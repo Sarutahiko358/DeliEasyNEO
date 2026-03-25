@@ -492,7 +492,7 @@
   function widgetTap(action) {
     if (typeof hp === 'function') hp();
     if (action === 'earn') {
-      if (typeof openOverlay === 'function') openOverlay('earn');
+      if (typeof openOverlay === 'function') openOverlay('earnInput');
       else toast('売上入力は次のバージョンで実装予定です');
     }
   }
