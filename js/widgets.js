@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/widgets.js
-   ウィジェット定義 + 描画エンジン
+   ウィジェット定義 + 描画エンジン（修正版）
    ========================================================== */
 (function(){
   'use strict';
@@ -17,7 +17,6 @@
 
   /* ========== ウィジェット定義 ========== */
   var WIDGET_DEFS = {
-    /* --- 時間系 --- */
     clock: {
       id: 'clock', name: '時計', icon: '🕐', category: 'time',
       size: 'full', sizeOptions: ['full','half'],
@@ -39,15 +38,14 @@
       }
     },
 
-    /* --- 今日系 --- */
     todaySales: {
       id: 'todaySales', name: '今日の売上', icon: '💰', category: 'today',
       size: 'half', sizeOptions: ['half','full'],
       desc: '今日の合計売上',
       tappable: true, tapAction: 'earn',
       render: function(w) {
-        var data = _getTodayData();
-        return _statBox('今日の売上', '¥' + fmt(data.sales), null, w);
+        var tot = typeof tdTot === 'function' ? tdTot() : 0;
+        return _statBox('今日の売上', '¥' + fmt(tot), null, w);
       }
     },
     todayCount: {
@@ -56,8 +54,8 @@
       desc: '今日の配達件数',
       tappable: true, tapAction: 'earn',
       render: function(w) {
-        var data = _getTodayData();
-        return _statBox('今日の件数', data.count + '件', null, w);
+        var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
+        return _statBox('今日の件数', cnt + '件', null, w);
       }
     },
     todayUnit: {
@@ -65,8 +63,9 @@
       size: 'half', sizeOptions: ['half','full'],
       desc: '今日の平均単価',
       render: function(w) {
-        var data = _getTodayData();
-        var unit = data.count > 0 ? Math.round(data.sales / data.count) : 0;
+        var tot = typeof tdTot === 'function' ? tdTot() : 0;
+        var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
+        var unit = cnt > 0 ? Math.round(tot / cnt) : 0;
         return _statBox('平均単価', '¥' + fmt(unit), null, w);
       }
     },
@@ -75,29 +74,33 @@
       size: 'half', sizeOptions: ['half','full'],
       desc: '売上 − 経費の概算',
       render: function(w) {
-        var data = _getTodayData();
-        var exp = _getTodayExpense();
-        var profit = data.sales - exp;
+        var tot = typeof tdTot === 'function' ? tdTot() : 0;
+        var exps = S.g('exps', []);
+        var expTot = 0;
+        exps.forEach(function(e) { if (e.date === TD) expTot += (Number(e.amount) || 0); });
+        var profit = tot - expTot;
         var cls = profit >= 0 ? '' : ' c-danger';
         return _statBox('今日の利益', '<span class="' + cls + '">¥' + fmt(profit) + '</span>', null, w);
       }
     },
 
-    /* --- 集計系 --- */
     todaySummary: {
       id: 'todaySummary', name: '今日のまとめ', icon: '📋', category: 'summary',
       size: 'full', sizeOptions: ['full'],
       desc: '売上・件数・単価・利益を一覧',
       tappable: true, tapAction: 'earn',
       render: function() {
-        var data = _getTodayData();
-        var exp = _getTodayExpense();
-        var unit = data.count > 0 ? Math.round(data.sales / data.count) : 0;
-        var profit = data.sales - exp;
+        var tot = typeof tdTot === 'function' ? tdTot() : 0;
+        var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
+        var unit = cnt > 0 ? Math.round(tot / cnt) : 0;
+        var exps = S.g('exps', []);
+        var expTot = 0;
+        exps.forEach(function(e) { if (e.date === TD) expTot += (Number(e.amount) || 0); });
+        var profit = tot - expTot;
         return '<div class="widget-inner">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          _miniStat('売上', '¥' + fmt(data.sales)) +
-          _miniStat('件数', data.count + '件') +
+          _miniStat('売上', '¥' + fmt(tot)) +
+          _miniStat('件数', cnt + '件') +
           _miniStat('単価', '¥' + fmt(unit)) +
           _miniStat('利益', '¥' + fmt(profit), profit < 0 ? 'c-danger' : '') +
           '</div></div>';
@@ -108,12 +111,12 @@
       size: 'full', sizeOptions: ['full'],
       desc: '今週（月〜日）の合計',
       render: function() {
-        var data = _getWeekData();
-        var unit = data.count > 0 ? Math.round(data.sales / data.count) : 0;
+        var data = typeof wkData === 'function' ? wkData() : { tot: 0, cnt: 0, days: 0 };
+        var unit = data.cnt > 0 ? Math.round(data.tot / data.cnt) : 0;
         return '<div class="widget-inner">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          _miniStat('週売上', '¥' + fmt(data.sales)) +
-          _miniStat('週件数', data.count + '件') +
+          _miniStat('週売上', '¥' + fmt(data.tot)) +
+          _miniStat('週件数', data.cnt + '件') +
           _miniStat('週単価', '¥' + fmt(unit)) +
           _miniStat('稼働日', data.days + '日') +
           '</div></div>';
@@ -124,14 +127,16 @@
       size: 'full', sizeOptions: ['full'],
       desc: '今月の合計',
       render: function() {
-        var data = _getMonthData();
-        var unit = data.count > 0 ? Math.round(data.sales / data.count) : 0;
+        var tot = typeof moTot === 'function' ? moTot() : 0;
+        var cnt = typeof moCnt === 'function' ? moCnt() : 0;
+        var days = typeof moDays === 'function' ? moDays() : 0;
+        var unit = cnt > 0 ? Math.round(tot / cnt) : 0;
         return '<div class="widget-inner">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          _miniStat('月売上', '¥' + fmt(data.sales)) +
-          _miniStat('月件数', data.count + '件') +
+          _miniStat('月売上', '¥' + fmt(tot)) +
+          _miniStat('月件数', cnt + '件') +
           _miniStat('月単価', '¥' + fmt(unit)) +
-          _miniStat('稼働日', data.days + '日') +
+          _miniStat('稼働日', days + '日') +
           '</div></div>';
       }
     },
@@ -141,15 +146,15 @@
       desc: '今日のプラットフォーム別内訳',
       tappable: true, tapAction: 'earn',
       render: function() {
-        var records = _getTodayRecords();
+        var records = typeof eByDate === 'function' ? eByDate(TD) : [];
         var pfMap = {};
         var total = 0;
         records.forEach(function(r) {
-          var pf = r.pf || '不明';
+          var pf = (typeof extractPf === 'function' ? extractPf(r.m) : '') || '不明';
           if (!pfMap[pf]) pfMap[pf] = { sales: 0, count: 0 };
-          pfMap[pf].sales += (r.amount || 0);
-          pfMap[pf].count += (r.count || 1);
-          total += (r.amount || 0);
+          pfMap[pf].sales += (Number(r.a) || 0);
+          pfMap[pf].count += (Number(r.c) || 1);
+          total += (Number(r.a) || 0);
         });
         var keys = Object.keys(pfMap).sort(function(a,b) { return pfMap[b].sales - pfMap[a].sales; });
         if (keys.length === 0) return '<div class="widget-empty">今日のデータなし</div>';
@@ -170,21 +175,20 @@
       }
     },
 
-    /* --- 目標系 --- */
     goalProgress: {
       id: 'goalProgress', name: '月間目標', icon: '🎯', category: 'goal',
       size: 'full', sizeOptions: ['full','half'],
       desc: '月間売上目標に対する進捗',
       render: function(w) {
         var goal = S.g('monthlyGoal', 0);
-        var data = _getMonthData();
+        var tot = typeof moTot === 'function' ? moTot() : 0;
         if (!goal || goal <= 0) {
           return '<div class="widget-inner"><div class="widget-goal-value">目標未設定</div>' +
             '<div class="widget-progress-label" style="cursor:pointer" onclick="openGoalSetting()">タップして設定</div></div>';
         }
-        var pct = Math.min(Math.round(data.sales / goal * 100), 100);
+        var pct = Math.min(Math.round(tot / goal * 100), 100);
         return '<div class="widget-inner">' +
-          '<div class="widget-goal-value">¥' + fmt(data.sales) + ' / ¥' + fmt(goal) + '</div>' +
+          '<div class="widget-goal-value">¥' + fmt(tot) + ' / ¥' + fmt(goal) + '</div>' +
           '<div class="widget-progress"><div class="widget-progress-bar" style="width:' + pct + '%"></div></div>' +
           '<div class="widget-progress-label">' + pct + '% 達成</div>' +
         '</div>';
@@ -198,39 +202,40 @@
         var now = new Date();
         var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
         var dayOfMonth = now.getDate();
-        var data = _getMonthData();
-        var pace = data.days > 0 ? Math.round(data.sales / data.days * daysInMonth) : 0;
-        var dailyAvg = data.days > 0 ? Math.round(data.sales / data.days) : 0;
+        var tot = typeof moTot === 'function' ? moTot() : 0;
+        var days = typeof moDays === 'function' ? moDays() : 0;
+        var pace = days > 0 ? Math.round(tot / days * daysInMonth) : 0;
+        var dailyAvg = days > 0 ? Math.round(tot / days) : 0;
         return '<div class="widget-inner">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
           _miniStat('月末着地予測', '¥' + fmt(pace)) +
           _miniStat('日平均', '¥' + fmt(dailyAvg)) +
           _miniStat('経過日数', dayOfMonth + '/' + daysInMonth + '日') +
-          _miniStat('稼働日数', data.days + '日') +
+          _miniStat('稼働日数', days + '日') +
           '</div></div>';
       }
     },
 
-    /* --- 詳細系 --- */
     recentRecords: {
       id: 'recentRecords', name: '最近の記録', icon: '📝', category: 'detail',
       size: 'full', sizeOptions: ['full'],
       desc: '直近5件の売上記録',
       tappable: true, tapAction: 'earn',
       render: function() {
-        var all = typeof getEarns === 'function' ? getEarns() : [];
+        var all = typeof getE === 'function' ? getE() : [];
         var recent = all.slice(-5).reverse();
         if (recent.length === 0) return '<div class="widget-empty">記録なし</div>';
         var html = '<div class="widget-records">';
         recent.forEach(function(r) {
-          var d = new Date(r.ts || r.timestamp);
-          var dateStr = (d.getMonth()+1) + '/' + d.getDate();
-          html += '<div class="widget-rec-row">' +
-            '<span class="widget-rec-date">' + dateStr + '</span>' +
-            '<span class="widget-rec-pf">' + escHtml(r.pf || '') + '</span>' +
-            '<span class="widget-rec-amt">¥' + fmt(r.amount || 0) + '</span>' +
-            '<span class="widget-rec-cnt">' + (r.count || 1) + '件</span>' +
-          '</div>';
+          var pf = typeof extractPf === 'function' ? extractPf(r.m) : '';
+          var pfCol = pf && typeof pfColor === 'function' ? pfColor(pf) : '';
+          html += '<div class="widget-rec-row">';
+          html += '<span class="widget-rec-date">' + escHtml((r.d || '').substring(5)) + '</span>';
+          if (pfCol) html += '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + pfCol + ';flex-shrink:0"></span>';
+          html += '<span class="widget-rec-pf">' + escHtml(pf || '—') + '</span>';
+          html += '<span class="widget-rec-amt">¥' + fmt(r.a) + '</span>';
+          html += '<span class="widget-rec-cnt">' + r.c + '件</span>';
+          html += '</div>';
         });
         html += '</div>';
         return html;
@@ -247,19 +252,17 @@
         var firstDay = new Date(year, month, 1).getDay();
         var daysInMonth = new Date(year, month + 1, 0).getDate();
         var today = now.getDate();
+        var mk = year + '-' + String(month + 1).padStart(2, '0');
 
-        /* 日別売上取得 */
+        /* 日別売上取得 — earns-db.js APIを使用 */
         var dayData = {};
-        var all = typeof getEarns === 'function' ? getEarns() : [];
-        all.forEach(function(r) {
-          var d = new Date(r.ts || r.timestamp);
-          if (d.getFullYear() === year && d.getMonth() === month) {
-            var day = d.getDate();
-            dayData[day] = (dayData[day] || 0) + (r.amount || 0);
-          }
+        var monthEarns = typeof eByMonth === 'function' ? eByMonth(mk) : [];
+        monthEarns.forEach(function(r) {
+          var parts = r.d.split('-');
+          var day = parseInt(parts[2], 10);
+          dayData[day] = (dayData[day] || 0) + (Number(r.a) || 0);
         });
 
-        /* 最大値算出 */
         var maxSales = 0;
         Object.keys(dayData).forEach(function(k) { if (dayData[k] > maxSales) maxSales = dayData[k]; });
 
@@ -274,8 +277,11 @@
         for (var d = 1; d <= daysInMonth; d++) {
           var lv = 0;
           if (dayData[d]) {
-            var ratio = maxSales > 0 ? dayData[d] / maxSales : 0;
-            lv = ratio > 0.8 ? 5 : ratio > 0.6 ? 4 : ratio > 0.4 ? 3 : ratio > 0.2 ? 2 : 1;
+            if (dayData[d] >= 20000) lv = 5;
+            else if (dayData[d] >= 15000) lv = 4;
+            else if (dayData[d] >= 10000) lv = 3;
+            else if (dayData[d] >= 5000) lv = 2;
+            else lv = 1;
           }
           var isToday = d === today;
           html += '<div class="widget-cal-day' + (isToday ? ' widget-cal-today' : '') + '"' +
@@ -286,15 +292,14 @@
       }
     },
 
-    /* --- その他 --- */
     hourlyRate: {
       id: 'hourlyRate', name: '時給換算', icon: '⏱', category: 'other',
       size: 'half', sizeOptions: ['half','full'],
       desc: '今日の稼働時間と時給',
       render: function(w) {
-        var data = _getTodayData();
+        var tot = typeof tdTot === 'function' ? tdTot() : 0;
         var hours = S.g('todayHours', 0);
-        var rate = hours > 0 ? Math.round(data.sales / hours) : 0;
+        var rate = hours > 0 ? Math.round(tot / hours) : 0;
         var label = hours > 0 ? '¥' + fmt(rate) + '/h' : '稼働時間未設定';
         return _statBox('時給換算', label, null, w);
       }
@@ -348,88 +353,14 @@
     '</div>';
   }
 
-  /* ---------- データ取得 ---------- */
-  function _getTodayRecords() {
-    var all = typeof getEarns === 'function' ? getEarns() : [];
-    var today = dateKey(new Date());
-    return all.filter(function(r) {
-      return dateKey(new Date(r.ts || r.timestamp)) === today;
-    });
-  }
-
-  function _getTodayData() {
-    var records = _getTodayRecords();
-    var sales = 0, count = 0;
-    records.forEach(function(r) {
-      sales += (r.amount || 0);
-      count += (r.count || 1);
-    });
-    return { sales: sales, count: count, records: records };
-  }
-
-  function _getTodayExpense() {
-    if (typeof getExpenses !== 'function') return 0;
-    var all = getExpenses();
-    var today = dateKey(new Date());
-    var total = 0;
-    all.forEach(function(e) {
-      if (dateKey(new Date(e.ts || e.timestamp || e.date)) === today) {
-        total += (e.amount || 0);
-      }
-    });
-    return total;
-  }
-
-  function _getWeekData() {
-    var now = new Date();
-    var day = now.getDay();
-    var mondayOffset = day === 0 ? -6 : 1 - day;
-    var monday = new Date(now);
-    monday.setDate(monday.getDate() + mondayOffset);
-    monday.setHours(0,0,0,0);
-
-    var all = typeof getEarns === 'function' ? getEarns() : [];
-    var sales = 0, count = 0, daysSet = {};
-    all.forEach(function(r) {
-      var d = new Date(r.ts || r.timestamp);
-      if (d >= monday && d <= now) {
-        sales += (r.amount || 0);
-        count += (r.count || 1);
-        daysSet[dateKey(d)] = true;
-      }
-    });
-    return { sales: sales, count: count, days: Object.keys(daysSet).length };
-  }
-
-  function _getMonthData() {
-    var now = new Date();
-    var year = now.getFullYear();
-    var month = now.getMonth();
-    var all = typeof getEarns === 'function' ? getEarns() : [];
-    var sales = 0, count = 0, daysSet = {};
-    all.forEach(function(r) {
-      var d = new Date(r.ts || r.timestamp);
-      if (d.getFullYear() === year && d.getMonth() === month) {
-        sales += (r.amount || 0);
-        count += (r.count || 1);
-        daysSet[dateKey(d)] = true;
-      }
-    });
-    return { sales: sales, count: count, days: Object.keys(daysSet).length };
-  }
-
+  /* ---------- 連続稼働日数 ---------- */
   function _calcStreak() {
-    var all = typeof getEarns === 'function' ? getEarns() : [];
+    var all = typeof getE === 'function' ? getE() : [];
     var daysSet = {};
-    all.forEach(function(r) {
-      daysSet[dateKey(new Date(r.ts || r.timestamp))] = true;
-    });
+    all.forEach(function(r) { daysSet[r.d] = true; });
     var streak = 0;
     var d = new Date();
-    /* 今日データがなければ昨日から開始 */
-    if (!daysSet[dateKey(d)]) {
-      d.setDate(d.getDate() - 1);
-    }
+    if (!daysSet[dateKey(d)]) d.setDate(d.getDate() - 1);
     while (daysSet[dateKey(d)]) {
       streak++;
       d.setDate(d.getDate() - 1);
@@ -449,7 +380,6 @@
     }
     var html = '<div class="widget ' + sizeClass + tappable + '"' + tapAttr + '>';
 
-    /* タイトルバー */
     html += '<div class="widget-title">';
     html += '<span>' + def.icon + ' ' + escHtml(def.name) + '</span>';
     if (editMode) {
@@ -462,7 +392,6 @@
     }
     html += '</div>';
 
-    /* コンテンツ */
     try {
       html += def.render(w);
     } catch (e) {
@@ -493,7 +422,6 @@
     if (typeof hp === 'function') hp();
     if (action === 'earn') {
       if (typeof openOverlay === 'function') openOverlay('earnInput');
-      else toast('売上入力は次のバージョンで実装予定です');
     }
   }
 
