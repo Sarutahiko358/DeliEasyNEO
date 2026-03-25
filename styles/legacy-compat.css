@@ -1,0 +1,73 @@
+/* ==========================================================
+   DeliEasy v2 — styles/legacy-compat.css
+   旧JSファイル（calendar.js, stats.js, expense.js, tax.js）が
+   参照する旧CSS変数を v2 カラーパレット変数にマッピング
+   ========================================================== */
+
+:root {
+  /* --- 基本色 --- */
+  --bg: var(--c-bg, #f2f2f7);
+  --c: var(--c-card, #ffffff);
+  --tx: var(--c-tx, #1d1d1f);
+  --sub: var(--c-tx-secondary, #6e6e73);
+  --mt: var(--c-tx-muted, #86868b);
+  --bd: var(--c-border, rgba(0,0,0,.06));
+
+  /* --- プライマリ色 --- */
+  --p: var(--c-primary, #007aff);
+  --pl: var(--c-primary-light, rgba(0,122,255,.08));
+  --pd: var(--c-primary-dark, #0055cc);
+  --pbg: var(--c-primary, #007aff);
+
+  /* --- アクセント色 --- */
+  --bl: var(--c-primary, #007aff);
+  --bll: var(--c-primary-light, rgba(0,122,255,.08));
+  --gn: var(--c-success, #34c759);
+  --gnl: var(--c-success-light, rgba(52,199,89,.1));
+  --tl: var(--c-info, #5ac8fa);
+  --tll: var(--c-info-light, rgba(90,200,250,.1));
+  --rd: var(--c-danger, #ff3b30);
+  --rdl: var(--c-danger-light, rgba(255,59,48,.1));
+  --pu: #af52de;
+  --pul: rgba(175,82,222,.1);
+  --yl: var(--c-warning, #ffcc00);
+  --yll: var(--c-warning-light, rgba(255,204,0,.1));
+
+  /* --- 角丸 --- */
+  --R: var(--ds-radius, 16px);
+  --R-sm: var(--ds-radius-sm, 12px);
+  --R-lg: var(--ds-radius-lg, 24px);
+  --R-xl: 28px;
+
+  /* --- UI背景 --- */
+  --card: var(--c-card, #ffffff);
+  --hdr: var(--c-topbar-bg, rgba(242,242,247,.82));
+  --calHdr: var(--c-topbar-bg, rgba(242,242,247,.82));
+  --tabBg: var(--c-topbar-bg, rgba(242,242,247,.82));
+  --inputBg: var(--c-input-bg, rgba(118,118,128,.12));
+  --sbBg: var(--c-fill-quaternary, rgba(118,118,128,.06));
+  --etBg: var(--c-bottombar-bg, rgba(249,249,249,.94));
+
+  /* --- オーバーレイ --- */
+  --moOverlay: var(--c-overlay, rgba(0,0,0,.32));
+  --moBg: var(--c-bg, #f2f2f7);
+  --glass: rgba(255,255,255,.72);
+  --glassBd: rgba(255,255,255,.3);
+
+  /* --- Apple互換変数 --- */
+  --apple-blur: 20px;
+  --apple-separator: var(--c-divider, rgba(60,60,67,.12));
+  --apple-fill-primary: var(--c-fill-primary, rgba(120,120,128,.2));
+  --apple-fill-secondary: var(--c-fill-secondary, rgba(120,120,128,.16));
+  --apple-fill-tertiary: var(--c-fill-tertiary, rgba(118,118,128,.12));
+  --apple-fill-quaternary: var(--c-fill-quaternary, rgba(116,116,128,.08));
+  --apple-label-secondary: var(--c-tx-secondary, rgba(60,60,67,.6));
+  --apple-label-tertiary: var(--c-tx-muted, rgba(60,60,67,.3));
+  --apple-group-bg: var(--c-card, #ffffff);
+  --apple-group-header: var(--c-tx-secondary, rgba(60,60,67,.6));
+
+  /* --- タブバー/ヘッダー高さ --- */
+  --sh: none;
+  --th: 84px;
+  --hh: 44px;
+}

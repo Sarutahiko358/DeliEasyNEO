@@ -1,10 +1,9 @@
-/* sw.js — DeliEasy Service Worker */
-const CACHE_NAME = 'delieasy-v4';
+/* sw.js — DeliEasy Service Worker v2 */
+const CACHE_NAME = 'delieasy-v5';
 const PRE_CACHE = [
   './',
   './index.html',
   './firebase-config.js',
-  './styles/main.css',
   './storage.js',
   './earns-db.js',
   './firebase-sync.js',
@@ -16,7 +15,45 @@ const PRE_CACHE = [
   './icon.svg',
   './icon-192.png',
   './icon-512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  /* v2 Styles */
+  './styles/main.css',
+  './styles/legacy-compat.css',
+  './styles/base.css',
+  './styles/design-styles.css',
+  './styles/color-palettes.css',
+  './styles/components.css',
+  './styles/sidebar.css',
+  './styles/overlay.css',
+  './styles/fab.css',
+  './styles/widgets.css',
+  './styles/presets.css',
+  './styles/home.css',
+  './styles/topbar.css',
+  './styles/bottombar.css',
+  './styles/right-panel.css',
+  './styles/calendar.css',
+  './styles/stats.css',
+  /* v2 Scripts */
+  './js/utils.js',
+  './js/sidebar.js',
+  './js/overlay.js',
+  './js/fab.js',
+  './js/widgets.js',
+  './js/presets.js',
+  './js/topbar.js',
+  './js/bottombar.js',
+  './js/right-panel.js',
+  './js/home.js',
+  './js/earn-input.js',
+  './js/expense-input.js',
+  './js/calendar-view.js',
+  './js/stats-view.js',
+  './js/tax-view.js',
+  './js/expense-view.js',
+  './js/pf-manage.js',
+  './js/settings-view.js',
+  './js/app.js'
 ];
 
 self.addEventListener('install', e => {
