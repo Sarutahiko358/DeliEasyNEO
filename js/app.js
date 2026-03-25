@@ -97,6 +97,12 @@
         if (typeof renderFab === 'function') renderFab();
         if (typeof initSidebarGestures === 'function') initSidebarGestures();
 
+        /* Phase 4: トップバー・ボトムバー・右パネル */
+        if (typeof renderTopbar === 'function') renderTopbar();
+        if (typeof renderBottombar === 'function') renderBottombar();
+        if (typeof initRightPanelGestures === 'function') initRightPanelGestures();
+        if (typeof startTopbarUpdater === 'function') startTopbarUpdater();
+
         updateSyncIndicator();
         if (typeof onFirebaseSyncStatusChange === 'function') {
           onFirebaseSyncStatusChange(function() { updateSyncIndicator(); });
@@ -107,6 +113,8 @@
         console.warn('[App] Init error:', e);
         if (typeof renderHome === 'function') renderHome();
         if (typeof renderFab === 'function') renderFab();
+        if (typeof renderTopbar === 'function') renderTopbar();
+        if (typeof renderBottombar === 'function') renderBottombar();
       });
     }
 
@@ -148,6 +156,7 @@
         history.pushState(null, '', location.href);
         if (typeof isOverlayOpen === 'function' && isOverlayOpen()) { closeOverlay(); return; }
         if (typeof isSidebarOpen === 'function' && isSidebarOpen()) { closeSidebar(); return; }
+        if (typeof isRightPanelOpen === 'function' && isRightPanelOpen()) { closeRightPanel(); return; }
         _showExitConfirm();
       }
     });

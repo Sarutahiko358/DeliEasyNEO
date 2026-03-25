@@ -26,6 +26,9 @@
 <link rel="stylesheet" href="./styles/widgets.css">
 <link rel="stylesheet" href="./styles/presets.css">
 <link rel="stylesheet" href="./styles/home.css">
+<link rel="stylesheet" href="./styles/topbar.css">
+<link rel="stylesheet" href="./styles/bottombar.css">
+<link rel="stylesheet" href="./styles/right-panel.css">
 
 <!-- Topbar inline styles (minimal for Phase 1) -->
 <style>
@@ -146,6 +149,12 @@
   <!-- Rendered by sidebar.js -->
 </nav>
 
+<!-- ===== Right Panel ===== -->
+<div class="right-panel-overlay" id="right-panel-overlay" onclick="closeRightPanel()"></div>
+<nav class="right-panel" id="right-panel" aria-label="情報パネル">
+  <!-- Rendered by right-panel.js -->
+</nav>
+
 <!-- ===== Overlay Container ===== -->
 <div class="overlay-container" id="overlay-container">
   <div class="overlay-backdrop" id="overlay-backdrop"></div>
@@ -177,6 +186,9 @@
 <script src="./js/fab.js"></script>
 <script src="./js/widgets.js"></script>
 <script src="./js/presets.js"></script>
+<script src="./js/topbar.js"></script>
+<script src="./js/bottombar.js"></script>
+<script src="./js/right-panel.js"></script>
 <script src="./js/home.js"></script>
 <script src="./js/app.js"></script>
 

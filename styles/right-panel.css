@@ -1,0 +1,255 @@
+/* ==========================================================
+   DeliEasy v2 — styles/right-panel.css
+   右サイドバー（情報パネル）
+   ========================================================== */
+
+/* ---------- オーバーレイ ---------- */
+.right-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--c-overlay);
+  z-index: 5000;
+  opacity: 0;
+  transition: opacity .3s cubic-bezier(.28,.11,.32,1);
+  pointer-events: none;
+}
+.right-panel-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- パネル ---------- */
+.right-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: 80vw;
+  background: var(--c-sidebar-bg);
+  -webkit-backdrop-filter: var(--ds-backdrop);
+  backdrop-filter: var(--ds-backdrop);
+  z-index: 5001;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.28,.11,.32,1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.right-panel.open {
+  transform: translateX(0);
+}
+
+/* ---------- ヘッダー ---------- */
+.right-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: var(--ds-divider);
+  flex-shrink: 0;
+}
+
+/* ---------- ボディ ---------- */
+.right-panel-body {
+  flex: 1;
+  padding: 8px 16px 24px;
+  overflow-y: auto;
+}
+
+/* ---------- セクション ---------- */
+.right-panel-section {
+  margin-bottom: 16px;
+}
+.right-panel-section-title {
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--c-tx-secondary);
+  letter-spacing: -0.008em;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+.right-panel-section-body {
+  background: var(--c-card);
+  border-radius: var(--ds-radius);
+  border: var(--ds-card-border);
+  box-shadow: var(--ds-shadow-card);
+  padding: 12px 14px;
+}
+
+/* ---------- 統計グリッド ---------- */
+.rp-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.rp-stat {
+  text-align: center;
+}
+.rp-stat-full {
+  grid-column: 1 / -1;
+}
+.rp-stat-label {
+  display: block;
+  font-size: .5625rem;
+  color: var(--c-tx-muted);
+  margin-bottom: 2px;
+}
+.rp-stat-value {
+  display: block;
+  font-size: .875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-tx);
+}
+
+/* ---------- 記録リスト ---------- */
+.rp-record {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  border-bottom: .5px solid var(--c-divider);
+  font-size: .75rem;
+}
+.rp-record:last-child { border-bottom: none; }
+.rp-record-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rp-record-pf {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--c-tx);
+  font-weight: 500;
+}
+.rp-record-amt {
+  font-weight: 600;
+  color: var(--c-tx);
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
+  text-align: right;
+}
+.rp-record-cnt {
+  font-size: .625rem;
+  color: var(--c-tx-muted);
+  min-width: 22px;
+  text-align: right;
+}
+
+/* ---------- 目標 ---------- */
+.rp-goal { text-align: center; }
+.rp-goal-text {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--c-tx);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 6px;
+}
+.rp-goal-bar {
+  height: 6px;
+  background: var(--c-fill-quaternary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.rp-goal-fill {
+  height: 100%;
+  background: var(--c-primary);
+  border-radius: 3px;
+  transition: width .5s cubic-bezier(.28,.11,.32,1);
+}
+.rp-goal-pct {
+  font-size: .625rem;
+  color: var(--c-tx-muted);
+  margin-top: 4px;
+}
+
+/* ---------- PF内訳 ---------- */
+.rp-pf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+.rp-pf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rp-pf-name {
+  flex: 1;
+  font-size: .6875rem;
+  color: var(--c-tx);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rp-pf-val {
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--c-tx);
+  font-variant-numeric: tabular-nums;
+}
+.rp-pf-pct {
+  font-size: .5625rem;
+  color: var(--c-tx-muted);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ---------- 連続稼働 ---------- */
+.rp-streak {
+  text-align: center;
+  font-size: .875rem;
+  color: var(--c-tx);
+  padding: 4px 0;
+}
+.rp-streak-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--c-warning);
+}
+
+/* ---------- 経費行 ---------- */
+.rp-exp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: .5px solid var(--c-divider);
+  font-size: .75rem;
+}
+.rp-exp-row:last-child { border-bottom: none; }
+.rp-exp-cat { color: var(--c-tx); }
+.rp-exp-amt {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 右端ヒント（初回のみ） ---------- */
+.right-panel-hint {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: var(--c-primary);
+  border-radius: 2px 0 0 2px;
+  opacity: .3;
+  z-index: 90;
+  animation: rp-hint-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes rp-hint-pulse {
+  0%, 100% { opacity: .15; }
+  50% { opacity: .4; }
+}

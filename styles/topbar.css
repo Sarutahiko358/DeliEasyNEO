@@ -1,0 +1,146 @@
+/* ==========================================================
+   DeliEasy v2 — styles/topbar.css
+   トップバーのスロットカスタマイズ用スタイル
+   ========================================================== */
+
+/* ---------- スロット ---------- */
+.topbar-slot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.topbar-slot-left {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.topbar-slot-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  max-width: 50%;
+}
+.topbar-slot-center > * { pointer-events: auto; }
+.topbar-slot-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ---------- データ表示 ---------- */
+.topbar-data {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-tx);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar-data-primary { color: var(--c-primary); }
+.topbar-data-success { color: var(--c-success); }
+.topbar-data-danger { color: var(--c-danger); }
+.topbar-data-warning { color: var(--c-warning); }
+.topbar-data-compact {
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--c-tx-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 目標バー ---------- */
+.topbar-goal-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.topbar-goal-track {
+  width: 60px;
+  height: 6px;
+  background: var(--c-fill-quaternary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.topbar-goal-fill {
+  height: 100%;
+  background: var(--c-primary);
+  border-radius: 3px;
+  transition: width .5s cubic-bezier(.28,.11,.32,1);
+}
+.topbar-goal-pct {
+  font-size: .625rem;
+  font-weight: 600;
+  color: var(--c-primary);
+}
+
+/* ---------- フローティングハンバーガー ---------- */
+.floating-hamburger {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 101;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--c-card);
+  color: var(--c-primary);
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px var(--c-shadow-color), 0 0 0 .5px var(--c-divider);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-backdrop-filter: var(--ds-backdrop);
+  backdrop-filter: var(--ds-backdrop);
+  transition: all var(--ds-transition-fast);
+}
+.floating-hamburger:active {
+  transform: scale(.9);
+  opacity: .7;
+}
+
+/* ---------- トグルスイッチ（設定画面用、再利用可能） ---------- */
+.topbar-toggle {
+  position: relative;
+  display: inline-block;
+  width: 51px;
+  height: 31px;
+  flex-shrink: 0;
+}
+.topbar-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.topbar-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--c-fill-primary);
+  border-radius: 15.5px;
+  cursor: pointer;
+  transition: background .3s cubic-bezier(.28,.11,.32,1);
+}
+.topbar-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 27px;
+  height: 27px;
+  left: 2px;
+  top: 2px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .3s cubic-bezier(.28,.11,.32,1);
+  box-shadow: 0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.06);
+}
+.topbar-toggle input:checked + .topbar-toggle-slider {
+  background: var(--c-success);
+}
+.topbar-toggle input:checked + .topbar-toggle-slider::before {
+  transform: translateX(20px);
+}

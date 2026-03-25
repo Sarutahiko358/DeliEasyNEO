@@ -54,6 +54,19 @@
     }
     html += '</div>';
 
+    /* === 編集モード: 詳細設定（トップバー・ボトムバー・右パネル） === */
+    if (_editMode) {
+      html += '<div class="card mb12">';
+      html += '<div class="card-header" onclick="this.classList.toggle(\'open\');var b=document.getElementById(\'edit-advanced-body\');b.style.display=b.style.display===\'none\'?\'\':\'none\'">';
+      html += '<span>⚙️ 詳細設定</span><span class="card-arrow">▼</span>';
+      html += '</div>';
+      html += '<div class="card-body" id="edit-advanced-body" style="display:none">';
+      if (typeof renderTopbarSettings === 'function') html += renderTopbarSettings();
+      if (typeof renderBottombarSettings === 'function') html += renderBottombarSettings();
+      if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
+      html += '</div></div>';
+    }
+
     /* === 編集モードでない時のヒント === */
     if (!_editMode && presets.length <= 1) {
       html += '<div class="text-c fz-xs c-muted mt16 mb8" style="opacity:.5">';
@@ -80,6 +93,9 @@
     hp();
     setActivePreset(id);
     renderHome();
+    /* プリセット切替時にトップバー・ボトムバーも再描画 */
+    if (typeof renderTopbar === 'function') renderTopbar();
+    if (typeof renderBottombar === 'function') renderBottombar();
   }
 
   /* ========== プリセットメニュー ========== */
@@ -165,13 +181,18 @@
   function enterEditMode() {
     _editMode = true;
     if (typeof hideFab === 'function') hideFab();
+    if (typeof hideBottombar === 'function') hideBottombar();
     renderHome();
   }
 
   function exitEditMode() {
     _editMode = false;
     if (typeof showFab === 'function') showFab();
+    if (typeof showBottombar === 'function') showBottombar();
     renderHome();
+    /* 編集完了時にトップバー・ボトムバーを最新の設定で再描画 */
+    if (typeof renderTopbar === 'function') renderTopbar();
+    if (typeof renderBottombar === 'function') renderBottombar();
   }
 
   function isEditMode() { return _editMode; }
