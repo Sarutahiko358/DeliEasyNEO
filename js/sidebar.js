@@ -21,6 +21,7 @@
     { type: 'divider' },
     { id: 'pf-manage',     icon: '📦', label: 'PF・カテゴリ', overlay: 'pfManage' },
     { id: 'theme',         icon: '🎨', label: 'テーマ',       overlay: 'theme' },
+    { id: 'home-edit',     icon: '🏠', label: 'ホーム編集',   action: 'enterEditMode' },
     { id: 'settings',      icon: '⚙️', label: '設定',         overlay: 'settings' },
     { id: 'help',          icon: '❓', label: 'ヘルプ',       overlay: 'help' }
   ];
@@ -72,11 +73,16 @@
     items.forEach(function(el) {
       el.addEventListener('click', function() {
         var overlayId = el.getAttribute('data-overlay');
+        var actionId = el.getAttribute('data-action');
         closeSidebar();
         if (overlayId && typeof window.openOverlay === 'function') {
           setTimeout(function() {
             window.openOverlay(overlayId);
-          }, 150); /* slight delay for sidebar close animation */
+          }, 150);
+        } else if (actionId === 'enterEditMode') {
+          setTimeout(function() {
+            if (typeof window.enterEditMode === 'function') window.enterEditMode();
+          }, 150);
         }
       });
     });
