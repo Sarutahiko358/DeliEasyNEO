@@ -17,6 +17,7 @@
 | 5 | 入力オーバーレイ | 2 | ✅ 完了 | 03-25 | 03-25 |
 | 6 | 機能オーバーレイ群 | 8 | ✅ 完了 | 03-25 | 03-25 |
 | 7 | 統合・仕上げ | 5+ | ✅ 完了 | 03-25 | 03-26 |
+| 8 | 旧CSS完全排除 | 6 | ✅ 完了 | 03-26 | 03-26 |
 
 ---
 
@@ -99,7 +100,7 @@
 - [x] PF別内訳ウィジェット
 - [x] 連続稼働日数ウィジェット
 - [x] 直近の記録ウィジェット
-- [ ] ヒント表示（Phase 7で実装）
+- [ ] ヒント表示（将来実装）
 
 ---
 
@@ -157,8 +158,8 @@
 | js/expense-view.js | ✅ | expense.js をオーバーレイ内にラップ (#pg4生成) |
 | js/pf-manage.js | ✅ | PF CRUD + 経費カテゴリ CRUD（タブ切替UI） |
 | js/settings-view.js | ✅ | 同期・データ管理・JSONインポート・全削除・クラウド削除 |
-| styles/calendar.css | ✅ | v2テーマ変数へのフォールバックマッピング |
-| styles/stats.css | ✅ | v2テーマ変数へのフォールバックマッピング |
+| styles/calendar.css | ✅ | v2テーマ変数で動作 |
+| styles/stats.css | ✅ | v2テーマ変数で動作 |
 
 **追加変更:**
 | ファイル | 変更内容 |
@@ -181,10 +182,8 @@
 - [x] openStatDetail → statsオーバーレイを開く（renderDashOverlay経由）
 
 **設計メモ:**
-- 既存の calendar.js / stats.js / expense.js / tax.js は変更なし
+- 既存の calendar.js / stats.js / expense.js / tax.js はPhase 8でv2 CSS変数に完全移行
 - ラッパーパターン: オーバーレイbody内に仮の #pg1〜#pg4 を生成し、既存render関数を呼び出す
-- 旧CSS変数(--p, --card等)とv2変数(--c-primary, --c-card等)の共存をfallback付きCSSで実現
-- styles/main.css は引き続きロード不要（旧変数は各カラーパレットでも定義済み）
 
 ---
 
@@ -206,7 +205,91 @@
 
 ---
 
+## Phase 8: 旧CSS完全排除（Legacy CSS Elimination）
+
+> 旧JSファイル（calendar.js, stats.js, expense.js, tax.js）が参照していた
+> 旧CSS変数（--p, --card, --apple-*等）と旧クラス名（.cd, .ch, .cb, .fi, .bp, .sg, .sb等）を
+> v2 CSS変数（--c-primary, --c-card等）とv2クラス名に完全移行。
+> legacy-structures.css と legacy-compat.css を削除。
+
+| 作業 | 状態 | メモ |
+|------|------|------|
+| expense.js → v2 クラス移行 | ✅ | .cd→.card, .ch→.card-header, .cb→.card-body, .fi→.input, .fg→.input-group, .bp→.btn btn-primary, .bs2→.btn btn-secondary, .bsm→btn-sm, .bbl→btn-block, .s-btn→.pill 等 |
+| tax.js → v2 クラス移行 | ✅ | 同上 + .sg→.stat-grid, .sb→.stat-box, .sl→.stat-box-label, .sv→.stat-box-value, .hl→accent-primary, .rl→accent-danger, .gl→accent-success, .tl→accent-info 等 |
+| calendar.js → v2 クラス移行 | ✅ | 旧CSS変数(--p, --apple-*)への参照をv2変数(--c-primary, --c-card等)に置換 |
+| stats.js → v2 クラス移行 | ✅ | 旧CSS変数への参照をv2変数に置換。ds-*クラスはstats.cssで定義済み |
+| components.css 拡張 | ✅ | tappable, toggle, im-*, qa, rtb, exit-cf等の旧構造クラスをv2変数ベースで追加 |
+| calendar.css 統合 | ✅ | 旧CSS変数参照をv2変数に置換、ダークパレット対応 |
+| stats.css 統合 | ✅ | ds-*クラスをv2変数ベースで統合 |
+| legacy-structures.css 削除 | ✅ | リポジトリから削除 |
+| legacy-compat.css 削除 | ✅ | リポジトリから削除 |
+| index.html 旧CSS参照削除 | ✅ | link タグ削除済み |
+| sw.js キャッシュ名更新 | ✅ | CACHE_NAME → delieasy-v8 |
+
+**移行前後のクラス対応表:**
+
+| 旧クラス | v2クラス | 定義場所 |
+|---------|---------|---------|
+| .cd | .card | components.css |
+| .ch | .card-header | components.css |
+| .cb | .card-body | components.css |
+| .fi | .input | components.css |
+| .fg | .input-group | components.css |
+| .bp | .btn.btn-primary | components.css |
+| .bs2 | .btn.btn-secondary | components.css |
+| .brd | .btn.btn-danger | components.css |
+| .bsm | .btn-sm | components.css |
+| .bbl | .btn-block | components.css |
+| .sg / .sg2 | .stat-grid.stat-grid-2 | components.css |
+| .sg3 | .stat-grid.stat-grid-3 | components.css |
+| .sb | .stat-box | components.css |
+| .sl | .stat-box-label | components.css |
+| .sv | .stat-box-value | components.css |
+| .sb.hl | .stat-box.accent-primary | components.css |
+| .sb.gl | .stat-box.accent-success | components.css |
+| .sb.rl | .stat-box.accent-danger | components.css |
+| .sb.tl | .stat-box.accent-info | components.css |
+| .s-btn | .pill | components.css |
+| .np | .numpad | components.css |
+| .pf-d | .pf-dot | components.css |
+| .bdg | .badge | components.css |
+| .rec-s / .rtb | .rec-s / .rtb | components.css |
+
+**移行前後のCSS変数対応表:**
+
+| 旧変数 | v2変数 |
+|-------|-------|
+| --p | --c-primary |
+| --pl | --c-primary-light |
+| --pd | --c-primary-dark |
+| --pbg | --c-primary |
+| --card / --c | --c-card |
+| --bg | --c-bg |
+| --tx | --c-tx |
+| --sub | --c-tx-secondary |
+| --mt | --c-tx-muted |
+| --bd | --c-border |
+| --gn | --c-success |
+| --gnl | --c-success-light |
+| --rd | --c-danger |
+| --rdl | --c-danger-light |
+| --yl | --c-warning |
+| --yll | --c-warning-light |
+| --bl / --tl | --c-info |
+| --bll / --tll | --c-info-light |
+| --inputBg | --c-input-bg |
+| --R | --ds-radius |
+| --R-sm | --ds-radius-sm |
+| --apple-separator | --c-divider |
+| --apple-fill-* | --c-fill-* |
+| --apple-group-bg | --c-card |
+| --apple-label-secondary | --c-tx-secondary |
+| --moOverlay | --c-overlay |
+
+---
+
 ## メモ欄
 
-- Phase 6 で旧JSファイル（calendar.js, stats.js, expense.js, tax.js）を index.html に追加。これらは v2 オーバーレイ内でラッパー経由で動作する。
-- styles/main.css はロードしていないが、旧JSが参照する旧CSS変数（--p, --card, --apple-*等）はカラーパレットで定義されていないため、一部表示が崩れる可能性あり。Phase 7 でstyles/main.cssの必要部分を抽出するか、旧変数の互換レイヤーを追加する必要がある。
+- Phase 8 で旧JSファイル（calendar.js, stats.js, expense.js, tax.js）を v2 CSS変数・クラスに完全移行。legacy-structures.css と legacy-compat.css への依存は完全に排除された。
+- 全てのスタイルは v2 の CSS変数（--c-*, --ds-*）とクラス名（.card, .btn, .stat-box等）で動作する。
+- styles/main.css は不要（プロジェクトに残っている場合も未使用）。
