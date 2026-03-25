@@ -9,13 +9,25 @@
   var DEFAULT_STYLE = 'minimal';
   var DEFAULT_COLOR = 'blue-light';
 
+  var DARK_PALETTES = [
+    'blue-dark','green-dark','pink-dark','orange-dark',
+    'purple-dark','midnight','sumi-dark','charcoal'
+  ];
+
+  function isDarkPalette(color) {
+    return DARK_PALETTES.indexOf(color) >= 0;
+  }
+
   function applyTheme(style, color) {
-    document.documentElement.setAttribute('data-style', style || DEFAULT_STYLE);
-    document.documentElement.setAttribute('data-color', color || DEFAULT_COLOR);
+    var s = style || DEFAULT_STYLE;
+    var c = color || DEFAULT_COLOR;
+    document.documentElement.setAttribute('data-style', s);
+    document.documentElement.setAttribute('data-color', c);
+    /* 旧 data-theme 属性を削除（main.css の [data-theme="dark"] と競合防止） */
+    document.documentElement.removeAttribute('data-theme');
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      var isDark = (color || '').indexOf('dark') >= 0 || color === 'midnight' || color === 'charcoal';
-      meta.content = isDark ? '#000000' : '#f2f2f7';
+      meta.content = isDarkPalette(c) ? '#000000' : '#f2f2f7';
     }
   }
 
@@ -130,20 +142,11 @@
     _openEarnEditDialog(ts);
   };
 
-  window.openEditExpense = function(ts) {
-    /* expense.js の openEditExpense が既に定義されている場合はそちらを使う */
-    /* expense.js 内で window.openEditExpense が定義されているため、
-       ここでは expense.js がロード済みかチェックし、
-       ロード済みなら expense.js 版が既にwindowに入っている */
-    /* この関数は expense.js より後にロードされるため、
-       expense.js の openEditExpense を上書きしてしまう。
-       そこで expense.js の関数を別名で保存して呼び出す */
-  };
-
-  /* expense.js の openEditExpense を退避して再利用 */
+  /* expense.js の openEditExpense を退避（expense.js は app.js より前にロードされる） */
   var _expenseEditFn = window.openEditExpense;
+
   window.openEditExpense = function(ts) {
-    if (_expenseEditFn && typeof _expenseEditFn === 'function') {
+    if (typeof _expenseEditFn === 'function') {
       _expenseEditFn(ts);
     } else {
       toast('経費編集はデータを読み込んでからお試しください');
@@ -272,6 +275,7 @@
   window.getThemeColor = getThemeColor;
   window.setThemeStyle = setThemeStyle;
   window.setThemeColor = setThemeColor;
+  window.isDarkPalette = isDarkPalette;
   window.updateSyncIndicator = updateSyncIndicator;
 
   document.addEventListener('DOMContentLoaded', initApp);

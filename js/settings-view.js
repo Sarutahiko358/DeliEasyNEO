@@ -120,7 +120,7 @@
 
     /* ===== バージョン情報 ===== */
     html += '<div class="text-c c-muted fz-xs mt16 mb16">';
-    html += 'DeliEasy v2.0 — Phase 6<br>';
+    html += 'DeliEasy v2.0<br>';
     html += 'Device ID: ' + escHtml(S.g('deviceId', 'N/A'));
     html += '</div>';
 

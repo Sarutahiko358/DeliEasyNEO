@@ -71,3 +71,41 @@
   --th: 84px;
   --hh: 44px;
 }
+
+/* ===== ダークパレット用の旧変数上書き ===== */
+[data-color="blue-dark"],
+[data-color="green-dark"],
+[data-color="pink-dark"],
+[data-color="orange-dark"],
+[data-color="purple-dark"],
+[data-color="midnight"],
+[data-color="sumi-dark"],
+[data-color="charcoal"] {
+  --card: var(--c-card, #1c1c1e);
+  --hdr: var(--c-topbar-bg, rgba(0,0,0,.82));
+  --calHdr: var(--c-topbar-bg, rgba(0,0,0,.82));
+  --tabBg: var(--c-topbar-bg, rgba(0,0,0,.82));
+  --inputBg: var(--c-input-bg, rgba(118,118,128,.24));
+  --sbBg: var(--c-fill-quaternary, rgba(118,118,128,.12));
+  --etBg: var(--c-bottombar-bg, rgba(20,20,20,.94));
+  --moOverlay: var(--c-overlay, rgba(0,0,0,.5));
+  --moBg: var(--c-bg, #1c1c1e);
+  --glass: rgba(29,29,31,.8);
+  --glassBd: rgba(60,60,60,.4);
+  --pl: var(--c-primary-light, rgba(0,122,255,.2));
+  --bll: var(--c-primary-light, rgba(0,122,255,.2));
+  --gnl: var(--c-success-light, rgba(52,199,89,.2));
+  --tll: var(--c-info-light, rgba(90,200,250,.2));
+  --rdl: var(--c-danger-light, rgba(255,59,48,.2));
+  --pul: rgba(175,82,222,.2);
+  --yll: var(--c-warning-light, rgba(255,204,0,.2));
+  --apple-separator: var(--c-divider, rgba(84,84,88,.65));
+  --apple-fill-primary: var(--c-fill-primary, rgba(120,120,128,.36));
+  --apple-fill-secondary: var(--c-fill-secondary, rgba(120,120,128,.32));
+  --apple-fill-tertiary: var(--c-fill-tertiary, rgba(118,118,128,.24));
+  --apple-fill-quaternary: var(--c-fill-quaternary, rgba(116,116,128,.18));
+  --apple-label-secondary: var(--c-tx-secondary, rgba(235,235,245,.6));
+  --apple-label-tertiary: var(--c-tx-muted, rgba(235,235,245,.3));
+  --apple-group-bg: var(--c-card, #1c1c1e);
+  --apple-group-header: var(--c-tx-secondary, rgba(235,235,245,.6));
+}

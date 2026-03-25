@@ -68,3 +68,73 @@
   height: 50px;
   font-size: 1.2rem;
 }
+
+/* ダークパレットでのカレンダー金額レベル色 */
+[data-color="blue-dark"] .cal-c .cal-am.lv1,
+[data-color="green-dark"] .cal-c .cal-am.lv1,
+[data-color="pink-dark"] .cal-c .cal-am.lv1,
+[data-color="orange-dark"] .cal-c .cal-am.lv1,
+[data-color="purple-dark"] .cal-c .cal-am.lv1,
+[data-color="midnight"] .cal-c .cal-am.lv1,
+[data-color="sumi-dark"] .cal-c .cal-am.lv1,
+[data-color="charcoal"] .cal-c .cal-am.lv1 { color: #ffd60a; }
+
+[data-color="blue-dark"] .cal-c .cal-am.lv2,
+[data-color="green-dark"] .cal-c .cal-am.lv2,
+[data-color="pink-dark"] .cal-c .cal-am.lv2,
+[data-color="orange-dark"] .cal-c .cal-am.lv2,
+[data-color="purple-dark"] .cal-c .cal-am.lv2,
+[data-color="midnight"] .cal-c .cal-am.lv2,
+[data-color="sumi-dark"] .cal-c .cal-am.lv2,
+[data-color="charcoal"] .cal-c .cal-am.lv2 { color: #ff9f0a; }
+
+[data-color="blue-dark"] .cal-c .cal-am.lv3,
+[data-color="green-dark"] .cal-c .cal-am.lv3,
+[data-color="pink-dark"] .cal-c .cal-am.lv3,
+[data-color="orange-dark"] .cal-c .cal-am.lv3,
+[data-color="purple-dark"] .cal-c .cal-am.lv3,
+[data-color="midnight"] .cal-c .cal-am.lv3,
+[data-color="sumi-dark"] .cal-c .cal-am.lv3,
+[data-color="charcoal"] .cal-c .cal-am.lv3 { color: #ff6961; }
+
+[data-color="blue-dark"] .cal-c .cal-am.lv4,
+[data-color="green-dark"] .cal-c .cal-am.lv4,
+[data-color="pink-dark"] .cal-c .cal-am.lv4,
+[data-color="orange-dark"] .cal-c .cal-am.lv4,
+[data-color="purple-dark"] .cal-c .cal-am.lv4,
+[data-color="midnight"] .cal-c .cal-am.lv4,
+[data-color="sumi-dark"] .cal-c .cal-am.lv4,
+[data-color="charcoal"] .cal-c .cal-am.lv4 { color: #ff6482; }
+
+[data-color="blue-dark"] .cal-c .cal-am.lv5,
+[data-color="green-dark"] .cal-c .cal-am.lv5,
+[data-color="pink-dark"] .cal-c .cal-am.lv5,
+[data-color="orange-dark"] .cal-c .cal-am.lv5,
+[data-color="purple-dark"] .cal-c .cal-am.lv5,
+[data-color="midnight"] .cal-c .cal-am.lv5,
+[data-color="sumi-dark"] .cal-c .cal-am.lv5,
+[data-color="charcoal"] .cal-c .cal-am.lv5 { color: #bf5af2; }
+
+/* ダークパレットでの toast 影 */
+[data-color="blue-dark"] .toast,
+[data-color="green-dark"] .toast,
+[data-color="pink-dark"] .toast,
+[data-color="orange-dark"] .toast,
+[data-color="purple-dark"] .toast,
+[data-color="midnight"] .toast,
+[data-color="sumi-dark"] .toast,
+[data-color="charcoal"] .toast {
+  box-shadow: 0 8px 40px rgba(0,0,0,.5), 0 0 0 .5px rgba(255,255,255,.08);
+}
+
+/* ダークパレットでの sync-popup 影 */
+[data-color="blue-dark"] .sync-popup,
+[data-color="green-dark"] .sync-popup,
+[data-color="pink-dark"] .sync-popup,
+[data-color="orange-dark"] .sync-popup,
+[data-color="purple-dark"] .sync-popup,
+[data-color="midnight"] .sync-popup,
+[data-color="sumi-dark"] .sync-popup,
+[data-color="charcoal"] .sync-popup {
+  box-shadow: 0 8px 40px rgba(0,0,0,.5), 0 0 0 .5px rgba(255,255,255,.08);
+}

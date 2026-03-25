@@ -113,30 +113,10 @@
 }
 
 /* ---------- Reset ---------- */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-  background: var(--bg);
-  color: var(--tx);
-  line-height: 1.47059;
-  letter-spacing: -0.022em;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  -webkit-tap-highlight-color: transparent;
-}
+/* v2ではbase.cssがリセットを担当するため削除済み */
 
 /* ---------- App Shell ---------- */
-#app {
-  max-width: 430px;
-  margin: 0 auto;
-  min-height: 100vh;
-  min-height: 100dvh;
-  position: relative;
-  background: var(--bg);
-}
-@media(min-width:800px) { #app { border-left: .5px solid var(--apple-separator); border-right: .5px solid var(--apple-separator); } }
+/* v2ではindex.htmlのinline styleが担当するため削除済み */
 
 /* ---------- Header — iOS Navigation Bar ---------- */
 .hdr {
