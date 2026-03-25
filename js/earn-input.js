@@ -1,17 +1,18 @@
 /* ==========================================================
    DeliEasy v2 — js/earn-input.js
-   売上入力オーバーレイ（Phase 5）
+   売上入力オーバーレイ — PF追加対応 + 件数1件固定（詳細モードで変更可）
    ========================================================== */
 (function(){
   'use strict';
 
   /* ---------- 状態 ---------- */
-  var _inputMode = 'numpad'; // 'numpad' | 'direct'
+  var _inputMode = 'numpad';
   var _npVal = '';
   var _selectedDate = null;
   var _selectedPf = '';
   var _memo = '';
   var _count = 1;
+  var _showAdvanced = false;
 
   /* ---------- 初期化 ---------- */
   function _init() {
@@ -21,6 +22,7 @@
     _selectedPf = '';
     _memo = '';
     _count = 1;
+    _showAdvanced = false;
   }
 
   /* ---------- オーバーレイ描画 ---------- */
@@ -54,6 +56,8 @@
     /* PFなし選択肢 */
     var noPfActive = _selectedPf === '';
     html += '<button class="pill' + (noPfActive ? ' active' : '') + '" onclick="_earnSelectPf(\'\')">指定なし</button>';
+    /* PF追加ボタン */
+    html += '<button class="pill" onclick="_earnAddPfDialog()" style="border:1.5px dashed var(--c-border);color:var(--c-primary);font-weight:600">＋ 追加</button>';
     html += '</div>';
     html += '</div></div>';
 
@@ -64,7 +68,6 @@
     html += '<input type="date" class="input" id="earn-date" value="' + escHtml(_selectedDate) + '" onchange="_earnSetDate(this.value)" style="flex:1">';
     var isToday = _selectedDate === TD;
     html += '<button class="pill' + (isToday ? ' active' : '') + '" onclick="_earnSetDate(\'' + TD + '\')">今日</button>';
-    /* 昨日ボタン */
     var yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     var ydKey = dateKey(yesterday);
@@ -73,22 +76,31 @@
     html += '</div>';
     html += '</div></div>';
 
-    /* ===== 件数 ===== */
-    html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="fz-xs fw6 c-secondary mb8">件数</div>';
-    html += '<div style="display:flex;align-items:center;gap:8px">';
-    html += '<button class="btn btn-secondary btn-sm" onclick="_earnChangeCount(-1)" style="width:40px;font-size:1.2rem">−</button>';
-    html += '<span class="fw7 fz-l" id="earn-count-display" style="min-width:40px;text-align:center;font-variant-numeric:tabular-nums">' + _count + '</span>';
-    html += '<button class="btn btn-secondary btn-sm" onclick="_earnChangeCount(1)" style="width:40px;font-size:1.2rem">＋</button>';
-    html += '<span class="fz-xs c-muted">件</span>';
-    html += '</div>';
-    html += '</div></div>';
-
     /* ===== メモ ===== */
     html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-xs fw6 c-secondary mb8">メモ（任意）</div>';
     html += '<input type="text" class="input" id="earn-memo" placeholder="メモを入力" value="' + escHtml(_memo) + '" oninput="_earnSetMemo(this.value)">';
     html += '</div></div>';
+
+    /* ===== 詳細オプション（件数変更）===== */
+    html += '<div style="text-align:center;margin-bottom:8px">';
+    html += '<button class="btn btn-ghost btn-xs" onclick="_earnToggleAdvanced()" style="font-size:.7rem;color:var(--c-tx-muted)">';
+    html += _showAdvanced ? '▲ 詳細を閉じる' : '▼ 件数を変更する（まとめ記録）';
+    html += '</button>';
+    html += '</div>';
+
+    if (_showAdvanced) {
+      html += '<div class="card mb12"><div class="card-body">';
+      html += '<div class="fz-xs fw6 c-secondary mb8">件数（まとめ記録）</div>';
+      html += '<div class="fz-xxs c-danger mb8">⚠️ 統計の単価精度が下がります。1件ずつの記録を推奨します。</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px">';
+      html += '<button class="btn btn-secondary btn-sm" onclick="_earnChangeCount(-1)" style="width:40px;font-size:1.2rem">−</button>';
+      html += '<span class="fw7 fz-l" id="earn-count-display" style="min-width:40px;text-align:center;font-variant-numeric:tabular-nums">' + _count + '</span>';
+      html += '<button class="btn btn-secondary btn-sm" onclick="_earnChangeCount(1)" style="width:40px;font-size:1.2rem">＋</button>';
+      html += '<span class="fz-xs c-muted">件</span>';
+      html += '</div>';
+      html += '</div></div>';
+    }
 
     /* ===== 金額入力 ===== */
     html += '<div class="card mb12"><div class="card-body">';
@@ -104,17 +116,14 @@
       html += 'value="' + (_npVal || '') + '" placeholder="金額を入力" inputmode="numeric" ';
       html += 'oninput="_earnDirectInput(this.value)" autofocus>';
     } else {
-      /* テンキーディスプレイ */
       html += '<div class="numpad-display" id="earn-np-display">' + (_npVal ? fmt(Number(_npVal)) : '0') + '</div>';
 
-      /* クイック金額 */
       html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">';
       [500, 1000, 1500, 2000, 2500, 3000, 5000, 10000].forEach(function(amt) {
         html += '<button class="btn btn-secondary btn-xs" onclick="_earnQuickAmount(' + amt + ')" style="font-size:.7rem;padding:8px 4px">¥' + fmt(amt) + '</button>';
       });
       html += '</div>';
 
-      /* テンキー */
       html += '<div class="numpad">';
       ['7','8','9','4','5','6','1','2','3','00','0'].forEach(function(k) {
         html += '<button class="numpad-key" onclick="_earnNpKey(\'' + k + '\')">' + k + '</button>';
@@ -136,7 +145,6 @@
 
     body.innerHTML = html;
 
-    /* 直接入力モードの場合フォーカス */
     if (_inputMode === 'direct') {
       var directEl = document.getElementById('earn-amount-direct');
       if (directEl) setTimeout(function() { directEl.focus(); }, 100);
@@ -179,10 +187,62 @@
     _render();
   };
 
+  /* ---------- PF追加ダイアログ ---------- */
+  window._earnAddPfDialog = function() {
+    hp();
+    var div = document.createElement('div');
+    div.className = 'confirm-overlay';
+    div.innerHTML =
+      '<div class="confirm-box" style="max-width:320px;text-align:left">' +
+        '<h3 class="fz-s fw6 mb12 text-c">新しいPFを追加</h3>' +
+        '<div class="input-group"><label class="input-label">PF名</label>' +
+          '<input type="text" class="input" id="earn-add-pf-name" placeholder="例: Wolt"></div>' +
+        '<div class="input-group"><label class="input-label">色</label>' +
+          '<input type="color" id="earn-add-pf-color" value="#ff6600" style="width:100%;height:44px;border:none;border-radius:var(--ds-radius-sm);cursor:pointer"></div>' +
+        '<div class="flex justify-center gap8 mt12">' +
+          '<button class="btn btn-primary btn-sm" id="earn-add-pf-ok">追加</button>' +
+          '<button class="btn btn-secondary btn-sm" id="earn-add-pf-cancel">キャンセル</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(div);
+
+    setTimeout(function() {
+      var nameInput = document.getElementById('earn-add-pf-name');
+      if (nameInput) nameInput.focus();
+    }, 100);
+
+    document.getElementById('earn-add-pf-ok').onclick = function() {
+      var name = document.getElementById('earn-add-pf-name').value.trim();
+      var color = document.getElementById('earn-add-pf-color').value;
+      if (!name) { toast('PF名を入力してください'); return; }
+
+      var pfs = typeof getAllPFs === 'function' ? getAllPFs() : [];
+      for (var i = 0; i < pfs.length; i++) {
+        if (pfs[i].name === name) { toast('同名のPFが既に存在します'); return; }
+      }
+      pfs.push({ name: name, color: color, active: true, default: false });
+      S.s('pfItems', pfs);
+
+      _selectedPf = name;
+      toast('✅ PF「' + name + '」を追加しました');
+      div.remove();
+      _render();
+    };
+    document.getElementById('earn-add-pf-cancel').onclick = function() { div.remove(); };
+  };
+
   /* ---------- 日付設定 ---------- */
   window._earnSetDate = function(d) {
     hp();
     _selectedDate = d;
+    _render();
+  };
+
+  /* ---------- 詳細オプション切替 ---------- */
+  window._earnToggleAdvanced = function() {
+    hp();
+    _showAdvanced = !_showAdvanced;
+    if (!_showAdvanced) _count = 1; /* 閉じたら1件に戻す */
     _render();
   };
 
@@ -238,6 +298,7 @@
     _npVal = '';
     _memo = '';
     _count = 1;
+    _showAdvanced = false;
     _render();
   };
 
@@ -251,25 +312,20 @@
 
     hp();
 
-    /* メモ構築: "/PF名 メモテキスト" の形式 */
     var memoStr = '';
     if (_selectedPf) memoStr = '/' + _selectedPf;
     if (_memo) memoStr += (memoStr ? ' ' : '') + _memo;
 
-    /* earns-db.js の addE を使用 */
     if (typeof addE === 'function') {
       addE(_selectedDate, amount, _count, memoStr, null, true, null);
     }
 
-    /* 入力をリセット（PFと日付は維持） */
     _npVal = '';
     _memo = '';
     _count = 1;
+    _showAdvanced = false;
 
-    /* ホーム画面を更新 */
     if (typeof refreshHome === 'function') refreshHome();
-
-    /* 再描画（記録一覧を更新） */
     _render();
   };
 

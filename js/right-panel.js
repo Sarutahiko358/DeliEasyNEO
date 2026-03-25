@@ -1,14 +1,20 @@
 /* ==========================================================
    DeliEasy v2 — js/right-panel.js
-   右サイドバー（情報パネル）— スワイプで開閉
+   右サイドバー（情報パネル）— スワイプで閉じる対応
    ========================================================== */
 (function(){
   'use strict';
 
   var _isOpen = false;
   var _touchStartX = 0;
+  var _touchStartY = 0;
   var _touchCurrentX = 0;
   var _tracking = false;
+
+  /* パネル内スワイプ用 */
+  var _panelTouchStartX = 0;
+  var _panelTracking = false;
+  var _panelTranslateX = 0;
 
   /* ---------- セクション定義 ---------- */
   var RIGHT_PANEL_SECTIONS = [
@@ -75,6 +81,9 @@
     html += '</div>';
 
     panel.innerHTML = html;
+
+    /* パネル内スワイプで閉じる */
+    _initPanelSwipeToClose(panel);
   }
 
   function _findSection(id) {
@@ -82,6 +91,54 @@
       if (RIGHT_PANEL_SECTIONS[i].id === id) return RIGHT_PANEL_SECTIONS[i];
     }
     return null;
+  }
+
+  /* ---------- パネル内スワイプで閉じる ---------- */
+  function _initPanelSwipeToClose(panel) {
+    if (panel._swipeCloseInit) return;
+    panel._swipeCloseInit = true;
+
+    panel.addEventListener('touchstart', function(e) {
+      if (!_isOpen) return;
+      _panelTouchStartX = e.touches[0].clientX;
+      _panelTracking = true;
+      _panelTranslateX = 0;
+      panel.style.transition = 'none';
+    }, { passive: true });
+
+    panel.addEventListener('touchmove', function(e) {
+      if (!_panelTracking) return;
+      var dx = e.touches[0].clientX - _panelTouchStartX;
+      /* 右方向のみ（正の値） */
+      if (dx > 0) {
+        _panelTranslateX = dx;
+        panel.style.transform = 'translateX(' + dx + 'px)';
+        /* オーバーレイの透明度も追従 */
+        var overlay = document.getElementById('right-panel-overlay');
+        if (overlay) {
+          var progress = Math.min(dx / 200, 1);
+          overlay.style.opacity = 1 - progress;
+        }
+      }
+    }, { passive: true });
+
+    panel.addEventListener('touchend', function() {
+      if (!_panelTracking) return;
+      _panelTracking = false;
+      panel.style.transition = '';
+
+      var overlay = document.getElementById('right-panel-overlay');
+      if (overlay) overlay.style.opacity = '';
+
+      if (_panelTranslateX > 80) {
+        /* 十分にスワイプした → 閉じる */
+        closeRightPanel();
+      } else {
+        /* 戻す */
+        panel.style.transform = '';
+      }
+      _panelTranslateX = 0;
+    }, { passive: true });
   }
 
   /* ---------- セクションレンダラー ---------- */
@@ -228,8 +285,8 @@
     renderRightPanel();
     var overlay = document.getElementById('right-panel-overlay');
     var panel = document.getElementById('right-panel');
-    if (overlay) overlay.classList.add('open');
-    if (panel) panel.classList.add('open');
+    if (overlay) { overlay.classList.add('open'); overlay.style.opacity = ''; }
+    if (panel) { panel.classList.add('open'); panel.style.transform = ''; }
   }
 
   function closeRightPanel() {
@@ -237,17 +294,18 @@
     _isOpen = false;
     var overlay = document.getElementById('right-panel-overlay');
     var panel = document.getElementById('right-panel');
-    if (overlay) overlay.classList.remove('open');
-    if (panel) panel.classList.remove('open');
+    if (overlay) { overlay.classList.remove('open'); overlay.style.opacity = ''; }
+    if (panel) { panel.classList.remove('open'); panel.style.transform = ''; }
   }
 
   function isRightPanelOpen() { return _isOpen; }
 
-  /* ---------- 右端スワイプ ---------- */
+  /* ---------- 右端スワイプで開く ---------- */
   function initRightPanelGestures() {
     document.addEventListener('touchstart', function(e) {
       var screenW = window.innerWidth;
       _touchStartX = e.touches[0].clientX;
+      _touchStartY = e.touches[0].clientY;
       /* 画面右端25px以内からのスワイプを検知 */
       _tracking = (_touchStartX > screenW - 25) && !_isOpen;
     }, { passive: true });
@@ -256,7 +314,8 @@
       if (!_tracking) return;
       _touchCurrentX = e.touches[0].clientX;
       var dx = _touchStartX - _touchCurrentX;
-      if (dx > 60) {
+      var dy = Math.abs(e.touches[0].clientY - _touchStartY);
+      if (dx > 60 && dx > dy * 1.5) {
         _tracking = false;
         openRightPanel();
       }

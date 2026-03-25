@@ -1,12 +1,16 @@
 /* ==========================================================
    DeliEasy v2 — js/sidebar.js
-   左サイドバー（操作系メニュー）
+   左サイドバー（操作系メニュー）— スワイプで閉じる対応
    ========================================================== */
 (function(){
   'use strict';
 
   var _isOpen = false;
   var _touchStartX = 0;
+  var _touchStartY = 0;
+  var _panelTouchStartX = 0;
+  var _panelTracking = false;
+  var _panelTranslateX = 0;
 
   /* ---------- Menu definition ---------- */
   var MENU = [
@@ -86,6 +90,57 @@
         }
       });
     });
+
+    /* サイドバー内スワイプで閉じる */
+    _initPanelSwipeToClose(panel);
+  }
+
+  /* ---------- パネル内スワイプで閉じる ---------- */
+  function _initPanelSwipeToClose(panel) {
+    if (panel._swipeCloseInit) return;
+    panel._swipeCloseInit = true;
+
+    panel.addEventListener('touchstart', function(e) {
+      if (!_isOpen) return;
+      _panelTouchStartX = e.touches[0].clientX;
+      _panelTracking = true;
+      _panelTranslateX = 0;
+      panel.style.transition = 'none';
+    }, { passive: true });
+
+    panel.addEventListener('touchmove', function(e) {
+      if (!_panelTracking) return;
+      var dx = e.touches[0].clientX - _panelTouchStartX;
+      /* 左方向のみ（負の値） */
+      if (dx < 0) {
+        _panelTranslateX = dx;
+        panel.style.transform = 'translateX(' + dx + 'px)';
+        /* オーバーレイの透明度も追従 */
+        var overlay = document.getElementById('sidebar-overlay');
+        if (overlay) {
+          var progress = Math.min(Math.abs(dx) / 200, 1);
+          overlay.style.opacity = 1 - progress;
+        }
+      }
+    }, { passive: true });
+
+    panel.addEventListener('touchend', function() {
+      if (!_panelTracking) return;
+      _panelTracking = false;
+      panel.style.transition = '';
+
+      var overlay = document.getElementById('sidebar-overlay');
+      if (overlay) overlay.style.opacity = '';
+
+      if (_panelTranslateX < -80) {
+        /* 十分にスワイプした → 閉じる */
+        closeSidebar();
+      } else {
+        /* 戻す */
+        panel.style.transform = '';
+      }
+      _panelTranslateX = 0;
+    }, { passive: true });
   }
 
   /* ---------- Open / Close ---------- */
@@ -96,8 +151,8 @@
     renderSidebar();
     var overlay = document.getElementById('sidebar-overlay');
     var panel = document.getElementById('sidebar');
-    if (overlay) overlay.classList.add('open');
-    if (panel) panel.classList.add('open');
+    if (overlay) { overlay.classList.add('open'); overlay.style.opacity = ''; }
+    if (panel) { panel.classList.add('open'); panel.style.transform = ''; }
   }
 
   function closeSidebar() {
@@ -105,8 +160,8 @@
     _isOpen = false;
     var overlay = document.getElementById('sidebar-overlay');
     var panel = document.getElementById('sidebar');
-    if (overlay) overlay.classList.remove('open');
-    if (panel) panel.classList.remove('open');
+    if (overlay) { overlay.classList.remove('open'); overlay.style.opacity = ''; }
+    if (panel) { panel.classList.remove('open'); panel.style.transform = ''; }
   }
 
   function toggleSidebar() {
@@ -120,6 +175,7 @@
   function initSidebarGestures() {
     document.addEventListener('touchstart', function(e) {
       _touchStartX = e.touches[0].clientX;
+      _touchStartY = e.touches[0].clientY;
     }, { passive: true });
 
     document.addEventListener('touchmove', function(e) {
@@ -127,7 +183,8 @@
       /* Only trigger from left edge (first 25px) */
       if (_touchStartX > 25) return;
       var dx = e.touches[0].clientX - _touchStartX;
-      if (dx > 60) {
+      var dy = Math.abs(e.touches[0].clientY - _touchStartY);
+      if (dx > 60 && dx > dy * 1.5) {
         openSidebar();
       }
     }, { passive: true });

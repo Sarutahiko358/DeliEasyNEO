@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/overlay.js
-   オーバーレイシステム（フルスクリーン・スタック対応）
+   オーバーレイシステム — インタラクティブ下スワイプ対応
    ========================================================== */
 (function(){
   'use strict';
@@ -64,7 +64,7 @@
     });
 
     _stack.push({ id: id, level: level });
-    _initSheetSwipe(sheet);
+    _initInteractiveSwipe(sheet);
     _renderOverlayContent(id);
 
     if (typeof window.hideFab === 'function') window.hideFab();
@@ -105,17 +105,99 @@
   function isOverlayOpen() { return _stack.length > 0; }
   function getTopOverlayId() { return _stack.length > 0 ? _stack[_stack.length - 1].id : null; }
 
-  /* ---------- Swipe down to close ---------- */
-  function _initSheetSwipe(sheet) {
-    var startY = 0;
+  /* ---------- Interactive swipe down to close ---------- */
+  function _initInteractiveSwipe(sheet) {
     var body = sheet.querySelector('.overlay-body');
-    sheet.addEventListener('touchstart', function(e) {
+    var handle = sheet.querySelector('.overlay-handle');
+    var header = sheet.querySelector('.overlay-header');
+    var startY = 0;
+    var currentY = 0;
+    var isDragging = false;
+    var sheetHeight = 0;
+    var CLOSE_THRESHOLD = 0.25; /* シート高さの25%で閉じる */
+    var VELOCITY_THRESHOLD = 0.5; /* px/ms — 速いスワイプで即閉じ */
+    var startTime = 0;
+
+    /* ハンドルとヘッダーからのドラッグ */
+    function onTouchStart(e) {
+      /* bodyがスクロール中（上部以外）ならスキップ */
+      if (e.target !== handle && e.target !== header &&
+          !handle.contains(e.target) && !header.contains(e.target)) {
+        if (body && body.scrollTop > 5) return;
+      }
+      isDragging = true;
       startY = e.touches[0].clientY;
-    }, { passive: true });
-    sheet.addEventListener('touchend', function(e) {
-      if (body && body.scrollTop > 5) return;
-      if (e.changedTouches[0].clientY - startY > 100) closeOverlay();
-    }, { passive: true });
+      currentY = startY;
+      startTime = Date.now();
+      sheetHeight = sheet.offsetHeight;
+      sheet.style.transition = 'none';
+    }
+
+    function onTouchMove(e) {
+      if (!isDragging) return;
+      currentY = e.touches[0].clientY;
+      var dy = currentY - startY;
+
+      /* bodyスクロール中（上端以外）で下スワイプ開始した場合はスキップ */
+      if (dy < 0) {
+        /* 上方向は無視 */
+        return;
+      }
+
+      /* body内からのスワイプで、bodyがスクロール途中なら中止 */
+      if (body && body.scrollTop > 5 &&
+          !handle.contains(e.target) && !header.contains(e.target)) {
+        isDragging = false;
+        sheet.style.transition = '';
+        sheet.style.transform = '';
+        return;
+      }
+
+      /* シートを追従移動 */
+      sheet.style.transform = 'translateX(-50%) translateY(' + dy + 'px)';
+
+      /* バックドロップの透明度も追従 */
+      var backdrop = _getBackdrop();
+      if (backdrop) {
+        var progress = Math.min(dy / (sheetHeight * 0.5), 1);
+        backdrop.style.opacity = 1 - progress * 0.7;
+      }
+    }
+
+    function onTouchEnd(e) {
+      if (!isDragging) return;
+      isDragging = false;
+
+      var dy = currentY - startY;
+      var elapsed = Date.now() - startTime;
+      var velocity = elapsed > 0 ? dy / elapsed : 0; /* px/ms */
+
+      sheet.style.transition = '';
+      var backdrop = _getBackdrop();
+      if (backdrop) backdrop.style.opacity = '';
+
+      if (dy > sheetHeight * CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD) {
+        /* 閉じる — アニメーション付き */
+        sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
+        sheet.style.transform = 'translateX(-50%) translateY(100%)';
+        setTimeout(function() {
+          sheet.style.transition = '';
+          sheet.style.transform = '';
+          closeOverlay();
+        }, 300);
+      } else {
+        /* 元に戻す — バウンスアニメーション */
+        sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
+        sheet.style.transform = '';
+        setTimeout(function() {
+          sheet.style.transition = '';
+        }, 300);
+      }
+    }
+
+    sheet.addEventListener('touchstart', onTouchStart, { passive: true });
+    sheet.addEventListener('touchmove', onTouchMove, { passive: true });
+    sheet.addEventListener('touchend', onTouchEnd, { passive: true });
   }
 
   /* ---------- Render content ---------- */
@@ -132,7 +214,7 @@
       case 'theme':    _renderThemeOverlay(body); return;
     }
 
-    /* フォールバック: 未実装オーバーレイ */
+    /* フォールバック */
     body.innerHTML =
       '<div class="text-c" style="padding:60px 20px">' +
         '<div style="font-size:2.5rem;margin-bottom:12px">🚧</div>' +
@@ -189,7 +271,6 @@
 
     var html = '';
 
-    /* ===== デザインスタイル ===== */
     html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">🎨 デザインスタイル</div>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
@@ -208,11 +289,9 @@
     });
     html += '</div></div></div>';
 
-    /* ===== カラーパレット ===== */
     html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">🎨 カラーパレット</div>';
 
-    /* ライト */
     html += '<div class="fz-xs fw6 c-secondary mb8">☀️ ライト（12色）</div>';
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
     lightColors.forEach(function(c) {
@@ -231,7 +310,6 @@
     });
     html += '</div>';
 
-    /* ダーク */
     html += '<div class="fz-xs fw6 c-secondary mb8">🌙 ダーク（8色）</div>';
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px">';
     darkColors.forEach(function(c) {
@@ -250,7 +328,6 @@
     });
     html += '</div></div></div>';
 
-    /* ===== 現在のテーマ ===== */
     html += '<div class="card mb12"><div class="card-body text-c">';
     html += '<div class="fz-xs c-muted">現在のテーマ</div>';
     var activeStyleName = currentStyle;
