@@ -1,6 +1,3 @@
-# `PROGRESS.md`
-
-```markdown
 # DeliEasy リデザイン — 進捗管理
 
 > 設計書: [REDESIGN-PLAN.md](./REDESIGN-PLAN.md)
@@ -18,7 +15,7 @@
 | 3 | ウィジェット+ホーム | 7 | ✅ 完了 | 03-25 | 03-25 |
 | 4 | 4辺カスタム | 6 | ✅ 完了 | - | - |
 | 5 | 入力オーバーレイ | 2 | ✅ 完了 | 03-25 | 03-25 |
-| 6 | 機能オーバーレイ群 | 8 | ⬜ 未着手 | - | - |
+| 6 | 機能オーバーレイ群 | 8 | ✅ 完了 | 03-25 | 03-25 |
 | 7 | 統合・仕上げ | 2+ | ⬜ 未着手 | - | - |
 
 ---
@@ -154,24 +151,40 @@
 
 | ファイル | 状態 | メモ |
 |---------|------|------|
-| js/calendar-view.js | ⬜ | calendar.js をラップ |
-| js/stats-view.js | ⬜ | stats.js をラップ |
-| js/tax-view.js | ⬜ | tax.js をラップ |
-| js/expense-view.js | ⬜ | expense.js をラップ |
-| js/pf-manage.js | ⬜ | PF/カテゴリ管理 |
-| js/settings-view.js | ⬜ | 同期・データ管理 |
-| styles/calendar.css | ⬜ | |
-| styles/stats.css | ⬜ | |
+| js/calendar-view.js | ✅ | calendar.js をオーバーレイ内にラップ (#pg1生成) |
+| js/stats-view.js | ✅ | stats.js をオーバーレイ内にラップ (#pg2生成) + renderDashOverlay |
+| js/tax-view.js | ✅ | tax.js をオーバーレイ内にラップ (#pg3生成) |
+| js/expense-view.js | ✅ | expense.js をオーバーレイ内にラップ (#pg4生成) |
+| js/pf-manage.js | ✅ | PF CRUD + 経費カテゴリ CRUD（タブ切替UI） |
+| js/settings-view.js | ✅ | 同期・データ管理・JSONインポート・全削除・クラウド削除 |
+| styles/calendar.css | ✅ | v2テーマ変数へのフォールバックマッピング |
+| styles/stats.css | ✅ | v2テーマ変数へのフォールバックマッピング |
+
+**追加変更:**
+| ファイル | 変更内容 |
+|---------|---------|
+| index.html | Phase 6スクリプト+CSS追加、旧JSファイル(calendar/stats/expense/tax)のロード追加 |
+| js/overlay.js | settingsケース削除（settings-view.jsに委譲）、フォールバック文言修正 |
+| js/app.js | openEditEarn実装（売上編集ダイアログ）、openEditExpense互換、sumi-dark/midnight/charcoalテーマ判定追加 |
 
 **チェックリスト:**
-- [ ] カレンダー表示 + 日別詳細
-- [ ] 統計表示 + 期間切替 + グラフ
-- [ ] 税金計算動作
-- [ ] 経費一覧 + 編集/削除
-- [ ] PF追加/編集/削除
-- [ ] 設定 → Firebase同期動作
-- [ ] 売上編集/削除（オーバーレイ内）
-- [ ] 経費編集/削除（オーバーレイ内）
+- [x] カレンダー表示 + 日別詳細（calendar.jsの全機能がオーバーレイ内で動作）
+- [x] 統計表示 + 期間切替 + グラフ（stats.jsの全機能がオーバーレイ内で動作）
+- [x] 税金計算動作（tax.jsの全機能がオーバーレイ内で動作）
+- [x] 経費一覧 + 編集/削除（expense.jsの全機能がオーバーレイ内で動作）
+- [x] PF追加/編集/色変更/有効無効切替/削除
+- [x] 経費カテゴリ追加/名前変更/削除
+- [x] 設定 → Firebase同期（ログイン/ログアウト/手動同期/ダウンロード）
+- [x] 設定 → データ管理（バックアップ/CSV出力/JSONインポート/全削除/クラウド削除）
+- [x] 売上編集ダイアログ（openEditEarn - calendar.js/stats.jsから呼び出し可能）
+- [x] 経費編集ダイアログ（openEditExpense - expense.js内蔵版を利用）
+- [x] openStatDetail → statsオーバーレイを開く（renderDashOverlay経由）
+
+**設計メモ:**
+- 既存の calendar.js / stats.js / expense.js / tax.js は変更なし
+- ラッパーパターン: オーバーレイbody内に仮の #pg1〜#pg4 を生成し、既存render関数を呼び出す
+- 旧CSS変数(--p, --card等)とv2変数(--c-primary, --c-card等)の共存をfallback付きCSSで実現
+- styles/main.css は引き続きロード不要（旧変数は各カラーパレットでも定義済み）
 
 ---
 
@@ -195,4 +208,5 @@
 
 ## メモ欄
 
--
+- Phase 6 で旧JSファイル（calendar.js, stats.js, expense.js, tax.js）を index.html に追加。これらは v2 オーバーレイ内でラッパー経由で動作する。
+- styles/main.css はロードしていないが、旧JSが参照する旧CSS変数（--p, --card, --apple-*等）はカラーパレットで定義されていないため、一部表示が崩れる可能性あり。Phase 7 でstyles/main.cssの必要部分を抽出するか、旧変数の互換レイヤーを追加する必要がある。

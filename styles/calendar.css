@@ -1,0 +1,70 @@
+/* ==========================================================
+   DeliEasy v2 — styles/calendar.css
+   カレンダーオーバーレイ内のスタイル調整（Phase 6）
+   既存 main.css のカレンダースタイルを v2 変数にマッピング
+   ========================================================== */
+
+/* オーバーレイ内の #pg1 に適用 */
+.overlay-body #pg1 {
+  padding: 0;
+}
+
+/* カレンダーラップ */
+.overlay-body .cal-wrap {
+  padding: 0;
+}
+
+/* v2テーマカラー互換 — 旧変数が未定義の場合のフォールバック */
+.overlay-body .cal-hdr {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+  color: var(--c-tx, var(--tx, #1d1d1f));
+  border-radius: var(--ds-radius, 16px);
+}
+
+.overlay-body .cal-body {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+  border-radius: var(--ds-radius, 16px);
+}
+
+.overlay-body .cal-det {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+  border-radius: var(--ds-radius, 16px);
+}
+
+.overlay-body .cal-acc {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+}
+
+/* ボタン互換 */
+.overlay-body .cal-acc-btn-primary {
+  background: var(--c-primary, var(--pbg, #007aff)) !important;
+}
+
+.overlay-body .cal-acc-btn-secondary {
+  background: var(--c-fill-tertiary, var(--apple-fill-tertiary, rgba(118,118,128,.12))) !important;
+  color: var(--c-primary, var(--p, #007aff)) !important;
+}
+
+/* レジェンド */
+.overlay-body .cal-legend {
+  padding: 8px 4px 12px;
+}
+
+/* 入力トグル */
+.overlay-body .home-input-toggle {
+  margin: 0 0 12px;
+}
+
+/* cal-sum-row */
+.overlay-body .cal-sum-row {
+  padding: 0 4px;
+}
+
+/* テンキー */
+.overlay-body .np {
+  gap: 8px;
+}
+.overlay-body .np button {
+  height: 50px;
+  font-size: 1.2rem;
+}

@@ -1,0 +1,111 @@
+/* ==========================================================
+   DeliEasy v2 — styles/stats.css
+   統計オーバーレイ内のスタイル調整（Phase 6）
+   既存 main.css の統計/ダッシュボードスタイルを v2 変数にマッピング
+   ========================================================== */
+
+/* オーバーレイ内の #pg2 に適用 */
+.overlay-body #pg2 {
+  padding: 0;
+}
+
+/* stat-tabs → v2テーマ対応 */
+.overlay-body .stat-tabs {
+  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
+  border-radius: var(--ds-radius-sm, 12px);
+  margin-bottom: 12px;
+}
+
+.overlay-body .stat-tabs button {
+  border-radius: 10px;
+}
+
+.overlay-body .stat-tabs button.on {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+  color: var(--c-tx, var(--tx, #1d1d1f));
+}
+
+/* ds系カード */
+.overlay-body .ds-card {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+  border-radius: var(--ds-radius, 16px);
+  border: var(--ds-card-border, none);
+  box-shadow: var(--ds-shadow-card, none);
+}
+
+/* ds-ptab */
+.overlay-body .ds-ptab {
+  border-radius: 10px;
+}
+
+.overlay-body .ds-ptab.on {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+}
+
+/* ds-stab */
+.overlay-body .ds-stab.on {
+  background: var(--c-primary-light, var(--pl, rgba(0,122,255,.08)));
+  color: var(--c-primary, var(--p, #007aff));
+}
+
+/* ds-hero */
+.overlay-body .ds-hero-val {
+  color: var(--c-primary, var(--p, #007aff));
+}
+
+/* ds-gbox */
+.overlay-body .ds-gbox {
+  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
+  border-radius: var(--ds-radius-sm, 12px);
+}
+
+/* ds-rec */
+.overlay-body .ds-rec {
+  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
+  border-radius: var(--ds-radius-sm, 12px);
+}
+
+/* ds-row border */
+.overlay-body .ds-row {
+  border-bottom-color: var(--c-divider, var(--apple-separator, rgba(60,60,67,.12)));
+}
+
+/* foldCard in stats */
+.overlay-body .card.mb12 {
+  background: var(--c-card, var(--apple-group-bg, #fff));
+  border-radius: var(--ds-radius, 16px);
+  border: var(--ds-card-border, none);
+  box-shadow: var(--ds-shadow-card, none);
+  overflow: hidden;
+}
+
+.overlay-body .card-header {
+  border-bottom-color: var(--c-divider, var(--apple-separator, rgba(60,60,67,.12)));
+}
+
+/* ds-progress */
+.overlay-body .ds-progress-bar {
+  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
+}
+
+.overlay-body .ds-progress-fill {
+  background: var(--c-primary, var(--p, #007aff));
+}
+
+/* sb (stat box) 互換 */
+.overlay-body .sb {
+  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
+  border-radius: var(--ds-radius-sm, 12px);
+}
+
+.overlay-body .sb.hl {
+  background: var(--c-primary-light, var(--pl, rgba(0,122,255,.08)));
+}
+
+.overlay-body .sb.gl {
+  background: var(--c-success-light, var(--gnl, rgba(52,199,89,.1)));
+}
+
+.overlay-body .sb.rl {
+  background: var(--c-danger-light, var(--rdl, rgba(255,59,48,.1)));
+}

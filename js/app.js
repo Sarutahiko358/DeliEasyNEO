@@ -14,7 +14,7 @@
     document.documentElement.setAttribute('data-color', color || DEFAULT_COLOR);
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      var isDark = (color || '').indexOf('dark') >= 0;
+      var isDark = (color || '').indexOf('dark') >= 0 || color === 'midnight' || color === 'charcoal';
       meta.content = isDark ? '#000000' : '#f2f2f7';
     }
   }
@@ -42,12 +42,6 @@
   };
 
   window.openStatDetail = window.openStatDetail || function() {};
-  window.openEditEarn = window.openEditEarn || function(ts) {
-    toast('売上編集は次のバージョンで実装予定です');
-  };
-  window.openEditExpense = window.openEditExpense || function(ts) {
-    toast('経費編集は次のバージョンで実装予定です');
-  };
   window.curPage = -1;
 
   /* refreshHome — delegates to home.js renderHome if available */
@@ -57,6 +51,103 @@
   /* renderHomeWidgets is also used by home.js as an alias */
   window.renderHomeWidgets = function() {
     if (typeof renderHome === 'function') renderHome();
+  };
+
+  /* ---------- 売上編集ダイアログ ---------- */
+  function _openEarnEditDialog(ts) {
+    var earns = typeof getE === 'function' ? getE() : [];
+    var rec = null;
+    for (var i = 0; i < earns.length; i++) {
+      if (earns[i].ts === ts) { rec = earns[i]; break; }
+    }
+    if (!rec) { toast('データが見つかりません'); return; }
+
+    var pf = typeof extractPf === 'function' ? extractPf(rec.m) : '';
+    var memo = rec.m ? rec.m.replace(/^\/[^\s(]+\s*/, '') : '';
+
+    var div = document.createElement('div');
+    div.className = 'confirm-overlay';
+    div.innerHTML =
+      '<div class="confirm-box" style="max-width:340px;text-align:left">' +
+        '<h3 style="margin-bottom:12px;text-align:center">売上を編集</h3>' +
+        '<div class="input-group"><label class="input-label">日付</label>' +
+          '<input type="date" class="input" id="edit-earn-date" value="' + escHtml(rec.d) + '"></div>' +
+        '<div class="input-group"><label class="input-label">金額</label>' +
+          '<input type="number" class="input" id="edit-earn-amount" value="' + (rec.a || 0) + '"></div>' +
+        '<div class="input-group"><label class="input-label">件数</label>' +
+          '<input type="number" class="input" id="edit-earn-count" value="' + (rec.c || 1) + '" min="1"></div>' +
+        '<div class="input-group"><label class="input-label">PF</label>' +
+          '<select class="input" id="edit-earn-pf"><option value="">指定なし</option>' + pfOpts() + '</select></div>' +
+        '<div class="input-group"><label class="input-label">メモ</label>' +
+          '<input type="text" class="input" id="edit-earn-memo" value="' + escHtml(memo) + '"></div>' +
+        '<div class="flex justify-center gap8 mt12">' +
+          '<button class="btn btn-primary btn-sm" id="edit-earn-save">保存</button>' +
+          '<button class="btn btn-secondary btn-sm" id="edit-earn-cancel">キャンセル</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(div);
+
+    /* PF選択のデフォルト値設定 */
+    var pfSelect = document.getElementById('edit-earn-pf');
+    if (pfSelect && pf) {
+      for (var j = 0; j < pfSelect.options.length; j++) {
+        if (pfSelect.options[j].value === pf) {
+          pfSelect.selectedIndex = j;
+          break;
+        }
+      }
+    }
+
+    document.getElementById('edit-earn-cancel').onclick = function() { div.remove(); };
+    document.getElementById('edit-earn-save').onclick = function() {
+      var newDate = document.getElementById('edit-earn-date').value;
+      var newAmount = Number(document.getElementById('edit-earn-amount').value);
+      var newCount = Number(document.getElementById('edit-earn-count').value) || 1;
+      var newPf = document.getElementById('edit-earn-pf').value;
+      var newMemo = document.getElementById('edit-earn-memo').value;
+
+      if (!newAmount || newAmount <= 0) { toast('金額を入力してください'); return; }
+
+      var memoStr = newPf ? '/' + newPf : '';
+      if (newMemo) memoStr += (memoStr ? ' ' : '') + newMemo;
+
+      if (typeof updateE === 'function') {
+        updateE(ts, { d: newDate, a: newAmount, c: newCount, m: memoStr }).then(function() {
+          toast('✅ 更新しました');
+          div.remove();
+          if (typeof refreshHome === 'function') refreshHome();
+          /* カレンダーやstatsが開いていれば再描画 */
+          var topId = typeof getTopOverlayId === 'function' ? getTopOverlayId() : null;
+          if (topId === 'calendar' && typeof renderCalendar === 'function') renderCalendar();
+          if (topId === 'stats' && typeof renderStats === 'function') renderStats();
+        });
+      }
+    };
+  }
+
+  /* openEditEarn / openEditExpense グローバル関数 */
+  window.openEditEarn = function(ts) {
+    _openEarnEditDialog(ts);
+  };
+
+  window.openEditExpense = function(ts) {
+    /* expense.js の openEditExpense が既に定義されている場合はそちらを使う */
+    /* expense.js 内で window.openEditExpense が定義されているため、
+       ここでは expense.js がロード済みかチェックし、
+       ロード済みなら expense.js 版が既にwindowに入っている */
+    /* この関数は expense.js より後にロードされるため、
+       expense.js の openEditExpense を上書きしてしまう。
+       そこで expense.js の関数を別名で保存して呼び出す */
+  };
+
+  /* expense.js の openEditExpense を退避して再利用 */
+  var _expenseEditFn = window.openEditExpense;
+  window.openEditExpense = function(ts) {
+    if (_expenseEditFn && typeof _expenseEditFn === 'function') {
+      _expenseEditFn(ts);
+    } else {
+      toast('経費編集はデータを読み込んでからお試しください');
+    }
   };
 
   /* ---------- Sync status indicator ---------- */

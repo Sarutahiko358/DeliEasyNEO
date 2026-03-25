@@ -123,18 +123,20 @@
     var body = document.getElementById('overlay-body-' + id);
     if (!body) return;
 
+    /* Phase 6+: 外部ファイルで renderOverlay_xxx が定義されていればそちらを使用 */
     var fnName = 'renderOverlay_' + id;
     if (typeof window[fnName] === 'function') { window[fnName](body); return; }
 
+    /* 内蔵レンダラー（theme のみ残す） */
     switch (id) {
       case 'theme':    _renderThemeOverlay(body); return;
-      case 'settings': _renderSettingsOverlay(body); return;
     }
 
+    /* フォールバック: 未実装オーバーレイ */
     body.innerHTML =
       '<div class="text-c" style="padding:60px 20px">' +
         '<div style="font-size:2.5rem;margin-bottom:12px">🚧</div>' +
-        '<div class="fz-s c-muted">このセクションは Phase 5-6 で実装予定です</div>' +
+        '<div class="fz-s c-muted">このセクションは準備中です</div>' +
         '<div class="fz-xs c-muted mt8">' + escHtml(id) + '</div>' +
       '</div>';
   }
@@ -265,79 +267,6 @@
   window._refreshThemeOverlay = function() {
     var body = document.getElementById('overlay-body-theme');
     if (body) _renderThemeOverlay(body);
-  };
-
-  /* ==========================================================
-     設定オーバーレイ
-     ========================================================== */
-  function _renderSettingsOverlay(body) {
-    var html = '';
-
-    /* 同期セクション */
-    html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="fz-s fw6 mb12">☁️ クラウド同期</div>';
-
-    if (typeof firebaseIsSignedIn === 'function' && firebaseIsSignedIn()) {
-      var name = typeof firebaseGetUserName === 'function' ? firebaseGetUserName() : '';
-      var email = typeof firebaseGetUserEmail === 'function' ? firebaseGetUserEmail() : '';
-      var syncInfo = typeof firebaseGetSyncInfo === 'function' ? firebaseGetSyncInfo() : {};
-      var photo = typeof firebaseGetUserPhoto === 'function' ? firebaseGetUserPhoto() : '';
-
-      html += '<div class="flex items-center gap8 mb12">';
-      if (photo) html += '<img src="' + escHtml(photo) + '" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--c-primary)">';
-      html += '<div>';
-      html += '<div class="fz-s fw6">' + escHtml(name) + '</div>';
-      html += '<div class="fz-xs c-muted">' + escHtml(email) + '</div>';
-      html += '</div></div>';
-
-      if (syncInfo.lastSyncTs) {
-        html += '<div class="fz-xs c-muted mb8">最終同期: ' + new Date(syncInfo.lastSyncTs).toLocaleString('ja-JP') + '</div>';
-      }
-
-      html += '<div class="flex flex-wrap gap8">';
-      html += '<button class="btn btn-primary btn-sm" onclick="firebaseManualSync()">☁️ 同期</button>';
-      html += '<button class="btn btn-secondary btn-sm" onclick="firebaseManualDownload()">⬇️ ダウンロード</button>';
-      html += '<button class="btn btn-danger btn-sm" onclick="firebaseSignOut().then(function(){_refreshSettingsOverlay()})">ログアウト</button>';
-      html += '</div>';
-    } else {
-      html += '<p class="fz-s c-muted mb12">Googleアカウントでログインすると、複数の端末でデータを同期できます。</p>';
-      html += '<button class="btn btn-primary btn-block" onclick="firebaseSignInNow()">🔐 Googleでログイン</button>';
-    }
-    html += '</div></div>';
-
-    /* データ管理 */
-    html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="fz-s fw6 mb12">📦 データ管理</div>';
-    if (typeof estimateDpStorageBytes === 'function') {
-      html += '<div class="fz-xs c-muted mb8">ストレージ使用量: ' + (estimateDpStorageBytes() / 1024 / 1024).toFixed(2) + ' MB</div>';
-    }
-    html += '<div class="flex flex-wrap gap8">';
-    html += '<button class="btn btn-secondary btn-sm" onclick="if(typeof exportBackupJSON===\'function\')exportBackupJSON()">💾 バックアップ</button>';
-    html += '<button class="btn btn-secondary btn-sm" onclick="if(typeof exportRecCSV===\'function\')exportRecCSV()">📊 売上CSV</button>';
-    html += '<button class="btn btn-secondary btn-sm" onclick="if(typeof exportExpCSV===\'function\')exportExpCSV()">💸 経費CSV</button>';
-    html += '</div></div></div>';
-
-    /* テーマショートカット */
-    html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="fz-s fw6 mb8">🎨 テーマ</div>';
-    var cs = typeof getThemeStyle === 'function' ? getThemeStyle() : 'minimal';
-    var cc = typeof getThemeColor === 'function' ? getThemeColor() : 'blue-light';
-    html += '<div class="fz-xs c-muted mb8">現在: ' + escHtml(cs) + ' × ' + escHtml(cc) + '</div>';
-    html += '<button class="btn btn-secondary btn-block btn-sm" onclick="closeOverlay();setTimeout(function(){openOverlay(\'theme\')},200)">テーマを変更</button>';
-    html += '</div></div>';
-
-    /* バージョン */
-    html += '<div class="text-c c-muted fz-xs mt16 mb16">';
-    html += 'DeliEasy v2.0 — Phase 2<br>';
-    html += 'Device ID: ' + (typeof S !== 'undefined' ? escHtml(S.g('deviceId', 'N/A')) : 'N/A');
-    html += '</div>';
-
-    body.innerHTML = html;
-  }
-
-  window._refreshSettingsOverlay = function() {
-    var body = document.getElementById('overlay-body-settings');
-    if (body) _renderSettingsOverlay(body);
   };
 
   /* ---------- Expose ---------- */
