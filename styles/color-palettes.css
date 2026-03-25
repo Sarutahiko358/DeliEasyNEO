@@ -1,84 +1,472 @@
 /* ==========================================================
    DeliEasy v2 — color-palettes.css
-   Phase 1: blue-light + blue-dark (2 palettes)
+   全20カラーパレット（ライト12 + ダーク8）
    ========================================================== */
 
-/* ---------- Palette: Blue Light ---------- */
-[data-color="blue-light"] {
-  --c-bg: #f2f2f7;
-  --c-bg-secondary: #e5e5ea;
-  --c-card: #ffffff;
-  --c-card-hover: #f9f9f9;
-  --c-tx: #1d1d1f;
-  --c-tx-secondary: #6e6e73;
-  --c-tx-muted: #86868b;
-  --c-primary: #007aff;
-  --c-primary-light: rgba(0,122,255,.08);
-  --c-primary-dark: #0055cc;
-  --c-secondary: #5856d6;
-  --c-success: #34c759;
-  --c-success-light: rgba(52,199,89,.1);
-  --c-danger: #ff3b30;
-  --c-danger-light: rgba(255,59,48,.1);
-  --c-warning: #ff9500;
-  --c-warning-light: rgba(255,149,0,.1);
-  --c-info: #5ac8fa;
-  --c-info-light: rgba(90,200,250,.1);
-  --c-border: rgba(0,0,0,.06);
-  --c-divider: rgba(60,60,67,.12);
-  --c-input-bg: rgba(118,118,128,.12);
-  --c-overlay: rgba(0,0,0,.32);
-  --c-shadow-color: rgba(0,0,0,.08);
-  --c-sidebar-bg: #f2f2f7;
-  --c-topbar-bg: rgba(242,242,247,.82);
-  --c-bottombar-bg: rgba(249,249,249,.94);
-  --c-fab-bg: #007aff;
-  --c-fab-color: #ffffff;
-  --c-fill-primary: rgba(120,120,128,.2);
-  --c-fill-secondary: rgba(120,120,128,.16);
-  --c-fill-tertiary: rgba(120,120,128,.12);
-  --c-fill-quaternary: rgba(116,116,128,.08);
-  --c-separator: rgba(60,60,67,.12);
+/* ========================================
+   ☀️ ライト系（12種）
+   ======================================== */
 
+/* ---------- L01: ブルー (blue-light) ---------- */
+[data-color="blue-light"] {
+  --c-bg: #f2f2f7; --c-bg-secondary: #e5e5ea;
+  --c-card: #ffffff; --c-card-hover: #f9f9f9; --c-card-rgb: 255,255,255;
+  --c-tx: #1d1d1f; --c-tx-secondary: #6e6e73; --c-tx-muted: #86868b;
+  --c-primary: #007aff; --c-primary-light: rgba(0,122,255,.08); --c-primary-dark: #0055cc; --c-primary-rgb: 0,122,255;
+  --c-secondary: #5856d6;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(0,0,0,.06); --c-divider: rgba(60,60,67,.12);
+  --c-input-bg: rgba(118,118,128,.12); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(0,0,0,.08);
+  --c-sidebar-bg: #f2f2f7; --c-topbar-bg: rgba(242,242,247,.82);
+  --c-bottombar-bg: rgba(249,249,249,.94);
+  --c-fab-bg: #007aff; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(120,120,128,.2); --c-fill-secondary: rgba(120,120,128,.16);
+  --c-fill-tertiary: rgba(120,120,128,.12); --c-fill-quaternary: rgba(116,116,128,.08);
+  --c-separator: rgba(60,60,67,.12);
   color-scheme: light;
 }
 
-/* ---------- Palette: Blue Dark ---------- */
-[data-color="blue-dark"] {
-  --c-bg: #000000;
-  --c-bg-secondary: #1c1c1e;
-  --c-card: #1c1c1e;
-  --c-card-hover: #2c2c2e;
-  --c-tx: #f5f5f7;
-  --c-tx-secondary: #a1a1a6;
-  --c-tx-muted: #636366;
-  --c-primary: #0a84ff;
-  --c-primary-light: rgba(10,132,255,.2);
-  --c-primary-dark: #0060cc;
-  --c-secondary: #5e5ce6;
-  --c-success: #30d158;
-  --c-success-light: rgba(48,209,88,.2);
-  --c-danger: #ff453a;
-  --c-danger-light: rgba(255,69,58,.2);
-  --c-warning: #ff9f0a;
-  --c-warning-light: rgba(255,159,10,.2);
-  --c-info: #64d2ff;
-  --c-info-light: rgba(100,210,255,.2);
-  --c-border: rgba(255,255,255,.06);
-  --c-divider: rgba(84,84,88,.65);
-  --c-input-bg: rgba(118,118,128,.24);
-  --c-overlay: rgba(0,0,0,.5);
-  --c-shadow-color: rgba(0,0,0,.4);
-  --c-sidebar-bg: #1c1c1e;
-  --c-topbar-bg: rgba(0,0,0,.82);
-  --c-bottombar-bg: rgba(20,20,20,.94);
-  --c-fab-bg: #0a84ff;
-  --c-fab-color: #ffffff;
-  --c-fill-primary: rgba(120,120,128,.36);
-  --c-fill-secondary: rgba(120,120,128,.32);
-  --c-fill-tertiary: rgba(118,118,128,.24);
-  --c-fill-quaternary: rgba(116,116,128,.18);
-  --c-separator: rgba(84,84,88,.65);
+/* ---------- L02: グリーン (green-light) ---------- */
+[data-color="green-light"] {
+  --c-bg: #f2f8f2; --c-bg-secondary: #e0ece0;
+  --c-card: #ffffff; --c-card-hover: #f6faf6; --c-card-rgb: 255,255,255;
+  --c-tx: #1d2d1f; --c-tx-secondary: #5a7a5e; --c-tx-muted: #7a9a7e;
+  --c-primary: #34c759; --c-primary-light: rgba(52,199,89,.08); --c-primary-dark: #248a3d; --c-primary-rgb: 52,199,89;
+  --c-secondary: #30b0c7;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(0,40,0,.06); --c-divider: rgba(40,60,40,.12);
+  --c-input-bg: rgba(80,128,80,.1); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(0,40,0,.08);
+  --c-sidebar-bg: #f2f8f2; --c-topbar-bg: rgba(242,248,242,.82);
+  --c-bottombar-bg: rgba(246,252,246,.94);
+  --c-fab-bg: #34c759; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(80,128,80,.18); --c-fill-secondary: rgba(80,128,80,.14);
+  --c-fill-tertiary: rgba(80,128,80,.10); --c-fill-quaternary: rgba(80,128,80,.06);
+  --c-separator: rgba(40,60,40,.12);
+  color-scheme: light;
+}
 
+/* ---------- L03: ピンク (pink-light) ---------- */
+[data-color="pink-light"] {
+  --c-bg: #fdf2f5; --c-bg-secondary: #f5e0e6;
+  --c-card: #ffffff; --c-card-hover: #fef8f9; --c-card-rgb: 255,255,255;
+  --c-tx: #2d1d22; --c-tx-secondary: #7a5a66; --c-tx-muted: #9a7a86;
+  --c-primary: #ff2d55; --c-primary-light: rgba(255,45,85,.08); --c-primary-dark: #d70041; --c-primary-rgb: 255,45,85;
+  --c-secondary: #af52de;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(40,0,10,.06); --c-divider: rgba(60,40,50,.12);
+  --c-input-bg: rgba(160,80,100,.1); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(40,0,10,.08);
+  --c-sidebar-bg: #fdf2f5; --c-topbar-bg: rgba(253,242,245,.82);
+  --c-bottombar-bg: rgba(254,248,250,.94);
+  --c-fab-bg: #ff2d55; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(160,80,100,.18); --c-fill-secondary: rgba(160,80,100,.14);
+  --c-fill-tertiary: rgba(160,80,100,.10); --c-fill-quaternary: rgba(160,80,100,.06);
+  --c-separator: rgba(60,40,50,.12);
+  color-scheme: light;
+}
+
+/* ---------- L04: オレンジ (orange-light) ---------- */
+[data-color="orange-light"] {
+  --c-bg: #fdf6f0; --c-bg-secondary: #f5e8d8;
+  --c-card: #ffffff; --c-card-hover: #fefaf6; --c-card-rgb: 255,255,255;
+  --c-tx: #2d2419; --c-tx-secondary: #7a6a52; --c-tx-muted: #9a8a72;
+  --c-primary: #ff9500; --c-primary-light: rgba(255,149,0,.08); --c-primary-dark: #c77700; --c-primary-rgb: 255,149,0;
+  --c-secondary: #ff6b00;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(40,20,0,.06); --c-divider: rgba(60,50,30,.12);
+  --c-input-bg: rgba(160,120,60,.1); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(40,20,0,.08);
+  --c-sidebar-bg: #fdf6f0; --c-topbar-bg: rgba(253,246,240,.82);
+  --c-bottombar-bg: rgba(254,250,245,.94);
+  --c-fab-bg: #ff9500; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(160,120,60,.18); --c-fill-secondary: rgba(160,120,60,.14);
+  --c-fill-tertiary: rgba(160,120,60,.10); --c-fill-quaternary: rgba(160,120,60,.06);
+  --c-separator: rgba(60,50,30,.12);
+  color-scheme: light;
+}
+
+/* ---------- L05: パープル (purple-light) ---------- */
+[data-color="purple-light"] {
+  --c-bg: #f8f2fd; --c-bg-secondary: #ece0f5;
+  --c-card: #ffffff; --c-card-hover: #faf7fe; --c-card-rgb: 255,255,255;
+  --c-tx: #251d2d; --c-tx-secondary: #6a5a7a; --c-tx-muted: #8a7a9a;
+  --c-primary: #af52de; --c-primary-light: rgba(175,82,222,.08); --c-primary-dark: #8944b0; --c-primary-rgb: 175,82,222;
+  --c-secondary: #5856d6;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(20,0,40,.06); --c-divider: rgba(50,40,60,.12);
+  --c-input-bg: rgba(120,80,160,.1); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(20,0,40,.08);
+  --c-sidebar-bg: #f8f2fd; --c-topbar-bg: rgba(248,242,253,.82);
+  --c-bottombar-bg: rgba(252,248,254,.94);
+  --c-fab-bg: #af52de; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(120,80,160,.18); --c-fill-secondary: rgba(120,80,160,.14);
+  --c-fill-tertiary: rgba(120,80,160,.10); --c-fill-quaternary: rgba(120,80,160,.06);
+  --c-separator: rgba(50,40,60,.12);
+  color-scheme: light;
+}
+
+/* ---------- L06: ティール (teal-light) ---------- */
+[data-color="teal-light"] {
+  --c-bg: #f0faf9; --c-bg-secondary: #d8f0ee;
+  --c-card: #ffffff; --c-card-hover: #f5fcfb; --c-card-rgb: 255,255,255;
+  --c-tx: #1d2d2c; --c-tx-secondary: #5a7a78; --c-tx-muted: #7a9a98;
+  --c-primary: #00c7be; --c-primary-light: rgba(0,199,190,.08); --c-primary-dark: #009a94; --c-primary-rgb: 0,199,190;
+  --c-secondary: #30b0c7;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(0,40,38,.06); --c-divider: rgba(40,60,58,.12);
+  --c-input-bg: rgba(60,140,135,.1); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(0,40,38,.08);
+  --c-sidebar-bg: #f0faf9; --c-topbar-bg: rgba(240,250,249,.82);
+  --c-bottombar-bg: rgba(245,252,251,.94);
+  --c-fab-bg: #00c7be; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(60,140,135,.18); --c-fill-secondary: rgba(60,140,135,.14);
+  --c-fill-tertiary: rgba(60,140,135,.10); --c-fill-quaternary: rgba(60,140,135,.06);
+  --c-separator: rgba(40,60,58,.12);
+  color-scheme: light;
+}
+
+/* ---------- L07: レッド (red-light) ---------- */
+[data-color="red-light"] {
+  --c-bg: #fdf2f2; --c-bg-secondary: #f5e0e0;
+  --c-card: #ffffff; --c-card-hover: #fef8f8; --c-card-rgb: 255,255,255;
+  --c-tx: #2d1d1d; --c-tx-secondary: #7a5a5a; --c-tx-muted: #9a7a7a;
+  --c-primary: #ff3b30; --c-primary-light: rgba(255,59,48,.08); --c-primary-dark: #d32f2f; --c-primary-rgb: 255,59,48;
+  --c-secondary: #ff6b6b;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(40,0,0,.06); --c-divider: rgba(60,40,40,.12);
+  --c-input-bg: rgba(160,80,80,.1); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(40,0,0,.08);
+  --c-sidebar-bg: #fdf2f2; --c-topbar-bg: rgba(253,242,242,.82);
+  --c-bottombar-bg: rgba(254,248,248,.94);
+  --c-fab-bg: #ff3b30; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(160,80,80,.18); --c-fill-secondary: rgba(160,80,80,.14);
+  --c-fill-tertiary: rgba(160,80,80,.10); --c-fill-quaternary: rgba(160,80,80,.06);
+  --c-separator: rgba(60,40,40,.12);
+  color-scheme: light;
+}
+
+/* ---------- L08: ゴールド (gold-light) ---------- */
+[data-color="gold-light"] {
+  --c-bg: #faf8f2; --c-bg-secondary: #f0ecdc;
+  --c-card: #ffffff; --c-card-hover: #fdfcf8; --c-card-rgb: 255,255,255;
+  --c-tx: #2d2a1d; --c-tx-secondary: #7a7460; --c-tx-muted: #9a9480;
+  --c-primary: #c8a04a; --c-primary-light: rgba(200,160,74,.08); --c-primary-dark: #a08030; --c-primary-rgb: 200,160,74;
+  --c-secondary: #d4b05a;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30; --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500; --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa; --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(40,30,0,.06); --c-divider: rgba(60,50,30,.12);
+  --c-input-bg: rgba(160,140,80,.1); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(40,30,0,.08);
+  --c-sidebar-bg: #faf8f2; --c-topbar-bg: rgba(250,248,242,.82);
+  --c-bottombar-bg: rgba(252,250,246,.94);
+  --c-fab-bg: #c8a04a; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(160,140,80,.18); --c-fill-secondary: rgba(160,140,80,.14);
+  --c-fill-tertiary: rgba(160,140,80,.10); --c-fill-quaternary: rgba(160,140,80,.06);
+  --c-separator: rgba(60,50,30,.12);
+  color-scheme: light;
+}
+
+/* ---------- L09: サクラ (sakura-light) ---------- */
+[data-color="sakura-light"] {
+  --c-bg: #faf5f5; --c-bg-secondary: #f0e6e8;
+  --c-card: #ffffff; --c-card-hover: #fdfafa; --c-card-rgb: 255,255,255;
+  --c-tx: #2d2226; --c-tx-secondary: #7d6b72; --c-tx-muted: #a3919a;
+  --c-primary: #d4627b; --c-primary-light: rgba(212,98,123,.08); --c-primary-dark: #b84a63; --c-primary-rgb: 212,98,123;
+  --c-secondary: #e88a9e;
+  --c-success: #6b9e6b; --c-success-light: rgba(107,158,107,.1);
+  --c-danger: #c44d4d; --c-danger-light: rgba(196,77,77,.1);
+  --c-warning: #d4a843; --c-warning-light: rgba(212,168,67,.1);
+  --c-info: #7ea8be; --c-info-light: rgba(126,168,190,.1);
+  --c-border: rgba(45,34,38,.06); --c-divider: rgba(45,34,38,.10);
+  --c-input-bg: rgba(150,120,130,.10); --c-overlay: rgba(45,34,38,.32);
+  --c-shadow-color: rgba(45,34,38,.08);
+  --c-sidebar-bg: #faf5f5; --c-topbar-bg: rgba(250,245,245,.88);
+  --c-bottombar-bg: rgba(252,248,248,.94);
+  --c-fab-bg: #d4627b; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(150,120,130,.18); --c-fill-secondary: rgba(150,120,130,.14);
+  --c-fill-tertiary: rgba(150,120,130,.10); --c-fill-quaternary: rgba(150,120,130,.06);
+  --c-separator: rgba(45,34,38,.10);
+  color-scheme: light;
+}
+
+/* ---------- L10: 抹茶 (matcha-light) ---------- */
+[data-color="matcha-light"] {
+  --c-bg: #f4f7f2; --c-bg-secondary: #e4eae0;
+  --c-card: #ffffff; --c-card-hover: #f8faf6; --c-card-rgb: 255,255,255;
+  --c-tx: #2a3328; --c-tx-secondary: #667a62; --c-tx-muted: #8fa68a;
+  --c-primary: #5a8c51; --c-primary-light: rgba(90,140,81,.08); --c-primary-dark: #3d6b36; --c-primary-rgb: 90,140,81;
+  --c-secondary: #7aaa6e;
+  --c-success: #5a8c51; --c-success-light: rgba(90,140,81,.1);
+  --c-danger: #b85c4a; --c-danger-light: rgba(184,92,74,.1);
+  --c-warning: #c4a845; --c-warning-light: rgba(196,168,69,.1);
+  --c-info: #6a9eaa; --c-info-light: rgba(106,158,170,.1);
+  --c-border: rgba(42,51,40,.06); --c-divider: rgba(42,51,40,.10);
+  --c-input-bg: rgba(90,140,81,.10); --c-overlay: rgba(42,51,40,.32);
+  --c-shadow-color: rgba(42,51,40,.08);
+  --c-sidebar-bg: #f4f7f2; --c-topbar-bg: rgba(244,247,242,.88);
+  --c-bottombar-bg: rgba(248,250,246,.94);
+  --c-fab-bg: #5a8c51; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(90,140,81,.18); --c-fill-secondary: rgba(90,140,81,.14);
+  --c-fill-tertiary: rgba(90,140,81,.10); --c-fill-quaternary: rgba(90,140,81,.06);
+  --c-separator: rgba(42,51,40,.10);
+  color-scheme: light;
+}
+
+/* ---------- L11: 藍 (ai-light) ---------- */
+[data-color="ai-light"] {
+  --c-bg: #f0f4f8; --c-bg-secondary: #dce4ee;
+  --c-card: #ffffff; --c-card-hover: #f5f8fb; --c-card-rgb: 255,255,255;
+  --c-tx: #1d2833; --c-tx-secondary: #5a7088; --c-tx-muted: #7a90a8;
+  --c-primary: #3a5f8a; --c-primary-light: rgba(58,95,138,.08); --c-primary-dark: #2a4a6e; --c-primary-rgb: 58,95,138;
+  --c-secondary: #5b8fb9;
+  --c-success: #6baf7a; --c-success-light: rgba(107,175,122,.1);
+  --c-danger: #c44d4d; --c-danger-light: rgba(196,77,77,.1);
+  --c-warning: #c9a94e; --c-warning-light: rgba(201,169,78,.1);
+  --c-info: #7bbcd4; --c-info-light: rgba(123,188,212,.1);
+  --c-border: rgba(30,40,50,.06); --c-divider: rgba(30,40,50,.10);
+  --c-input-bg: rgba(58,95,138,.10); --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(30,40,50,.08);
+  --c-sidebar-bg: #f0f4f8; --c-topbar-bg: rgba(240,244,248,.88);
+  --c-bottombar-bg: rgba(245,248,252,.94);
+  --c-fab-bg: #3a5f8a; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(58,95,138,.18); --c-fill-secondary: rgba(58,95,138,.14);
+  --c-fill-tertiary: rgba(58,95,138,.10); --c-fill-quaternary: rgba(58,95,138,.06);
+  --c-separator: rgba(30,40,50,.10);
+  color-scheme: light;
+}
+
+/* ---------- L12: 朱 (shu-light) ---------- */
+[data-color="shu-light"] {
+  --c-bg: #faf4f0; --c-bg-secondary: #f0e4da;
+  --c-card: #ffffff; --c-card-hover: #fdf9f6; --c-card-rgb: 255,255,255;
+  --c-tx: #2e2420; --c-tx-secondary: #7a6860; --c-tx-muted: #a89890;
+  --c-primary: #c8503c; --c-primary-light: rgba(200,80,60,.08); --c-primary-dark: #a83c28; --c-primary-rgb: 200,80,60;
+  --c-secondary: #d8685a;
+  --c-success: #6a9a5e; --c-success-light: rgba(106,154,94,.1);
+  --c-danger: #c8503c; --c-danger-light: rgba(200,80,60,.1);
+  --c-warning: #c8a040; --c-warning-light: rgba(200,160,64,.1);
+  --c-info: #6a98b0; --c-info-light: rgba(106,152,176,.1);
+  --c-border: rgba(46,36,32,.06); --c-divider: rgba(46,36,32,.10);
+  --c-input-bg: rgba(160,110,90,.10); --c-overlay: rgba(46,36,32,.32);
+  --c-shadow-color: rgba(46,36,32,.08);
+  --c-sidebar-bg: #faf4f0; --c-topbar-bg: rgba(250,244,240,.88);
+  --c-bottombar-bg: rgba(252,248,244,.94);
+  --c-fab-bg: #c8503c; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(160,110,90,.18); --c-fill-secondary: rgba(160,110,90,.14);
+  --c-fill-tertiary: rgba(160,110,90,.10); --c-fill-quaternary: rgba(160,110,90,.06);
+  --c-separator: rgba(46,36,32,.10);
+  color-scheme: light;
+}
+
+/* ========================================
+   🌙 ダーク系（8種）
+   ======================================== */
+
+/* ---------- D01: ダーク・ブルー (blue-dark) ---------- */
+[data-color="blue-dark"] {
+  --c-bg: #000000; --c-bg-secondary: #1c1c1e;
+  --c-card: #1c1c1e; --c-card-hover: #2c2c2e; --c-card-rgb: 28,28,30;
+  --c-tx: #f5f5f7; --c-tx-secondary: #a1a1a6; --c-tx-muted: #636366;
+  --c-primary: #0a84ff; --c-primary-light: rgba(10,132,255,.2); --c-primary-dark: #0060cc; --c-primary-rgb: 10,132,255;
+  --c-secondary: #5e5ce6;
+  --c-success: #30d158; --c-success-light: rgba(48,209,88,.2);
+  --c-danger: #ff453a; --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a; --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff; --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(255,255,255,.06); --c-divider: rgba(84,84,88,.65);
+  --c-input-bg: rgba(118,118,128,.24); --c-overlay: rgba(0,0,0,.5);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #1c1c1e; --c-topbar-bg: rgba(0,0,0,.82);
+  --c-bottombar-bg: rgba(20,20,20,.94);
+  --c-fab-bg: #0a84ff; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(120,120,128,.36); --c-fill-secondary: rgba(120,120,128,.32);
+  --c-fill-tertiary: rgba(118,118,128,.24); --c-fill-quaternary: rgba(116,116,128,.18);
+  --c-separator: rgba(84,84,88,.65);
+  color-scheme: dark;
+}
+
+/* ---------- D02: ダーク・グリーン (green-dark) ---------- */
+[data-color="green-dark"] {
+  --c-bg: #001a00; --c-bg-secondary: #0d1f0d;
+  --c-card: #0d1f0d; --c-card-hover: #1a2e1a; --c-card-rgb: 13,31,13;
+  --c-tx: #e8f5e8; --c-tx-secondary: #8ab88a; --c-tx-muted: #4a7a4a;
+  --c-primary: #30d158; --c-primary-light: rgba(48,209,88,.2); --c-primary-dark: #20a040; --c-primary-rgb: 48,209,88;
+  --c-secondary: #60e080;
+  --c-success: #30d158; --c-success-light: rgba(48,209,88,.2);
+  --c-danger: #ff453a; --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a; --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff; --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(48,209,88,.08); --c-divider: rgba(48,209,88,.15);
+  --c-input-bg: rgba(48,209,88,.15); --c-overlay: rgba(0,0,0,.5);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #0d1f0d; --c-topbar-bg: rgba(0,26,0,.82);
+  --c-bottombar-bg: rgba(10,22,10,.94);
+  --c-fab-bg: #30d158; --c-fab-color: #000000;
+  --c-fill-primary: rgba(48,209,88,.28); --c-fill-secondary: rgba(48,209,88,.22);
+  --c-fill-tertiary: rgba(48,209,88,.16); --c-fill-quaternary: rgba(48,209,88,.10);
+  --c-separator: rgba(48,209,88,.15);
+  color-scheme: dark;
+}
+
+/* ---------- D03: ダーク・ピンク (pink-dark) ---------- */
+[data-color="pink-dark"] {
+  --c-bg: #1a0008; --c-bg-secondary: #1f0d12;
+  --c-card: #1f0d12; --c-card-hover: #2e1a20; --c-card-rgb: 31,13,18;
+  --c-tx: #f5e8ec; --c-tx-secondary: #b88a98; --c-tx-muted: #7a4a5a;
+  --c-primary: #ff375f; --c-primary-light: rgba(255,55,95,.2); --c-primary-dark: #cc2040; --c-primary-rgb: 255,55,95;
+  --c-secondary: #ff6b8a;
+  --c-success: #30d158; --c-success-light: rgba(48,209,88,.2);
+  --c-danger: #ff453a; --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a; --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff; --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(255,55,95,.08); --c-divider: rgba(255,55,95,.15);
+  --c-input-bg: rgba(255,55,95,.15); --c-overlay: rgba(0,0,0,.5);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #1f0d12; --c-topbar-bg: rgba(26,0,8,.82);
+  --c-bottombar-bg: rgba(22,10,14,.94);
+  --c-fab-bg: #ff375f; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(255,55,95,.28); --c-fill-secondary: rgba(255,55,95,.22);
+  --c-fill-tertiary: rgba(255,55,95,.16); --c-fill-quaternary: rgba(255,55,95,.10);
+  --c-separator: rgba(255,55,95,.15);
+  color-scheme: dark;
+}
+
+/* ---------- D04: ダーク・オレンジ (orange-dark) ---------- */
+[data-color="orange-dark"] {
+  --c-bg: #1a0f00; --c-bg-secondary: #1f150d;
+  --c-card: #1f150d; --c-card-hover: #2e221a; --c-card-rgb: 31,21,13;
+  --c-tx: #f5ede8; --c-tx-secondary: #b8a088; --c-tx-muted: #7a6a5a;
+  --c-primary: #ff9f0a; --c-primary-light: rgba(255,159,10,.2); --c-primary-dark: #cc8000; --c-primary-rgb: 255,159,10;
+  --c-secondary: #ffb840;
+  --c-success: #30d158; --c-success-light: rgba(48,209,88,.2);
+  --c-danger: #ff453a; --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a; --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff; --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(255,159,10,.08); --c-divider: rgba(255,159,10,.15);
+  --c-input-bg: rgba(255,159,10,.15); --c-overlay: rgba(0,0,0,.5);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #1f150d; --c-topbar-bg: rgba(26,15,0,.82);
+  --c-bottombar-bg: rgba(22,18,10,.94);
+  --c-fab-bg: #ff9f0a; --c-fab-color: #000000;
+  --c-fill-primary: rgba(255,159,10,.28); --c-fill-secondary: rgba(255,159,10,.22);
+  --c-fill-tertiary: rgba(255,159,10,.16); --c-fill-quaternary: rgba(255,159,10,.10);
+  --c-separator: rgba(255,159,10,.15);
+  color-scheme: dark;
+}
+
+/* ---------- D05: ダーク・パープル (purple-dark) ---------- */
+[data-color="purple-dark"] {
+  --c-bg: #0d0019; --c-bg-secondary: #140d1f;
+  --c-card: #140d1f; --c-card-hover: #221a2e; --c-card-rgb: 20,13,31;
+  --c-tx: #ede8f5; --c-tx-secondary: #a088b8; --c-tx-muted: #6a5a7a;
+  --c-primary: #bf5af2; --c-primary-light: rgba(191,90,242,.2); --c-primary-dark: #9040c0; --c-primary-rgb: 191,90,242;
+  --c-secondary: #d88aff;
+  --c-success: #30d158; --c-success-light: rgba(48,209,88,.2);
+  --c-danger: #ff453a; --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a; --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff; --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(191,90,242,.08); --c-divider: rgba(191,90,242,.15);
+  --c-input-bg: rgba(191,90,242,.15); --c-overlay: rgba(0,0,0,.5);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #140d1f; --c-topbar-bg: rgba(13,0,25,.82);
+  --c-bottombar-bg: rgba(16,10,22,.94);
+  --c-fab-bg: #bf5af2; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(191,90,242,.28); --c-fill-secondary: rgba(191,90,242,.22);
+  --c-fill-tertiary: rgba(191,90,242,.16); --c-fill-quaternary: rgba(191,90,242,.10);
+  --c-separator: rgba(191,90,242,.15);
+  color-scheme: dark;
+}
+
+/* ---------- D06: ミッドナイト (midnight) ---------- */
+[data-color="midnight"] {
+  --c-bg: #000000; --c-bg-secondary: #111111;
+  --c-card: #111111; --c-card-hover: #1a1a1a; --c-card-rgb: 17,17,17;
+  --c-tx: #e5e5ea; --c-tx-secondary: #8e8e93; --c-tx-muted: #48484a;
+  --c-primary: #5e5ce6; --c-primary-light: rgba(94,92,230,.2); --c-primary-dark: #4a48c0; --c-primary-rgb: 94,92,230;
+  --c-secondary: #7a78f0;
+  --c-success: #30d158; --c-success-light: rgba(48,209,88,.2);
+  --c-danger: #ff453a; --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a; --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff; --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(255,255,255,.05); --c-divider: rgba(84,84,88,.5);
+  --c-input-bg: rgba(118,118,128,.24); --c-overlay: rgba(0,0,0,.6);
+  --c-shadow-color: rgba(0,0,0,.5);
+  --c-sidebar-bg: #111111; --c-topbar-bg: rgba(0,0,0,.85);
+  --c-bottombar-bg: rgba(8,8,8,.94);
+  --c-fab-bg: #5e5ce6; --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(94,92,230,.28); --c-fill-secondary: rgba(94,92,230,.22);
+  --c-fill-tertiary: rgba(94,92,230,.16); --c-fill-quaternary: rgba(94,92,230,.10);
+  --c-separator: rgba(84,84,88,.5);
+  color-scheme: dark;
+}
+
+/* ---------- D07: 墨 (sumi-dark) ---------- */
+[data-color="sumi-dark"] {
+  --c-bg: #121210; --c-bg-secondary: #1e1e1a;
+  --c-card: #1e1e1a; --c-card-hover: #2a2a24; --c-card-rgb: 30,30,26;
+  --c-tx: #e8e4dc; --c-tx-secondary: #a8a298; --c-tx-muted: #6b665e;
+  --c-primary: #c8a86c; --c-primary-light: rgba(200,168,108,.18); --c-primary-dark: #a88a4c; --c-primary-rgb: 200,168,108;
+  --c-secondary: #d4bc88;
+  --c-success: #7aaa6e; --c-success-light: rgba(122,170,110,.18);
+  --c-danger: #c46a5a; --c-danger-light: rgba(196,106,90,.18);
+  --c-warning: #d4b84a; --c-warning-light: rgba(212,184,74,.18);
+  --c-info: #7aafbf; --c-info-light: rgba(122,175,191,.18);
+  --c-border: rgba(232,228,220,.06); --c-divider: rgba(168,162,152,.20);
+  --c-input-bg: rgba(200,168,108,.16); --c-overlay: rgba(8,8,6,.55);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #1e1e1a; --c-topbar-bg: rgba(18,18,16,.88);
+  --c-bottombar-bg: rgba(22,22,18,.94);
+  --c-fab-bg: #c8a86c; --c-fab-color: #1e1e1a;
+  --c-fill-primary: rgba(200,168,108,.28); --c-fill-secondary: rgba(200,168,108,.22);
+  --c-fill-tertiary: rgba(200,168,108,.16); --c-fill-quaternary: rgba(200,168,108,.10);
+  --c-separator: rgba(168,162,152,.20);
+  color-scheme: dark;
+}
+
+/* ---------- D08: チャコール (charcoal) ---------- */
+[data-color="charcoal"] {
+  --c-bg: #1c1c1e; --c-bg-secondary: #2c2c2e;
+  --c-card: #2c2c2e; --c-card-hover: #3a3a3c; --c-card-rgb: 44,44,46;
+  --c-tx: #d1d1d6; --c-tx-secondary: #8e8e93; --c-tx-muted: #636366;
+  --c-primary: #8e8e93; --c-primary-light: rgba(142,142,147,.2); --c-primary-dark: #6c6c70; --c-primary-rgb: 142,142,147;
+  --c-secondary: #a1a1a6;
+  --c-success: #34c759; --c-success-light: rgba(52,199,89,.2);
+  --c-danger: #ff453a; --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a; --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff; --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(255,255,255,.06); --c-divider: rgba(84,84,88,.5);
+  --c-input-bg: rgba(118,118,128,.24); --c-overlay: rgba(0,0,0,.5);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #2c2c2e; --c-topbar-bg: rgba(28,28,30,.85);
+  --c-bottombar-bg: rgba(32,32,34,.94);
+  --c-fab-bg: #8e8e93; --c-fab-color: #1c1c1e;
+  --c-fill-primary: rgba(142,142,147,.28); --c-fill-secondary: rgba(142,142,147,.22);
+  --c-fill-tertiary: rgba(142,142,147,.16); --c-fill-quaternary: rgba(142,142,147,.10);
+  --c-separator: rgba(84,84,88,.5);
   color-scheme: dark;
 }

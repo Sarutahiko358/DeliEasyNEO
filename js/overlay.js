@@ -19,8 +19,8 @@
     help:          { title: '❓ ヘルプ' }
   };
 
-  /* ---------- State: stack of open overlays ---------- */
-  var _stack = []; /* array of { id, level } */
+  /* ---------- State ---------- */
+  var _stack = [];
 
   /* ---------- Container refs ---------- */
   function _getContainer() { return document.getElementById('overlay-container'); }
@@ -29,24 +29,15 @@
   /* ---------- Open ---------- */
   function openOverlay(id) {
     var def = OVERLAYS[id];
-    if (!def) {
-      console.warn('[Overlay] Unknown overlay:', id);
-      return;
-    }
+    if (!def) { console.warn('[Overlay] Unknown:', id); return; }
 
     var container = _getContainer();
     var backdrop = _getBackdrop();
     if (!container) return;
 
-    /* Determine level */
     var level = _stack.length + 1;
-    if (level > 2) {
-      /* Close first one before opening a third */
-      _closeTopSheet();
-      level = _stack.length + 1;
-    }
+    if (level > 2) { _closeTopSheet(); level = _stack.length + 1; }
 
-    /* Create sheet */
     var sheet = document.createElement('div');
     sheet.className = 'overlay-sheet';
     sheet.id = 'overlay-sheet-' + id;
@@ -68,27 +59,18 @@
     container.classList.add('has-overlay');
     if (backdrop) backdrop.classList.add('visible');
 
-    /* Animate in */
     requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        sheet.classList.add('open');
-      });
+      requestAnimationFrame(function() { sheet.classList.add('open'); });
     });
 
-    /* Push to stack */
     _stack.push({ id: id, level: level });
-
-    /* Init swipe-down-to-close on the sheet */
     _initSheetSwipe(sheet);
-
-    /* Render content */
     _renderOverlayContent(id);
 
-    /* Hide FAB */
     if (typeof window.hideFab === 'function') window.hideFab();
   }
 
-  /* ---------- Close top overlay ---------- */
+  /* ---------- Close ---------- */
   function closeOverlay() {
     if (_stack.length === 0) return;
     _closeTopSheet();
@@ -97,7 +79,6 @@
       var backdrop = _getBackdrop();
       if (container) container.classList.remove('has-overlay');
       if (backdrop) backdrop.classList.remove('visible');
-      /* Show FAB again */
       if (typeof window.showFab === 'function') window.showFab();
     }
   }
@@ -112,11 +93,8 @@
     }
   }
 
-  /* Close all overlays */
   function closeAllOverlays() {
-    while (_stack.length > 0) {
-      _closeTopSheet();
-    }
+    while (_stack.length > 0) { _closeTopSheet(); }
     var container = _getContainer();
     var backdrop = _getBackdrop();
     if (container) container.classList.remove('has-overlay');
@@ -131,18 +109,12 @@
   function _initSheetSwipe(sheet) {
     var startY = 0;
     var body = sheet.querySelector('.overlay-body');
-
     sheet.addEventListener('touchstart', function(e) {
-      startY = e.touches[0].clientX !== undefined ? e.touches[0].clientY : 0;
+      startY = e.touches[0].clientY;
     }, { passive: true });
-
     sheet.addEventListener('touchend', function(e) {
-      /* Only close if body is scrolled to top */
       if (body && body.scrollTop > 5) return;
-      var dy = e.changedTouches[0].clientY - startY;
-      if (dy > 100) {
-        closeOverlay();
-      }
+      if (e.changedTouches[0].clientY - startY > 100) closeOverlay();
     }, { passive: true });
   }
 
@@ -151,24 +123,14 @@
     var body = document.getElementById('overlay-body-' + id);
     if (!body) return;
 
-    /* Check if a dedicated render function exists */
     var fnName = 'renderOverlay_' + id;
-    if (typeof window[fnName] === 'function') {
-      window[fnName](body);
-      return;
-    }
+    if (typeof window[fnName] === 'function') { window[fnName](body); return; }
 
-    /* Built-in renderers */
     switch (id) {
-      case 'theme':
-        _renderThemeOverlay(body);
-        return;
-      case 'settings':
-        _renderSettingsOverlay(body);
-        return;
+      case 'theme':    _renderThemeOverlay(body); return;
+      case 'settings': _renderSettingsOverlay(body); return;
     }
 
-    /* Fallback: empty state */
     body.innerHTML =
       '<div class="text-c" style="padding:60px 20px">' +
         '<div style="font-size:2.5rem;margin-bottom:12px">🚧</div>' +
@@ -177,120 +139,159 @@
       '</div>';
   }
 
-  /* ---------- Theme Overlay (Phase 1 簡易版) ---------- */
+  /* ==========================================================
+     テーマオーバーレイ（Phase 2 完全版）
+     ========================================================== */
   function _renderThemeOverlay(body) {
     var currentStyle = typeof getThemeStyle === 'function' ? getThemeStyle() : 'minimal';
     var currentColor = typeof getThemeColor === 'function' ? getThemeColor() : 'blue-light';
 
     var styles = [
-      { id: 'minimal', name: 'ミニマル', desc: 'Apple HIG準拠・フロストガラス' },
-      { id: 'flat',    name: 'フラット', desc: 'ボーダーで区切るクリーンなデザイン' }
+      { id: 'minimal', name: 'ミニマル',   emoji: '✨', desc: 'Apple風・フロストガラス・大きな角丸' },
+      { id: 'flat',    name: 'フラット',   emoji: '📐', desc: 'ボーダーで区切るクリーンなデザイン' },
+      { id: 'soft',    name: 'ソフト',     emoji: '☁️', desc: 'ニューモーフィズム風の柔らかい立体感' },
+      { id: 'cyber',   name: 'サイバー',   emoji: '🔮', desc: 'ネオン発光・シャープなSFデザイン' },
+      { id: 'pop',     name: 'ポップ',     emoji: '🎈', desc: 'グラデーション・丸い形・元気で明るい' },
+      { id: 'wabi',    name: '和モダン',   emoji: '🍵', desc: '余白重視・繊細な線・日本的な落ち着き' },
+      { id: 'brutal',  name: 'ブルータル', emoji: '🔨', desc: '太いボーダー・大胆なフォント・インパクト' },
+      { id: 'glass',   name: 'グラス',     emoji: '🪟', desc: '全面フロストガラス・透け感とブラー' },
+      { id: 'classic', name: 'クラシック', emoji: '📖', desc: '伝統的なWebデザイン・読みやすさ重視' },
+      { id: 'compact', name: 'コンパクト', emoji: '📱', desc: '情報密度最大・一画面に多く表示' }
     ];
 
-    var colors = [
-      { id: 'blue-light', name: 'ブルー',   type: 'light', dot: '#007aff' },
-      { id: 'blue-dark',  name: 'ダークブルー', type: 'dark', dot: '#0a84ff' }
+    var lightColors = [
+      { id: 'blue-light',   name: 'ブルー',     dot: '#007aff' },
+      { id: 'green-light',  name: 'グリーン',   dot: '#34c759' },
+      { id: 'pink-light',   name: 'ピンク',     dot: '#ff2d55' },
+      { id: 'orange-light', name: 'オレンジ',   dot: '#ff9500' },
+      { id: 'purple-light', name: 'パープル',   dot: '#af52de' },
+      { id: 'teal-light',   name: 'ティール',   dot: '#00c7be' },
+      { id: 'red-light',    name: 'レッド',     dot: '#ff3b30' },
+      { id: 'gold-light',   name: 'ゴールド',   dot: '#c8a04a' },
+      { id: 'sakura-light', name: 'サクラ',     dot: '#d4627b' },
+      { id: 'matcha-light', name: '抹茶',       dot: '#5a8c51' },
+      { id: 'ai-light',     name: '藍',         dot: '#3a5f8a' },
+      { id: 'shu-light',    name: '朱',         dot: '#c8503c' }
+    ];
+
+    var darkColors = [
+      { id: 'blue-dark',    name: 'ダークブルー',   dot: '#0a84ff' },
+      { id: 'green-dark',   name: 'ダークグリーン', dot: '#30d158' },
+      { id: 'pink-dark',    name: 'ダークピンク',   dot: '#ff375f' },
+      { id: 'orange-dark',  name: 'ダークオレンジ', dot: '#ff9f0a' },
+      { id: 'purple-dark',  name: 'ダークパープル', dot: '#bf5af2' },
+      { id: 'midnight',     name: 'ミッドナイト',   dot: '#5e5ce6' },
+      { id: 'sumi-dark',    name: '墨',             dot: '#c8a86c' },
+      { id: 'charcoal',     name: 'チャコール',     dot: '#8e8e93' }
     ];
 
     var html = '';
 
-    /* Design Style */
-    html += '<div class="card mb12">';
-    html += '<div class="card-body">';
+    /* ===== デザインスタイル ===== */
+    html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">🎨 デザインスタイル</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
     styles.forEach(function(s) {
-      var isActive = s.id === currentStyle;
-      html += '<button class="' + (isActive ? 'btn btn-primary' : 'btn btn-secondary') + ' btn-block mb8" ';
-      html += 'onclick="setThemeStyle(\'' + s.id + '\');_refreshThemeOverlay()" ';
-      html += 'style="text-align:left;justify-content:flex-start;gap:12px">';
-      html += '<span style="font-size:1.2rem">' + (isActive ? '✓' : '○') + '</span>';
-      html += '<span>';
-      html += '<span class="fw6">' + escHtml(s.name) + '</span>';
-      html += '<br><span class="fz-xs" style="opacity:.7">' + escHtml(s.desc) + '</span>';
-      html += '</span>';
+      var isA = s.id === currentStyle;
+      html += '<button style="display:flex;flex-direction:column;align-items:center;gap:4px;';
+      html += 'padding:14px 8px;border-radius:var(--ds-radius-sm);cursor:pointer;';
+      html += 'border:2px solid ' + (isA ? 'var(--c-primary)' : 'transparent') + ';';
+      html += 'background:' + (isA ? 'var(--c-primary-light)' : 'var(--c-fill-quaternary)') + ';';
+      html += 'color:var(--c-tx);transition:all .15s;-webkit-tap-highlight-color:transparent"';
+      html += ' onclick="setThemeStyle(\'' + s.id + '\');_refreshThemeOverlay()">';
+      html += '<span style="font-size:1.5rem">' + s.emoji + '</span>';
+      html += '<span style="font-size:.8125rem;font-weight:' + (isA ? '700' : '500') + '">' + escHtml(s.name) + '</span>';
+      html += '<span style="font-size:.6rem;color:var(--c-tx-muted);line-height:1.3;text-align:center">' + escHtml(s.desc) + '</span>';
       html += '</button>';
     });
-    html += '</div></div>';
+    html += '</div></div></div>';
 
-    /* Color Palette */
-    html += '<div class="card mb12">';
-    html += '<div class="card-body">';
+    /* ===== カラーパレット ===== */
+    html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">🎨 カラーパレット</div>';
 
-    /* Light */
-    html += '<div class="fz-xs c-secondary mb8">☀️ ライト</div>';
-    html += '<div class="flex flex-wrap gap8 mb12">';
-    colors.filter(function(c) { return c.type === 'light'; }).forEach(function(c) {
-      var isActive = c.id === currentColor;
-      html += '<button class="' + (isActive ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm') + '" ';
-      html += 'onclick="setThemeColor(\'' + c.id + '\');_refreshThemeOverlay()" ';
-      html += 'style="gap:6px">';
-      html += '<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:' + c.dot + ';border:2px solid ' + (isActive ? '#fff' : 'var(--c-border)') + '"></span>';
-      html += escHtml(c.name);
+    /* ライト */
+    html += '<div class="fz-xs fw6 c-secondary mb8">☀️ ライト（12色）</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
+    lightColors.forEach(function(c) {
+      var isA = c.id === currentColor;
+      html += '<button style="display:flex;flex-direction:column;align-items:center;gap:4px;';
+      html += 'padding:10px 4px;border-radius:var(--ds-radius-sm);cursor:pointer;';
+      html += 'border:2px solid ' + (isA ? 'var(--c-primary)' : 'transparent') + ';';
+      html += 'background:' + (isA ? 'var(--c-primary-light)' : 'var(--c-fill-quaternary)') + ';';
+      html += 'color:var(--c-tx);transition:all .15s;-webkit-tap-highlight-color:transparent"';
+      html += ' onclick="setThemeColor(\'' + c.id + '\');_refreshThemeOverlay()">';
+      html += '<span style="display:block;width:28px;height:28px;border-radius:50%;background:' + c.dot + ';';
+      html += 'border:3px solid ' + (isA ? '#fff' : 'rgba(0,0,0,.08)') + ';';
+      html += 'box-shadow:' + (isA ? '0 0 0 2px var(--c-primary)' : 'none') + '"></span>';
+      html += '<span style="font-size:.625rem;font-weight:' + (isA ? '700' : '400') + ';white-space:nowrap">' + escHtml(c.name) + '</span>';
       html += '</button>';
     });
     html += '</div>';
 
-    /* Dark */
-    html += '<div class="fz-xs c-secondary mb8">🌙 ダーク</div>';
-    html += '<div class="flex flex-wrap gap8 mb12">';
-    colors.filter(function(c) { return c.type === 'dark'; }).forEach(function(c) {
-      var isActive = c.id === currentColor;
-      html += '<button class="' + (isActive ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm') + '" ';
-      html += 'onclick="setThemeColor(\'' + c.id + '\');_refreshThemeOverlay()" ';
-      html += 'style="gap:6px">';
-      html += '<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:' + c.dot + ';border:2px solid ' + (isActive ? '#fff' : 'rgba(255,255,255,.2)') + '"></span>';
-      html += escHtml(c.name);
+    /* ダーク */
+    html += '<div class="fz-xs fw6 c-secondary mb8">🌙 ダーク（8色）</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px">';
+    darkColors.forEach(function(c) {
+      var isA = c.id === currentColor;
+      html += '<button style="display:flex;flex-direction:column;align-items:center;gap:4px;';
+      html += 'padding:10px 4px;border-radius:var(--ds-radius-sm);cursor:pointer;';
+      html += 'border:2px solid ' + (isA ? 'var(--c-primary)' : 'transparent') + ';';
+      html += 'background:' + (isA ? 'var(--c-primary-light)' : 'var(--c-fill-quaternary)') + ';';
+      html += 'color:var(--c-tx);transition:all .15s;-webkit-tap-highlight-color:transparent"';
+      html += ' onclick="setThemeColor(\'' + c.id + '\');_refreshThemeOverlay()">';
+      html += '<span style="display:block;width:28px;height:28px;border-radius:50%;background:' + c.dot + ';';
+      html += 'border:3px solid rgba(255,255,255,' + (isA ? '.9' : '.15') + ');';
+      html += 'box-shadow:' + (isA ? '0 0 0 2px var(--c-primary)' : 'none') + '"></span>';
+      html += '<span style="font-size:.625rem;font-weight:' + (isA ? '700' : '400') + ';white-space:nowrap">' + escHtml(c.name) + '</span>';
       html += '</button>';
     });
-    html += '</div>';
+    html += '</div></div></div>';
 
-    html += '</div></div>';
-
-    /* Current info */
+    /* ===== 現在のテーマ ===== */
     html += '<div class="card mb12"><div class="card-body text-c">';
     html += '<div class="fz-xs c-muted">現在のテーマ</div>';
-    html += '<div class="fz-s fw6 mt4">' + escHtml(currentStyle) + ' × ' + escHtml(currentColor) + '</div>';
-    html += '<div class="fz-xs c-muted mt8">Phase 2 で10スタイル×20カラーに拡張予定</div>';
+    var activeStyleName = currentStyle;
+    styles.forEach(function(s) { if (s.id === currentStyle) activeStyleName = s.emoji + ' ' + s.name; });
+    var activeColorName = currentColor;
+    lightColors.concat(darkColors).forEach(function(c) { if (c.id === currentColor) activeColorName = c.name; });
+    html += '<div class="fz-m fw7 mt4" style="color:var(--c-primary)">' + escHtml(activeStyleName) + ' × ' + escHtml(activeColorName) + '</div>';
+    html += '<div class="fz-xs c-muted mt8">10スタイル × 20カラー = 200通りの組み合わせ</div>';
     html += '</div></div>';
 
     body.innerHTML = html;
   }
 
-  /* Theme overlay refresh (called after style/color change) */
   window._refreshThemeOverlay = function() {
     var body = document.getElementById('overlay-body-theme');
     if (body) _renderThemeOverlay(body);
   };
 
-  /* ---------- Settings Overlay (Phase 1 簡易版) ---------- */
+  /* ==========================================================
+     設定オーバーレイ
+     ========================================================== */
   function _renderSettingsOverlay(body) {
     var html = '';
 
-    /* Sync section */
-    html += '<div class="card mb12">';
-    html += '<div class="card-body">';
+    /* 同期セクション */
+    html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">☁️ クラウド同期</div>';
 
     if (typeof firebaseIsSignedIn === 'function' && firebaseIsSignedIn()) {
       var name = typeof firebaseGetUserName === 'function' ? firebaseGetUserName() : '';
       var email = typeof firebaseGetUserEmail === 'function' ? firebaseGetUserEmail() : '';
       var syncInfo = typeof firebaseGetSyncInfo === 'function' ? firebaseGetSyncInfo() : {};
+      var photo = typeof firebaseGetUserPhoto === 'function' ? firebaseGetUserPhoto() : '';
 
       html += '<div class="flex items-center gap8 mb12">';
-      var photo = typeof firebaseGetUserPhoto === 'function' ? firebaseGetUserPhoto() : '';
-      if (photo) {
-        html += '<img src="' + escHtml(photo) + '" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--c-primary)">';
-      }
+      if (photo) html += '<img src="' + escHtml(photo) + '" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--c-primary)">';
       html += '<div>';
       html += '<div class="fz-s fw6">' + escHtml(name) + '</div>';
       html += '<div class="fz-xs c-muted">' + escHtml(email) + '</div>';
-      html += '</div>';
-      html += '</div>';
+      html += '</div></div>';
 
       if (syncInfo.lastSyncTs) {
-        var d = new Date(syncInfo.lastSyncTs);
-        html += '<div class="fz-xs c-muted mb8">最終同期: ' + d.toLocaleString('ja-JP') + '</div>';
+        html += '<div class="fz-xs c-muted mb8">最終同期: ' + new Date(syncInfo.lastSyncTs).toLocaleString('ja-JP') + '</div>';
       }
 
       html += '<div class="flex flex-wrap gap8">';
@@ -302,40 +303,32 @@
       html += '<p class="fz-s c-muted mb12">Googleアカウントでログインすると、複数の端末でデータを同期できます。</p>';
       html += '<button class="btn btn-primary btn-block" onclick="firebaseSignInNow()">🔐 Googleでログイン</button>';
     }
-
     html += '</div></div>';
 
-    /* Data section */
-    html += '<div class="card mb12">';
-    html += '<div class="card-body">';
+    /* データ管理 */
+    html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">📦 データ管理</div>';
-
     if (typeof estimateDpStorageBytes === 'function') {
-      var bytes = estimateDpStorageBytes();
-      var mb = (bytes / 1024 / 1024).toFixed(2);
-      html += '<div class="fz-xs c-muted mb8">ストレージ使用量: ' + mb + ' MB</div>';
+      html += '<div class="fz-xs c-muted mb8">ストレージ使用量: ' + (estimateDpStorageBytes() / 1024 / 1024).toFixed(2) + ' MB</div>';
     }
-
     html += '<div class="flex flex-wrap gap8">';
     html += '<button class="btn btn-secondary btn-sm" onclick="if(typeof exportBackupJSON===\'function\')exportBackupJSON()">💾 バックアップ</button>';
     html += '<button class="btn btn-secondary btn-sm" onclick="if(typeof exportRecCSV===\'function\')exportRecCSV()">📊 売上CSV</button>';
     html += '<button class="btn btn-secondary btn-sm" onclick="if(typeof exportExpCSV===\'function\')exportExpCSV()">💸 経費CSV</button>';
-    html += '</div>';
-    html += '</div></div>';
+    html += '</div></div></div>';
 
-    /* Theme shortcut */
-    html += '<div class="card mb12">';
-    html += '<div class="card-body">';
+    /* テーマショートカット */
+    html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb8">🎨 テーマ</div>';
-    var currentStyle = typeof getThemeStyle === 'function' ? getThemeStyle() : 'minimal';
-    var currentColor = typeof getThemeColor === 'function' ? getThemeColor() : 'blue-light';
-    html += '<div class="fz-xs c-muted mb8">現在: ' + escHtml(currentStyle) + ' × ' + escHtml(currentColor) + '</div>';
+    var cs = typeof getThemeStyle === 'function' ? getThemeStyle() : 'minimal';
+    var cc = typeof getThemeColor === 'function' ? getThemeColor() : 'blue-light';
+    html += '<div class="fz-xs c-muted mb8">現在: ' + escHtml(cs) + ' × ' + escHtml(cc) + '</div>';
     html += '<button class="btn btn-secondary btn-block btn-sm" onclick="closeOverlay();setTimeout(function(){openOverlay(\'theme\')},200)">テーマを変更</button>';
     html += '</div></div>';
 
-    /* Version info */
+    /* バージョン */
     html += '<div class="text-c c-muted fz-xs mt16 mb16">';
-    html += 'DeliEasy v2.0 — Phase 1<br>';
+    html += 'DeliEasy v2.0 — Phase 2<br>';
     html += 'Device ID: ' + (typeof S !== 'undefined' ? escHtml(S.g('deviceId', 'N/A')) : 'N/A');
     html += '</div>';
 

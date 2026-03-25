@@ -1,9 +1,10 @@
 /* ==========================================================
    DeliEasy v2 — design-styles.css
-   Phase 1: minimal + flat (2 styles)
+   全10デザインスタイル定義
    ========================================================== */
 
-/* ---------- Style: Minimal (Apple HIG inspired) ---------- */
+/* ---------- Style 1: ミニマル (minimal) ---------- */
+/* Apple HIG準拠。フロストガラス、大きな角丸、控えめな影。 */
 [data-style="minimal"] {
   --ds-radius: 16px;
   --ds-radius-sm: 12px;
@@ -32,9 +33,11 @@
   --ds-card-border: none;
   --ds-input-border: none;
   --ds-divider: .5px solid var(--c-divider);
+  --ds-content-density: spacious;
 }
 
-/* ---------- Style: Flat (Material Lite inspired) ---------- */
+/* ---------- Style 2: フラット (flat) ---------- */
+/* 影なし。ボーダーで区切るクリーンなデザイン。 */
 [data-style="flat"] {
   --ds-radius: 8px;
   --ds-radius-sm: 6px;
@@ -63,35 +66,382 @@
   --ds-card-border: 1px solid var(--c-border);
   --ds-input-border: 1px solid var(--c-border);
   --ds-divider: 1px solid var(--c-border);
+  --ds-content-density: normal;
 }
-/* Flat: cards get a visible border instead of shadow */
-[data-style="flat"] .card {
-  border: 1px solid var(--c-border);
-  box-shadow: none;
+[data-style="flat"] .card { border: 1px solid var(--c-border); box-shadow: none; }
+[data-style="flat"] .sidebar { border-right: 1px solid var(--c-border); -webkit-backdrop-filter: none; backdrop-filter: none; }
+[data-style="flat"] .numpad-key { border-radius: var(--ds-radius-sm); box-shadow: none; border: 1px solid var(--c-border); }
+[data-style="flat"] .fab-main { box-shadow: var(--ds-shadow-fab); }
+[data-style="flat"] .toast { -webkit-backdrop-filter: none; backdrop-filter: none; border: 1px solid var(--c-border); }
+[data-style="flat"] .fab-mini { border: 1px solid var(--c-border); box-shadow: 0 2px 8px var(--c-shadow-color); }
+
+/* ---------- Style 3: ソフト (soft) ---------- */
+/* ニューモーフィズム風。凹凸のある柔らかい立体感。 */
+[data-style="soft"] {
+  --ds-radius: 20px;
+  --ds-radius-sm: 14px;
+  --ds-radius-lg: 28px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: 6px 6px 12px var(--c-shadow-color), -4px -4px 10px rgba(255,255,255,.7);
+  --ds-shadow-lg: 8px 8px 20px var(--c-shadow-color), -6px -6px 16px rgba(255,255,255,.6);
+  --ds-shadow-card: 6px 6px 12px var(--c-shadow-color), -4px -4px 10px rgba(255,255,255,.7);
+  --ds-shadow-fab: 4px 4px 14px var(--c-shadow-color), -3px -3px 10px rgba(255,255,255,.6);
+  --ds-blur: 8px;
+  --ds-border: 0px;
+  --ds-border-style: none;
+  --ds-card-padding: 18px 22px;
+  --ds-widget-gap: 14px;
+  --ds-btn-radius: 980px;
+  --ds-btn-padding: 12px 24px;
+  --ds-btn-weight: 500;
+  --ds-heading-weight: 600;
+  --ds-heading-tracking: -0.016em;
+  --ds-body-size: 1rem;
+  --ds-transition: .3s ease-in-out;
+  --ds-transition-fast: .18s ease-in-out;
+  --ds-hover-scale: 1.01;
+  --ds-active-scale: .96;
+  --ds-backdrop: blur(8px);
+  --ds-card-border: none;
+  --ds-input-border: none;
+  --ds-divider: 1px solid rgba(0,0,0,.04);
+  --ds-content-density: spacious;
 }
-[data-style="flat"] .sidebar {
-  border-right: 1px solid var(--c-border);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+[data-style="soft"] .card { box-shadow: var(--ds-shadow-card); border: none; }
+[data-style="soft"] .stat-box { box-shadow: inset 2px 2px 5px rgba(0,0,0,.06), inset -2px -2px 5px rgba(255,255,255,.7); }
+[data-style="soft"] .numpad-key { border-radius: 50%; box-shadow: 3px 3px 8px var(--c-shadow-color), -3px -3px 8px rgba(255,255,255,.6); border: none; }
+[data-style="soft"] .numpad-key:active { box-shadow: inset 2px 2px 5px var(--c-shadow-color), inset -2px -2px 5px rgba(255,255,255,.5); }
+[data-style="soft"] .fab-mini { box-shadow: var(--ds-shadow); }
+[data-style="soft"] .input { box-shadow: inset 2px 2px 5px rgba(0,0,0,.06), inset -2px -2px 5px rgba(255,255,255,.6); border: none; }
+[data-style="soft"] .sidebar { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+[data-style="soft"] .toast { box-shadow: var(--ds-shadow-lg); }
+[data-style="soft"] .btn-primary { box-shadow: 3px 3px 8px var(--c-shadow-color); }
+[data-style="soft"] .btn-primary:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,.15); }
+
+/* ---------- Style 4: サイバー (cyber) ---------- */
+/* ネオン発光、シャープなエッジ。SF的な未来感。 */
+[data-style="cyber"] {
+  --ds-radius: 4px;
+  --ds-radius-sm: 2px;
+  --ds-radius-lg: 6px;
+  --ds-radius-pill: 2px;
+  --ds-shadow: 0 0 8px rgba(var(--c-primary-rgb, 0,122,255), .15);
+  --ds-shadow-lg: 0 0 20px rgba(var(--c-primary-rgb, 0,122,255), .25);
+  --ds-shadow-card: 0 0 6px rgba(var(--c-primary-rgb, 0,122,255), .08), 0 1px 3px rgba(0,0,0,.12);
+  --ds-shadow-fab: 0 0 16px rgba(var(--c-primary-rgb, 0,122,255), .4);
+  --ds-blur: 0px;
+  --ds-border: 1px;
+  --ds-border-style: solid;
+  --ds-card-padding: 14px 16px;
+  --ds-widget-gap: 8px;
+  --ds-btn-radius: 2px;
+  --ds-btn-padding: 10px 18px;
+  --ds-btn-weight: 600;
+  --ds-heading-weight: 700;
+  --ds-heading-tracking: 0.04em;
+  --ds-body-size: .9375rem;
+  --ds-transition: .15s ease-out;
+  --ds-transition-fast: .08s ease-out;
+  --ds-hover-scale: 1;
+  --ds-active-scale: .98;
+  --ds-backdrop: none;
+  --ds-card-border: 1px solid var(--c-primary);
+  --ds-input-border: 1px solid var(--c-primary);
+  --ds-divider: 1px solid var(--c-primary);
+  --ds-content-density: normal;
 }
-[data-style="flat"] .overlay-sheet {
-  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+[data-style="cyber"] .card { border: 1px solid var(--c-primary); box-shadow: var(--ds-shadow-card); }
+[data-style="cyber"] .card-header { letter-spacing: 0.06em; text-transform: uppercase; font-size: .75rem; }
+[data-style="cyber"] .numpad-key { border-radius: 2px; border: 1px solid var(--c-primary); box-shadow: 0 0 4px rgba(var(--c-primary-rgb, 0,122,255), .15); }
+[data-style="cyber"] .numpad-key:active { box-shadow: 0 0 12px rgba(var(--c-primary-rgb, 0,122,255), .4); }
+[data-style="cyber"] .fab-main { border-radius: 4px; }
+[data-style="cyber"] .fab-mini { border: 1px solid var(--c-primary); border-radius: 2px; box-shadow: 0 0 8px rgba(var(--c-primary-rgb, 0,122,255), .15); }
+[data-style="cyber"] .sidebar { border-right: 1px solid var(--c-primary); }
+[data-style="cyber"] .overlay-sheet { border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0; }
+[data-style="cyber"] .toast { border: 1px solid var(--c-primary); box-shadow: 0 0 12px rgba(var(--c-primary-rgb, 0,122,255), .2); }
+[data-style="cyber"] .stat-box { border: 1px solid rgba(var(--c-primary-rgb, 0,122,255), .2); }
+[data-style="cyber"] .btn-primary { box-shadow: 0 0 10px rgba(var(--c-primary-rgb, 0,122,255), .3); letter-spacing: 0.04em; text-transform: uppercase; }
+[data-style="cyber"] .btn-primary:active { box-shadow: 0 0 20px rgba(var(--c-primary-rgb, 0,122,255), .5); }
+[data-style="cyber"] body { font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace; }
+[data-style="cyber"] .topbar-title { letter-spacing: 0.08em; text-transform: uppercase; font-size: .9rem; }
+
+/* ---------- Style 5: ポップ (pop) ---------- */
+/* グラデーション多用、丸い形、元気で明るい。 */
+[data-style="pop"] {
+  --ds-radius: 24px;
+  --ds-radius-sm: 16px;
+  --ds-radius-lg: 32px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: 0 4px 16px rgba(0,0,0,.08);
+  --ds-shadow-lg: 0 8px 30px rgba(0,0,0,.12);
+  --ds-shadow-card: 0 4px 16px rgba(0,0,0,.06);
+  --ds-shadow-fab: 0 6px 24px rgba(0,0,0,.2);
+  --ds-blur: 12px;
+  --ds-border: 0px;
+  --ds-border-style: none;
+  --ds-card-padding: 18px 20px;
+  --ds-widget-gap: 14px;
+  --ds-btn-radius: 980px;
+  --ds-btn-padding: 13px 26px;
+  --ds-btn-weight: 700;
+  --ds-heading-weight: 700;
+  --ds-heading-tracking: -0.02em;
+  --ds-body-size: 1rem;
+  --ds-transition: .3s cubic-bezier(.34,1.56,.64,1);
+  --ds-transition-fast: .2s cubic-bezier(.34,1.56,.64,1);
+  --ds-hover-scale: 1.02;
+  --ds-active-scale: .93;
+  --ds-backdrop: blur(12px);
+  --ds-card-border: none;
+  --ds-input-border: none;
+  --ds-divider: 2px solid rgba(0,0,0,.04);
+  --ds-content-density: normal;
 }
-[data-style="flat"] .numpad-key {
-  border-radius: var(--ds-radius-sm);
-  box-shadow: none;
-  border: 1px solid var(--c-border);
+[data-style="pop"] .card { box-shadow: var(--ds-shadow-card); border: none; overflow: visible; }
+[data-style="pop"] .numpad-key { border-radius: 50%; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,.1); border: none; }
+[data-style="pop"] .numpad-key:active { transform: scale(.88); }
+[data-style="pop"] .fab-main { box-shadow: var(--ds-shadow-fab); }
+[data-style="pop"] .fab-mini { border-radius: 980px; box-shadow: 0 4px 14px var(--c-shadow-color); }
+[data-style="pop"] .stat-box { border-radius: 20px; }
+[data-style="pop"] .btn-primary { background: linear-gradient(135deg, var(--c-primary), var(--c-secondary, var(--c-primary))); box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+[data-style="pop"] .toast { border-radius: 980px; box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+[data-style="pop"] .sidebar { border-radius: 0 24px 24px 0; }
+[data-style="pop"] .overlay-handle { width: 48px; height: 6px; border-radius: 3px; }
+[data-style="pop"] .topbar-title { font-weight: 800; }
+[data-style="pop"] .card-header { font-weight: 700; }
+
+/* ---------- Style 6: 和モダン (wabi) ---------- */
+/* 余白重視、繊細な線、日本的な落ち着き。 */
+[data-style="wabi"] {
+  --ds-radius: 2px;
+  --ds-radius-sm: 1px;
+  --ds-radius-lg: 4px;
+  --ds-radius-pill: 2px;
+  --ds-shadow: none;
+  --ds-shadow-lg: none;
+  --ds-shadow-card: none;
+  --ds-shadow-fab: 0 2px 8px rgba(0,0,0,.1);
+  --ds-blur: 0px;
+  --ds-border: .5px;
+  --ds-border-style: solid;
+  --ds-card-padding: 20px 24px;
+  --ds-widget-gap: 16px;
+  --ds-btn-radius: 2px;
+  --ds-btn-padding: 10px 20px;
+  --ds-btn-weight: 400;
+  --ds-heading-weight: 400;
+  --ds-heading-tracking: 0.08em;
+  --ds-body-size: .9375rem;
+  --ds-transition: .4s ease;
+  --ds-transition-fast: .25s ease;
+  --ds-hover-scale: 1;
+  --ds-active-scale: .99;
+  --ds-backdrop: none;
+  --ds-card-border: .5px solid var(--c-border);
+  --ds-input-border: .5px solid var(--c-border);
+  --ds-divider: .5px solid var(--c-border);
+  --ds-content-density: spacious;
 }
-[data-style="flat"] .fab-main {
-  box-shadow: var(--ds-shadow-fab);
+[data-style="wabi"] .card { border: .5px solid var(--c-border); box-shadow: none; }
+[data-style="wabi"] .card-header { letter-spacing: 0.08em; font-weight: 400; border-bottom: .5px solid var(--c-border); }
+[data-style="wabi"] .numpad-key { border-radius: 2px; border: .5px solid var(--c-border); box-shadow: none; font-weight: 300; }
+[data-style="wabi"] .fab-main { border-radius: 4px; }
+[data-style="wabi"] .fab-mini { border-radius: 2px; border: .5px solid var(--c-border); box-shadow: none; }
+[data-style="wabi"] .sidebar { border-right: .5px solid var(--c-border); }
+[data-style="wabi"] .stat-box { border: .5px solid var(--c-border); border-radius: 2px; }
+[data-style="wabi"] .toast { border: .5px solid var(--c-border); border-radius: 2px; box-shadow: none; }
+[data-style="wabi"] .btn-primary { font-weight: 400; letter-spacing: 0.04em; }
+[data-style="wabi"] .overlay-sheet { border-radius: 0; }
+[data-style="wabi"] .overlay-handle { width: 24px; height: 2px; border-radius: 1px; }
+[data-style="wabi"] .topbar-title { font-weight: 400; letter-spacing: 0.08em; }
+[data-style="wabi"] .segmented-item { border-radius: 2px; }
+[data-style="wabi"] .segmented { border-radius: 2px; }
+
+/* ---------- Style 7: ブルータル (brutal) ---------- */
+/* 太いボーダー、大胆なフォント、ハイコントラスト。 */
+[data-style="brutal"] {
+  --ds-radius: 0px;
+  --ds-radius-sm: 0px;
+  --ds-radius-lg: 0px;
+  --ds-radius-pill: 0px;
+  --ds-shadow: 4px 4px 0 var(--c-tx);
+  --ds-shadow-lg: 6px 6px 0 var(--c-tx);
+  --ds-shadow-card: 4px 4px 0 var(--c-tx);
+  --ds-shadow-fab: 4px 4px 0 var(--c-tx);
+  --ds-blur: 0px;
+  --ds-border: 3px;
+  --ds-border-style: solid;
+  --ds-card-padding: 16px 18px;
+  --ds-widget-gap: 12px;
+  --ds-btn-radius: 0px;
+  --ds-btn-padding: 12px 22px;
+  --ds-btn-weight: 800;
+  --ds-heading-weight: 900;
+  --ds-heading-tracking: -0.03em;
+  --ds-body-size: 1rem;
+  --ds-transition: 0s;
+  --ds-transition-fast: 0s;
+  --ds-hover-scale: 1;
+  --ds-active-scale: 1;
+  --ds-backdrop: none;
+  --ds-card-border: 3px solid var(--c-tx);
+  --ds-input-border: 3px solid var(--c-tx);
+  --ds-divider: 3px solid var(--c-tx);
+  --ds-content-density: normal;
 }
-[data-style="flat"] .toast {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: 0 4px 16px rgba(0,0,0,.1), 1px solid var(--c-border);
-  border: 1px solid var(--c-border);
+[data-style="brutal"] .card { border: 3px solid var(--c-tx); box-shadow: 4px 4px 0 var(--c-tx); }
+[data-style="brutal"] .card-header { border-bottom: 3px solid var(--c-tx); font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; }
+[data-style="brutal"] .numpad-key { border-radius: 0; border: 3px solid var(--c-tx); box-shadow: 3px 3px 0 var(--c-tx); font-weight: 700; }
+[data-style="brutal"] .numpad-key:active { box-shadow: 1px 1px 0 var(--c-tx); transform: translate(2px,2px); }
+[data-style="brutal"] .fab-main { border-radius: 0; border: 3px solid var(--c-tx); }
+[data-style="brutal"] .fab-mini { border: 3px solid var(--c-tx); border-radius: 0; box-shadow: 3px 3px 0 var(--c-tx); }
+[data-style="brutal"] .sidebar { border-right: 3px solid var(--c-tx); }
+[data-style="brutal"] .stat-box { border: 3px solid var(--c-tx); border-radius: 0; box-shadow: 3px 3px 0 var(--c-tx); }
+[data-style="brutal"] .toast { border: 3px solid var(--c-tx); box-shadow: 4px 4px 0 var(--c-tx); border-radius: 0; }
+[data-style="brutal"] .btn-primary { box-shadow: 3px 3px 0 var(--c-tx); border: 3px solid var(--c-tx); text-transform: uppercase; }
+[data-style="brutal"] .btn-primary:active { box-shadow: 1px 1px 0 var(--c-tx); transform: translate(2px,2px); }
+[data-style="brutal"] .btn-secondary { border: 3px solid var(--c-tx); }
+[data-style="brutal"] .overlay-sheet { border-radius: 0; border-top: 3px solid var(--c-tx); }
+[data-style="brutal"] .overlay-handle { display: none; }
+[data-style="brutal"] .input { border: 3px solid var(--c-tx); border-radius: 0; }
+[data-style="brutal"] .topbar { border-bottom: 3px solid var(--c-tx); }
+[data-style="brutal"] .topbar-title { font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; }
+[data-style="brutal"] .segmented { border-radius: 0; border: 3px solid var(--c-tx); }
+[data-style="brutal"] .segmented-item { border-radius: 0; }
+[data-style="brutal"] .segmented-item.active { box-shadow: none; }
+[data-style="brutal"] .confirm-box { border: 3px solid var(--c-tx); box-shadow: 6px 6px 0 var(--c-tx); border-radius: 0; }
+
+/* ---------- Style 8: グラス (glass) ---------- */
+/* 全面フロストガラス。透け感とブラーが特徴。 */
+[data-style="glass"] {
+  --ds-radius: 16px;
+  --ds-radius-sm: 12px;
+  --ds-radius-lg: 24px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: 0 4px 16px rgba(0,0,0,.06);
+  --ds-shadow-lg: 0 8px 32px rgba(0,0,0,.1);
+  --ds-shadow-card: 0 2px 12px rgba(0,0,0,.05);
+  --ds-shadow-fab: 0 4px 20px rgba(0,0,0,.18);
+  --ds-blur: 24px;
+  --ds-border: .5px;
+  --ds-border-style: solid;
+  --ds-card-padding: 16px 20px;
+  --ds-widget-gap: 12px;
+  --ds-btn-radius: 12px;
+  --ds-btn-padding: 11px 20px;
+  --ds-btn-weight: 500;
+  --ds-heading-weight: 600;
+  --ds-heading-tracking: -0.024em;
+  --ds-body-size: 1rem;
+  --ds-transition: .25s cubic-bezier(.28,.11,.32,1);
+  --ds-transition-fast: .15s cubic-bezier(.28,.11,.32,1);
+  --ds-hover-scale: 1;
+  --ds-active-scale: .97;
+  --ds-backdrop: saturate(180%) blur(24px);
+  --ds-card-border: .5px solid rgba(255,255,255,.2);
+  --ds-input-border: .5px solid rgba(255,255,255,.15);
+  --ds-divider: .5px solid rgba(255,255,255,.12);
+  --ds-content-density: normal;
 }
-[data-style="flat"] .fab-mini {
-  border: 1px solid var(--c-border);
-  box-shadow: 0 2px 8px var(--c-shadow-color);
+[data-style="glass"] .card { background: rgba(var(--c-card-rgb, 255,255,255), .6); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px); border: .5px solid rgba(255,255,255,.25); box-shadow: var(--ds-shadow-card); }
+[data-style="glass"] .topbar { -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px); background: rgba(var(--c-card-rgb, 255,255,255), .5); }
+[data-style="glass"] .sidebar { -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px); background: rgba(var(--c-card-rgb, 255,255,255), .6); }
+[data-style="glass"] .overlay-sheet { -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px); background: rgba(var(--c-card-rgb, 255,255,255), .7); }
+[data-style="glass"] .numpad-key { background: rgba(var(--c-card-rgb, 255,255,255), .4); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: .5px solid rgba(255,255,255,.2); border-radius: 980px; box-shadow: none; }
+[data-style="glass"] .stat-box { background: rgba(var(--c-card-rgb, 255,255,255), .3); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: .5px solid rgba(255,255,255,.15); }
+[data-style="glass"] .fab-mini { background: rgba(var(--c-card-rgb, 255,255,255), .6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: .5px solid rgba(255,255,255,.2); }
+[data-style="glass"] .toast { background: rgba(var(--c-card-rgb, 255,255,255), .7); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border: .5px solid rgba(255,255,255,.2); }
+[data-style="glass"] .input { background: rgba(var(--c-card-rgb, 255,255,255), .25); }
+[data-style="glass"] .confirm-box { background: rgba(var(--c-card-rgb, 255,255,255), .7); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); }
+
+/* ---------- Style 9: クラシック (classic) ---------- */
+/* 伝統的なWebデザイン。控えめな装飾、読みやすさ重視。 */
+[data-style="classic"] {
+  --ds-radius: 6px;
+  --ds-radius-sm: 4px;
+  --ds-radius-lg: 10px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: 0 1px 3px rgba(0,0,0,.1);
+  --ds-shadow-lg: 0 4px 12px rgba(0,0,0,.12);
+  --ds-shadow-card: 0 1px 3px rgba(0,0,0,.08);
+  --ds-shadow-fab: 0 2px 10px rgba(0,0,0,.2);
+  --ds-blur: 0px;
+  --ds-border: 1px;
+  --ds-border-style: solid;
+  --ds-card-padding: 14px 16px;
+  --ds-widget-gap: 10px;
+  --ds-btn-radius: 4px;
+  --ds-btn-padding: 10px 16px;
+  --ds-btn-weight: 500;
+  --ds-heading-weight: 600;
+  --ds-heading-tracking: -0.01em;
+  --ds-body-size: .9375rem;
+  --ds-transition: .2s ease;
+  --ds-transition-fast: .12s ease;
+  --ds-hover-scale: 1;
+  --ds-active-scale: .98;
+  --ds-backdrop: none;
+  --ds-card-border: 1px solid var(--c-border);
+  --ds-input-border: 1px solid var(--c-border);
+  --ds-divider: 1px solid var(--c-border);
+  --ds-content-density: normal;
 }
+[data-style="classic"] .card { border: 1px solid var(--c-border); box-shadow: var(--ds-shadow-card); }
+[data-style="classic"] .numpad-key { border-radius: 6px; border: 1px solid var(--c-border); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+[data-style="classic"] .fab-mini { border: 1px solid var(--c-border); box-shadow: var(--ds-shadow); }
+[data-style="classic"] .sidebar { border-right: 1px solid var(--c-border); }
+[data-style="classic"] .toast { box-shadow: var(--ds-shadow-lg); border: 1px solid var(--c-border); }
+[data-style="classic"] .stat-box { box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+
+/* ---------- Style 10: コンパクト (compact) ---------- */
+/* 情報密度最大。小さめのパディング、一画面に多く表示。 */
+[data-style="compact"] {
+  --ds-radius: 4px;
+  --ds-radius-sm: 3px;
+  --ds-radius-lg: 8px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: none;
+  --ds-shadow-lg: 0 2px 8px rgba(0,0,0,.1);
+  --ds-shadow-card: none;
+  --ds-shadow-fab: 0 2px 8px rgba(0,0,0,.15);
+  --ds-blur: 0px;
+  --ds-border: .5px;
+  --ds-border-style: solid;
+  --ds-card-padding: 10px 12px;
+  --ds-widget-gap: 6px;
+  --ds-btn-radius: 4px;
+  --ds-btn-padding: 7px 14px;
+  --ds-btn-weight: 500;
+  --ds-heading-weight: 600;
+  --ds-heading-tracking: -0.01em;
+  --ds-body-size: .8125rem;
+  --ds-transition: .12s ease;
+  --ds-transition-fast: .06s ease;
+  --ds-hover-scale: 1;
+  --ds-active-scale: .98;
+  --ds-backdrop: none;
+  --ds-card-border: .5px solid var(--c-border);
+  --ds-input-border: .5px solid var(--c-border);
+  --ds-divider: .5px solid var(--c-border);
+  --ds-content-density: compact;
+}
+[data-style="compact"] .card { border: .5px solid var(--c-border); }
+[data-style="compact"] .card-header { padding: 8px 12px; font-size: .75rem; }
+[data-style="compact"] .card-body { padding: 10px 12px; }
+[data-style="compact"] .numpad-key { height: 44px; font-size: 1.1rem; border-radius: 4px; border: .5px solid var(--c-border); box-shadow: none; }
+[data-style="compact"] .fab-main { width: 48px; height: 48px; font-size: 1.2rem; }
+[data-style="compact"] .fab-mini { padding: 6px 12px; font-size: .75rem; }
+[data-style="compact"] .stat-box { padding: 8px 6px; border-radius: 4px; }
+[data-style="compact"] .stat-box-label { font-size: .5625rem; }
+[data-style="compact"] .stat-box-value { font-size: 1.1rem; }
+[data-style="compact"] .sidebar-item { padding: 8px 16px; font-size: .8125rem; gap: 10px; }
+[data-style="compact"] .sidebar-user { padding: 12px 16px 10px; }
+[data-style="compact"] .overlay-body { padding: 0 12px 24px; }
+[data-style="compact"] .overlay-header { padding: 4px 12px 8px; }
+[data-style="compact"] .toast { padding: 8px 16px; font-size: .8125rem; }
+[data-style="compact"] .topbar { height: 38px; }
+[data-style="compact"] .topbar-title { font-size: .9375rem; }
+[data-style="compact"] .input { padding: 8px 12px; font-size: .8125rem; }
+[data-style="compact"] .btn { padding: 7px 14px; font-size: .8125rem; }
+[data-style="compact"] .btn-sm { padding: 5px 10px; font-size: .6875rem; }
+[data-style="compact"] .main-content { padding: 8px 12px 100px; }
