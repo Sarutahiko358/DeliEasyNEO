@@ -1,0 +1,27 @@
+/* ==========================================================
+   DeliEasy v2 — styles/home.css
+   ホーム画面固有のスタイル
+   ========================================================== */
+
+/* 編集モード時のウィジェットにシェイクアニメ（iOS風） */
+.widget-grid-editing .widget {
+  animation: widget-wobble 0.3s ease-in-out infinite alternate;
+}
+.widget-grid-editing .widget:nth-child(even) {
+  animation-delay: 0.15s;
+}
+.widget-grid-editing .widget-add {
+  animation: none;
+}
+@keyframes widget-wobble {
+  from { transform: rotate(-0.5deg); }
+  to { transform: rotate(0.5deg); }
+}
+
+/* ウィジェットドラッグ中 */
+.widget.dragging {
+  opacity: 0.5;
+  transform: scale(1.03);
+  box-shadow: 0 12px 40px var(--c-shadow-color);
+  z-index: 10;
+}

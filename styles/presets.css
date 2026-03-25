@@ -1,0 +1,60 @@
+/* ==========================================================
+   DeliEasy v2 — styles/presets.css
+   プリセットバー + 編集モードヘッダー
+   ========================================================== */
+
+/* ---------- Preset Bar ---------- */
+.preset-bar {
+  margin: 0 -16px 12px;
+  padding: 0 16px;
+  overflow: hidden;
+}
+.preset-bar-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 4px 0;
+}
+.preset-bar-scroll::-webkit-scrollbar { display: none; }
+
+.preset-tab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--ds-radius-pill);
+  background: var(--c-fill-quaternary);
+  color: var(--c-tx-secondary);
+  font-size: .75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ds-transition-fast);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.preset-tab:active { transform: scale(.95); }
+.preset-tab.active {
+  background: var(--c-primary);
+  color: #fff;
+  font-weight: 600;
+}
+.preset-tab-add {
+  background: transparent;
+  border: 1.5px dashed var(--c-border);
+  color: var(--c-primary);
+  font-weight: 700;
+  font-size: .85rem;
+  padding: 8px 14px;
+}
+.preset-tab-add:active { border-color: var(--c-primary); background: var(--c-primary-light); }
+
+/* ---------- Edit Mode Header ---------- */
+.edit-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 12px;
+  border-bottom: var(--ds-divider);
+  margin-bottom: 12px;
+}

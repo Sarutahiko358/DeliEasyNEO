@@ -1,0 +1,245 @@
+/* ==========================================================
+   DeliEasy v2 — styles/widgets.css
+   ウィジェットグリッド + 個別ウィジェットスタイル
+   ========================================================== */
+
+/* ---------- Widget Grid ---------- */
+.widget-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-widget-gap, 12px);
+}
+.widget-grid-editing {
+  padding: 4px;
+  border: 2px dashed var(--c-primary);
+  border-radius: var(--ds-radius);
+  background: var(--c-primary-light);
+}
+
+/* ---------- Widget ---------- */
+.widget {
+  background: var(--c-card);
+  border-radius: var(--ds-radius);
+  border: var(--ds-card-border);
+  box-shadow: var(--ds-shadow-card);
+  overflow: hidden;
+  transition: transform var(--ds-transition-fast), box-shadow var(--ds-transition-fast);
+}
+.widget-full { grid-column: 1 / -1; }
+.widget-half { grid-column: span 1; }
+.widget-compact { grid-column: span 1; }
+.widget-compact .widget-inner { padding: 10px 12px; }
+
+.widget-tappable { cursor: pointer; }
+.widget-tappable:active { transform: scale(var(--ds-active-scale, .97)); opacity: .8; }
+
+/* ---------- Widget Title ---------- */
+.widget-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 0;
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--c-tx-secondary);
+  letter-spacing: -0.01em;
+}
+.widget-edit-controls {
+  display: flex;
+  gap: 4px;
+}
+.widget-edit-btn {
+  width: 26px; height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: var(--c-fill-quaternary);
+  color: var(--c-tx-muted);
+  font-size: .7rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--ds-transition-fast);
+}
+.widget-edit-btn:active { transform: scale(.85); }
+.widget-edit-del { background: var(--c-danger-light); color: var(--c-danger); }
+
+/* ---------- Widget Inner ---------- */
+.widget-inner {
+  padding: 10px 14px 14px;
+}
+.widget-empty {
+  text-align: center;
+  color: var(--c-tx-muted);
+  font-size: .8125rem;
+  padding: 20px 14px;
+}
+
+/* ---------- Widget Add ---------- */
+.widget-add {
+  border: 2px dashed var(--c-border);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  transition: all var(--ds-transition-fast);
+}
+.widget-add:active { border-color: var(--c-primary); background: var(--c-primary-light); }
+.widget-add-inner {
+  padding: 24px;
+  text-align: center;
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--c-primary);
+}
+
+/* ---------- Clock Widget ---------- */
+.widget-clock {
+  text-align: center;
+  padding: 16px 14px 20px;
+}
+.widget-clock-time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--c-tx);
+}
+.widget-clock-date {
+  color: var(--c-tx-secondary);
+  margin-top: 4px;
+}
+
+/* ---------- PF Breakdown Widget ---------- */
+.widget-pf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.widget-pf-row:last-child { margin-bottom: 0; }
+.widget-pf-name {
+  font-size: .7rem;
+  min-width: 50px;
+  color: var(--c-tx);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.widget-pf-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--c-fill-quaternary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.widget-pf-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .4s cubic-bezier(.28,.11,.32,1);
+}
+.widget-pf-val {
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--c-tx);
+  min-width: 48px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.widget-pf-pct {
+  font-size: .6rem;
+  color: var(--c-tx-muted);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ---------- Progress Widget ---------- */
+.widget-progress {
+  background: var(--c-fill-quaternary);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+.widget-progress-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--c-primary);
+  transition: width .5s cubic-bezier(.28,.11,.32,1);
+}
+.widget-progress-label {
+  font-size: .6875rem;
+  color: var(--c-tx-muted);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* ---------- Goal Widget ---------- */
+.widget-goal-value {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-tx);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Records Widget ---------- */
+.widget-records { padding: 8px 14px 12px; }
+.widget-rec-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  border-bottom: .5px solid var(--c-divider);
+  font-size: .75rem;
+}
+.widget-rec-row:last-child { border-bottom: none; }
+.widget-rec-date { color: var(--c-tx-muted); min-width: 32px; font-size: .65rem; }
+.widget-rec-pf { flex: 1; color: var(--c-tx); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.widget-rec-amt { font-weight: 600; color: var(--c-tx); min-width: 50px; text-align: right; font-variant-numeric: tabular-nums; }
+.widget-rec-cnt { font-size: .65rem; color: var(--c-tx-muted); min-width: 24px; text-align: right; }
+
+/* ---------- Mini Calendar Widget ---------- */
+.widget-mini-cal { padding: 8px 10px 12px; }
+.widget-cal-hdr {
+  font-size: .8125rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 6px;
+  color: var(--c-tx);
+}
+.widget-cal-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: .55rem;
+  font-weight: 600;
+  color: var(--c-tx-muted);
+  margin-bottom: 2px;
+}
+.widget-cal-week span:first-child { color: var(--c-danger); }
+.widget-cal-week span:last-child { color: var(--c-primary); }
+.widget-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+.widget-cal-day, .widget-cal-empty {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .6rem;
+  border-radius: 50%;
+  color: var(--c-tx);
+}
+.widget-cal-empty { visibility: hidden; }
+.widget-cal-today {
+  background: var(--c-primary) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+.widget-cal-day[data-lv="1"] { background: rgba(255,204,0,.15); }
+.widget-cal-day[data-lv="2"] { background: rgba(255,149,0,.2); }
+.widget-cal-day[data-lv="3"] { background: rgba(255,59,48,.2); }
+.widget-cal-day[data-lv="4"] { background: rgba(255,45,85,.25); }
+.widget-cal-day[data-lv="5"] { background: rgba(175,82,222,.25); }
+
+/* ---------- accent-warning (for streak) ---------- */
+.accent-warning .stat-box-value { color: var(--c-warning); }
