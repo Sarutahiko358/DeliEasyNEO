@@ -1,0 +1,84 @@
+/* ==========================================================
+   DeliEasy v2 — color-palettes.css
+   Phase 1: blue-light + blue-dark (2 palettes)
+   ========================================================== */
+
+/* ---------- Palette: Blue Light ---------- */
+[data-color="blue-light"] {
+  --c-bg: #f2f2f7;
+  --c-bg-secondary: #e5e5ea;
+  --c-card: #ffffff;
+  --c-card-hover: #f9f9f9;
+  --c-tx: #1d1d1f;
+  --c-tx-secondary: #6e6e73;
+  --c-tx-muted: #86868b;
+  --c-primary: #007aff;
+  --c-primary-light: rgba(0,122,255,.08);
+  --c-primary-dark: #0055cc;
+  --c-secondary: #5856d6;
+  --c-success: #34c759;
+  --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30;
+  --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500;
+  --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa;
+  --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(0,0,0,.06);
+  --c-divider: rgba(60,60,67,.12);
+  --c-input-bg: rgba(118,118,128,.12);
+  --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(0,0,0,.08);
+  --c-sidebar-bg: #f2f2f7;
+  --c-topbar-bg: rgba(242,242,247,.82);
+  --c-bottombar-bg: rgba(249,249,249,.94);
+  --c-fab-bg: #007aff;
+  --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(120,120,128,.2);
+  --c-fill-secondary: rgba(120,120,128,.16);
+  --c-fill-tertiary: rgba(120,120,128,.12);
+  --c-fill-quaternary: rgba(116,116,128,.08);
+  --c-separator: rgba(60,60,67,.12);
+
+  color-scheme: light;
+}
+
+/* ---------- Palette: Blue Dark ---------- */
+[data-color="blue-dark"] {
+  --c-bg: #000000;
+  --c-bg-secondary: #1c1c1e;
+  --c-card: #1c1c1e;
+  --c-card-hover: #2c2c2e;
+  --c-tx: #f5f5f7;
+  --c-tx-secondary: #a1a1a6;
+  --c-tx-muted: #636366;
+  --c-primary: #0a84ff;
+  --c-primary-light: rgba(10,132,255,.2);
+  --c-primary-dark: #0060cc;
+  --c-secondary: #5e5ce6;
+  --c-success: #30d158;
+  --c-success-light: rgba(48,209,88,.2);
+  --c-danger: #ff453a;
+  --c-danger-light: rgba(255,69,58,.2);
+  --c-warning: #ff9f0a;
+  --c-warning-light: rgba(255,159,10,.2);
+  --c-info: #64d2ff;
+  --c-info-light: rgba(100,210,255,.2);
+  --c-border: rgba(255,255,255,.06);
+  --c-divider: rgba(84,84,88,.65);
+  --c-input-bg: rgba(118,118,128,.24);
+  --c-overlay: rgba(0,0,0,.5);
+  --c-shadow-color: rgba(0,0,0,.4);
+  --c-sidebar-bg: #1c1c1e;
+  --c-topbar-bg: rgba(0,0,0,.82);
+  --c-bottombar-bg: rgba(20,20,20,.94);
+  --c-fab-bg: #0a84ff;
+  --c-fab-color: #ffffff;
+  --c-fill-primary: rgba(120,120,128,.36);
+  --c-fill-secondary: rgba(120,120,128,.32);
+  --c-fill-tertiary: rgba(118,118,128,.24);
+  --c-fill-quaternary: rgba(116,116,128,.18);
+  --c-separator: rgba(84,84,88,.65);
+
+  color-scheme: dark;
+}

@@ -1,0 +1,112 @@
+/* ==========================================================
+   DeliEasy v2 — overlay.css
+   フルスクリーンオーバーレイ（下からスライドイン）
+   ========================================================== */
+
+/* ---------- Container ---------- */
+.overlay-container {
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  pointer-events: none;
+}
+.overlay-container.has-overlay {
+  pointer-events: auto;
+}
+
+/* ---------- Backdrop ---------- */
+.overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--c-overlay);
+  opacity: 0;
+  transition: opacity .3s cubic-bezier(.28,.11,.32,1);
+}
+.overlay-backdrop.visible {
+  opacity: 1;
+}
+
+/* ---------- Sheet ---------- */
+.overlay-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 430px;
+  height: 95vh;
+  max-height: 95vh;
+  background: var(--c-bg);
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform .35s cubic-bezier(.28,.11,.32,1);
+}
+.overlay-sheet.open {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Stacked (second level) ---------- */
+.overlay-sheet[data-level="2"] {
+  height: 90vh;
+  max-height: 90vh;
+}
+
+/* ---------- Handle ---------- */
+.overlay-handle {
+  width: 36px;
+  height: 5px;
+  background: var(--c-fill-primary);
+  border-radius: 2.5px;
+  margin: 6px auto;
+  flex-shrink: 0;
+}
+
+/* ---------- Header ---------- */
+.overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 12px;
+  flex-shrink: 0;
+}
+.overlay-back {
+  background: none;
+  border: none;
+  color: var(--c-primary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all var(--ds-transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.overlay-back:active { opacity: .5; transform: scale(.9); }
+.overlay-title {
+  font-size: 1.0625rem;
+  font-weight: var(--ds-heading-weight);
+  letter-spacing: var(--ds-heading-tracking);
+  color: var(--c-tx);
+  flex: 1;
+  text-align: center;
+  margin: 0 -40px; /* compensate for back button width */
+  pointer-events: none;
+}
+.overlay-actions {
+  display: flex;
+  gap: 4px;
+  min-width: 40px; /* match back button */
+  justify-content: flex-end;
+}
+
+/* ---------- Body ---------- */
+.overlay-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 32px;
+}

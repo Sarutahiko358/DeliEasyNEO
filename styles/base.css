@@ -1,0 +1,180 @@
+/* ==========================================================
+   DeliEasy v2 — base.css
+   リセット・CSS変数基盤・ユーティリティ
+   ========================================================== */
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  line-height: 1.47059;
+  letter-spacing: -0.022em;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Structural CSS Variables ---------- */
+/* These are set by data-style and data-color on <html> */
+
+:root {
+  /* Fallback values (overridden by design-styles.css and color-palettes.css) */
+
+  /* --- Design Style vars (shape/texture) --- */
+  --ds-radius: 16px;
+  --ds-radius-sm: 12px;
+  --ds-radius-lg: 24px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: none;
+  --ds-shadow-lg: none;
+  --ds-shadow-card: none;
+  --ds-shadow-fab: 0 4px 16px rgba(0,0,0,.18);
+  --ds-blur: 20px;
+  --ds-border: 0px;
+  --ds-border-style: none;
+  --ds-card-padding: 16px 20px;
+  --ds-widget-gap: 12px;
+  --ds-btn-radius: 12px;
+  --ds-btn-padding: 11px 20px;
+  --ds-btn-weight: 500;
+  --ds-heading-weight: 600;
+  --ds-heading-tracking: -0.024em;
+  --ds-body-size: 1rem;
+  --ds-transition: .25s cubic-bezier(.28,.11,.32,1);
+  --ds-transition-fast: .15s cubic-bezier(.28,.11,.32,1);
+  --ds-hover-scale: 1;
+  --ds-active-scale: .97;
+  --ds-backdrop: saturate(180%) blur(20px);
+  --ds-card-border: none;
+  --ds-input-border: none;
+  --ds-divider: .5px solid var(--c-border, rgba(0,0,0,.06));
+
+  /* --- Color vars (palette) --- */
+  --c-bg: #f2f2f7;
+  --c-bg-secondary: #e5e5ea;
+  --c-card: #ffffff;
+  --c-card-hover: #f9f9f9;
+  --c-tx: #1d1d1f;
+  --c-tx-secondary: #6e6e73;
+  --c-tx-muted: #86868b;
+  --c-primary: #007aff;
+  --c-primary-light: rgba(0,122,255,.08);
+  --c-primary-dark: #0055cc;
+  --c-secondary: #5856d6;
+  --c-success: #34c759;
+  --c-success-light: rgba(52,199,89,.1);
+  --c-danger: #ff3b30;
+  --c-danger-light: rgba(255,59,48,.1);
+  --c-warning: #ff9500;
+  --c-warning-light: rgba(255,149,0,.1);
+  --c-info: #5ac8fa;
+  --c-info-light: rgba(90,200,250,.1);
+  --c-border: rgba(0,0,0,.06);
+  --c-divider: rgba(60,60,67,.12);
+  --c-input-bg: rgba(118,118,128,.12);
+  --c-overlay: rgba(0,0,0,.32);
+  --c-shadow-color: rgba(0,0,0,.08);
+  --c-sidebar-bg: #f2f2f7;
+  --c-topbar-bg: rgba(242,242,247,.82);
+  --c-bottombar-bg: rgba(249,249,249,.94);
+  --c-fab-bg: var(--c-primary);
+  --c-fab-color: #ffffff;
+
+  /* --- Derived / convenience --- */
+  --c-separator: var(--c-divider);
+  --c-fill-primary: rgba(120,120,128,.2);
+  --c-fill-secondary: rgba(120,120,128,.16);
+  --c-fill-tertiary: rgba(120,120,128,.12);
+  --c-fill-quaternary: rgba(116,116,128,.08);
+}
+
+/* ---------- Body applies palette ---------- */
+body {
+  background: var(--c-bg);
+  color: var(--c-tx);
+}
+
+/* ---------- Selection ---------- */
+::selection {
+  background: var(--c-primary-light);
+  color: var(--c-tx);
+}
+
+/* ---------- Scrollbar (thin/hidden for mobile) ---------- */
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ---------- Utility classes ---------- */
+.text-c { text-align: center; }
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mb4 { margin-bottom: 4px; }
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.gap4 { gap: 4px; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.fz-xxs { font-size: .625rem; }
+.fz-xs { font-size: .6875rem; }
+.fz-s { font-size: .8125rem; }
+.fz-m { font-size: 1rem; }
+.fz-l { font-size: 1.125rem; }
+.fz-xl { font-size: 1.375rem; }
+.fw4 { font-weight: 400; }
+.fw5 { font-weight: 500; }
+.fw6 { font-weight: 600; }
+.fw7 { font-weight: 700; }
+.fw8 { font-weight: 800; }
+.c-primary { color: var(--c-primary); }
+.c-success { color: var(--c-success); }
+.c-danger { color: var(--c-danger); }
+.c-warning { color: var(--c-warning); }
+.c-muted { color: var(--c-tx-muted); }
+.c-secondary { color: var(--c-tx-secondary); }
+.hidden { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ---------- Flex helpers ---------- */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-1 { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+
+/* ---------- Animations ---------- */
+@keyframes v2-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes v2-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes v2-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes v2-scale-in {
+  from { opacity: 0; transform: scale(.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes v2-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

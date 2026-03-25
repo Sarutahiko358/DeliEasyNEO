@@ -1,0 +1,97 @@
+/* ==========================================================
+   DeliEasy v2 — design-styles.css
+   Phase 1: minimal + flat (2 styles)
+   ========================================================== */
+
+/* ---------- Style: Minimal (Apple HIG inspired) ---------- */
+[data-style="minimal"] {
+  --ds-radius: 16px;
+  --ds-radius-sm: 12px;
+  --ds-radius-lg: 24px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: none;
+  --ds-shadow-lg: none;
+  --ds-shadow-card: none;
+  --ds-shadow-fab: 0 4px 20px rgba(0,0,0,.18);
+  --ds-blur: 20px;
+  --ds-border: 0px;
+  --ds-border-style: none;
+  --ds-card-padding: 16px 20px;
+  --ds-widget-gap: 12px;
+  --ds-btn-radius: 12px;
+  --ds-btn-padding: 11px 20px;
+  --ds-btn-weight: 500;
+  --ds-heading-weight: 600;
+  --ds-heading-tracking: -0.024em;
+  --ds-body-size: 1rem;
+  --ds-transition: .25s cubic-bezier(.28,.11,.32,1);
+  --ds-transition-fast: .15s cubic-bezier(.28,.11,.32,1);
+  --ds-hover-scale: 1;
+  --ds-active-scale: .97;
+  --ds-backdrop: saturate(180%) blur(20px);
+  --ds-card-border: none;
+  --ds-input-border: none;
+  --ds-divider: .5px solid var(--c-divider);
+}
+
+/* ---------- Style: Flat (Material Lite inspired) ---------- */
+[data-style="flat"] {
+  --ds-radius: 8px;
+  --ds-radius-sm: 6px;
+  --ds-radius-lg: 12px;
+  --ds-radius-pill: 980px;
+  --ds-shadow: none;
+  --ds-shadow-lg: none;
+  --ds-shadow-card: none;
+  --ds-shadow-fab: 0 2px 8px rgba(0,0,0,.15);
+  --ds-blur: 0px;
+  --ds-border: 1px;
+  --ds-border-style: solid;
+  --ds-card-padding: 14px 16px;
+  --ds-widget-gap: 10px;
+  --ds-btn-radius: 6px;
+  --ds-btn-padding: 10px 18px;
+  --ds-btn-weight: 500;
+  --ds-heading-weight: 600;
+  --ds-heading-tracking: -0.01em;
+  --ds-body-size: .9375rem;
+  --ds-transition: .2s ease;
+  --ds-transition-fast: .12s ease;
+  --ds-hover-scale: 1;
+  --ds-active-scale: .98;
+  --ds-backdrop: none;
+  --ds-card-border: 1px solid var(--c-border);
+  --ds-input-border: 1px solid var(--c-border);
+  --ds-divider: 1px solid var(--c-border);
+}
+/* Flat: cards get a visible border instead of shadow */
+[data-style="flat"] .card {
+  border: 1px solid var(--c-border);
+  box-shadow: none;
+}
+[data-style="flat"] .sidebar {
+  border-right: 1px solid var(--c-border);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+[data-style="flat"] .overlay-sheet {
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+}
+[data-style="flat"] .numpad-key {
+  border-radius: var(--ds-radius-sm);
+  box-shadow: none;
+  border: 1px solid var(--c-border);
+}
+[data-style="flat"] .fab-main {
+  box-shadow: var(--ds-shadow-fab);
+}
+[data-style="flat"] .toast {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1), 1px solid var(--c-border);
+  border: 1px solid var(--c-border);
+}
+[data-style="flat"] .fab-mini {
+  border: 1px solid var(--c-border);
+  box-shadow: 0 2px 8px var(--c-shadow-color);
+}

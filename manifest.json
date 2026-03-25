@@ -1,0 +1,19 @@
+{
+  "name": "DeliEasy",
+  "short_name": "DeliEasy",
+  "description": "デリバリー配達員向け売上管理アプリ",
+  "id": "/delieasy",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f3f0",
+  "theme_color": "#ff6b00",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"},
+    {"src":"./icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}

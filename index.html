@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="ja" data-style="minimal" data-color="blue-light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#f2f2f7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DeliEasy">
+<meta name="description" content="デリバリー配達員向け売上管理アプリ">
+<title>DeliEasy</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+
+<!-- v2 Styles -->
+<link rel="stylesheet" href="./styles/base.css">
+<link rel="stylesheet" href="./styles/design-styles.css">
+<link rel="stylesheet" href="./styles/color-palettes.css">
+<link rel="stylesheet" href="./styles/components.css">
+<link rel="stylesheet" href="./styles/sidebar.css">
+<link rel="stylesheet" href="./styles/overlay.css">
+<link rel="stylesheet" href="./styles/fab.css">
+
+<!-- Topbar inline styles (minimal for Phase 1) -->
+<style>
+  /* App shell */
+  #app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    background: var(--c-bg);
+  }
+  @media(min-width:800px) {
+    #app { border-left: .5px solid var(--c-divider); border-right: .5px solid var(--c-divider); }
+  }
+
+  /* Topbar */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--c-topbar-bg);
+    -webkit-backdrop-filter: var(--ds-backdrop);
+    backdrop-filter: var(--ds-backdrop);
+    color: var(--c-tx);
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: var(--ds-divider);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 8px; }
+  .topbar-title {
+    font-size: 1.0625rem;
+    font-weight: var(--ds-heading-weight);
+    letter-spacing: var(--ds-heading-tracking);
+  }
+  .topbar-right { display: flex; align-items: center; gap: 2px; }
+  .topbar-btn {
+    background: none;
+    border: none;
+    color: var(--c-primary);
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--ds-transition-fast);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .topbar-btn:active { background: var(--c-fill-quaternary); transform: scale(.9); }
+
+  /* Sync icon states (same as old code) */
+  .topbar-sync { transition: all .3s; position: relative; }
+  .sync-icon { display: flex; align-items: center; justify-content: center; transition: opacity .3s, filter .3s; }
+  .topbar-sync.sync-off .sync-icon { opacity: .25; }
+  .topbar-sync.sync-idle .sync-icon { opacity: .75; }
+  .topbar-sync.sync-ok .sync-icon { filter: drop-shadow(0 0 3px rgba(52,199,89,.5)); }
+  .topbar-sync.sync-ing .sync-icon { filter: drop-shadow(0 0 3px rgba(255,149,0,.6)); }
+  .topbar-sync.sync-err .sync-icon { filter: drop-shadow(0 0 3px rgba(255,59,48,.5)); }
+
+  /* Sync popup (reuse old styles) */
+  .sync-popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 250; background: transparent; }
+  .sync-popup {
+    position: fixed; top: 52px; right: 8px; z-index: 251;
+    background: var(--c-card);
+    -webkit-backdrop-filter: var(--ds-backdrop);
+    backdrop-filter: var(--ds-backdrop);
+    border-radius: var(--ds-radius);
+    box-shadow: 0 8px 40px var(--c-shadow-color), 0 0 0 .5px var(--c-divider);
+    padding: 16px 20px; min-width: 240px; max-width: 290px;
+    animation: v2-scale-in .2s cubic-bezier(.28,.11,.32,1);
+  }
+  .sync-popup::before {
+    content: ''; position: absolute; top: -5px; right: 22px;
+    width: 10px; height: 10px; background: var(--c-card);
+    transform: rotate(45deg); box-shadow: -.5px -.5px 0 var(--c-divider);
+  }
+  .sync-popup-icon { font-size: 1.2rem; margin-right: 10px; }
+  .sync-popup-msg { font-size: .8125rem; font-weight: 600; color: var(--c-tx); line-height: 1.4; }
+  .sync-popup-sub { font-size: .6875rem; color: var(--c-tx-muted); margin-top: 4px; line-height: 1.4; }
+  .sync-popup-link { display: inline-block; margin-top: 8px; font-size: .75rem; font-weight: 500; color: var(--c-primary); cursor: pointer; padding: 2px 0; border: none; background: none; }
+
+  /* Main content area */
+  .main-content {
+    padding: 12px 16px 120px; /* extra bottom for FAB */
+    min-height: calc(100vh - 44px);
+    min-height: calc(100dvh - 44px);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- ===== Topbar ===== -->
+  <div class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="topbar-btn" onclick="toggleSidebar()" title="メニュー" aria-label="メニューを開く">☰</button>
+      <span class="topbar-title">DeliEasy</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn topbar-sync sync-off" id="sync-status-indicator" onclick="showSyncPopup()" title="同期">
+        <span class="sync-icon">☁️</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Main Content ===== -->
+  <div class="main-content" id="main-content">
+    <!-- Rendered by app.js -->
+  </div>
+</div>
+
+<!-- ===== Left Sidebar ===== -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<nav class="sidebar" id="sidebar" aria-label="メインメニュー">
+  <!-- Rendered by sidebar.js -->
+</nav>
+
+<!-- ===== Overlay Container ===== -->
+<div class="overlay-container" id="overlay-container">
+  <div class="overlay-backdrop" id="overlay-backdrop"></div>
+  <!-- Overlay sheets are dynamically appended here -->
+</div>
+
+<!-- ===== FAB ===== -->
+<div class="fab-backdrop" id="fab-backdrop"></div>
+<div class="fab-container" id="fab-container">
+  <!-- Rendered by fab.js -->
+</div>
+
+<!-- ===== Toast Area ===== -->
+<div id="toast-area"></div>
+
+<!-- ===== Scripts: Untouched core files ===== -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="./firebase-config.js"></script>
+<script src="./storage.js"></script>
+<script src="./earns-db.js"></script>
+<script src="./firebase-sync.js"></script>
+
+<!-- ===== v2 Scripts ===== -->
+<script src="./js/utils.js"></script>
+<script src="./js/sidebar.js"></script>
+<script src="./js/overlay.js"></script>
+<script src="./js/fab.js"></script>
+<script src="./js/app.js"></script>
+
+</body>
+</html>

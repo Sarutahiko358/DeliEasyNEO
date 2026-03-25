@@ -1,0 +1,9 @@
+firebase-config.js
+.env
+.env.local
+.env.production
+.DS_Store
+Thumbs.db
+node_modules/
+*.bak
+*.log
