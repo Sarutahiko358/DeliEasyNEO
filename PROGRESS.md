@@ -201,6 +201,8 @@
 | sw.js 更新 | ✅ | CACHE_NAME → delieasy-v6 |
 | バージョン表記更新 | ✅ | settings-viewのバージョン文字列更新 |
 | PROGRESS.md 更新 | ✅ | Phase 7完了を記録 |
+| main.css → legacy-structures.css | ✅ | 旧テーマ変数/リセット/[data-theme]削除、構造クラスのみ残留 |
+| sw.js キャッシュ名更新 | ✅ | CACHE_NAME → delieasy-v7 |
 
 ---
 
