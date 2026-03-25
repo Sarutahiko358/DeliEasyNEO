@@ -1,4 +1,4 @@
-﻿/* stats.js — DeliEasy Statistics (Dashboard版) v2 — グラフ強化版 */
+﻿/* stats.js — DeliEasy Statistics (v2 CSS版) — グラフ強化版 */
 (function(){
   'use strict';
 
@@ -35,7 +35,7 @@
     }, { passive: true });
   }
 
-  /* ===== Period Navigation (swipe) ===== */
+  /* ===== Period Navigation ===== */
   function statPeriodPrev() {
     switch (_statPeriod) {
       case 'day': {
@@ -114,7 +114,6 @@
     renderStats();
   }
 
-  /* ===== Week range helper ===== */
   function _getStatWeekRange() {
     let base;
     if (_statDateStr) {
@@ -133,10 +132,6 @@
 
   /* ===== SVG Chart Helpers ===== */
 
-  /**
-   * ドーナツチャート SVG を生成
-   * 100%のセグメントでも正しく描画する
-   */
   function svgDonut(data, opts) {
     const size = opts.size || 160;
     const cx = size / 2, cy = size / 2;
@@ -150,8 +145,8 @@
     let h = `<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;display:block;margin:0 auto">`;
 
     if (data.length === 0) {
-      h += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--bd,#ddd)" stroke-width="${r - ir}"/>`;
-      h += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="var(--mt)">No Data</text>`;
+      h += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--c-border)" stroke-width="${r - ir}"/>`;
+      h += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="var(--c-tx-muted)">No Data</text>`;
       h += '</svg>';
       return h;
     }
@@ -197,9 +192,9 @@
     }
 
     if (showCenter) {
-      h += `<text x="${cx}" y="${cy - 4}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--tx)" font-weight="700">${escHtml(centerText)}</text>`;
+      h += `<text x="${cx}" y="${cy - 4}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--c-tx)" font-weight="700">${escHtml(centerText)}</text>`;
       if (centerSub) {
-        h += `<text x="${cx}" y="${cy + 10}" text-anchor="middle" dominant-baseline="central" font-size="7" fill="var(--mt)">${escHtml(centerSub)}</text>`;
+        h += `<text x="${cx}" y="${cy + 10}" text-anchor="middle" dominant-baseline="central" font-size="7" fill="var(--c-tx-muted)">${escHtml(centerSub)}</text>`;
       }
     }
 
@@ -207,9 +202,6 @@
     return h;
   }
 
-  /**
-   * 縦棒グラフ（日別売上など）
-   */
   function svgBarChart(data, opts) {
     const w = opts.width || 320;
     const h = opts.height || 160;
@@ -227,22 +219,22 @@
     for (let i = 0; i <= ySteps; i++) {
       const yy = pad.t + (ch / ySteps) * i;
       const val = maxVal - (maxVal / ySteps) * i;
-      svg += `<line x1="${pad.l}" y1="${yy}" x2="${w - pad.r}" y2="${yy}" stroke="var(--bd,#eee)" stroke-width="0.5"/>`;
-      svg += `<text x="${pad.l - 4}" y="${yy + 3}" text-anchor="end" font-size="7" fill="var(--mt)">${val >= 10000 ? Math.round(val / 1000) + 'k' : fmt(Math.round(val))}</text>`;
+      svg += `<line x1="${pad.l}" y1="${yy}" x2="${w - pad.r}" y2="${yy}" stroke="var(--c-border)" stroke-width="0.5"/>`;
+      svg += `<text x="${pad.l - 4}" y="${yy + 3}" text-anchor="end" font-size="7" fill="var(--c-tx-muted)">${val >= 10000 ? Math.round(val / 1000) + 'k' : fmt(Math.round(val))}</text>`;
     }
 
     data.forEach((d, i) => {
       const bh = maxVal > 0 ? (d.value / maxVal) * ch : 0;
       const bx = pad.l + gap * i + (gap - barW) / 2;
       const by = pad.t + ch - bh;
-      const color = d.color || 'var(--p,#ff6b00)';
+      const color = d.color || 'var(--c-primary)';
 
       svg += `<rect x="${bx}" y="${by}" width="${barW}" height="${bh}" rx="2" fill="${color}" opacity="0.85">`;
       svg += `<title>${escHtml(d.label)}: ¥${fmt(d.value)}</title>`;
       svg += `</rect>`;
 
       if (d.shortLabel) {
-        svg += `<text x="${bx + barW / 2}" y="${h - pad.b + 12}" text-anchor="middle" font-size="6.5" fill="var(--mt)">${escHtml(d.shortLabel)}</text>`;
+        svg += `<text x="${bx + barW / 2}" y="${h - pad.b + 12}" text-anchor="middle" font-size="6.5" fill="var(--c-tx-muted)">${escHtml(d.shortLabel)}</text>`;
       }
     });
 
@@ -250,9 +242,6 @@
     return svg;
   }
 
-  /**
-   * 水平バーチャート（ランキング）
-   */
   function svgHBarChart(data, opts) {
     const barH = opts.barHeight || 22;
     const labelW = opts.labelWidth || 70;
@@ -269,30 +258,27 @@
     data.forEach((d, i) => {
       const y = i * (barH + gap);
       const bw = maxVal > 0 ? (d.value / maxVal) * barAreaW : 0;
-      const color = d.color || 'var(--p,#ff6b00)';
+      const color = d.color || 'var(--c-primary)';
 
-      svg += `<text x="${labelW - 4}" y="${y + barH / 2 + 1}" text-anchor="end" dominant-baseline="central" font-size="8" fill="var(--tx)" font-weight="500">`;
+      svg += `<text x="${labelW - 4}" y="${y + barH / 2 + 1}" text-anchor="end" dominant-baseline="central" font-size="8" fill="var(--c-tx)" font-weight="500">`;
       if (d.dot) {
         svg += `<tspan fill="${d.dot}" font-size="10">● </tspan>`;
       }
       svg += `${escHtml(d.label)}</text>`;
 
-      svg += `<rect x="${labelW}" y="${y + 2}" width="${barAreaW}" height="${barH - 4}" rx="4" fill="var(--sbBg,#f0f0f0)"/>`;
+      svg += `<rect x="${labelW}" y="${y + 2}" width="${barAreaW}" height="${barH - 4}" rx="4" fill="var(--c-fill-quaternary)"/>`;
 
       if (bw > 0) {
         svg += `<rect x="${labelW}" y="${y + 2}" width="${bw}" height="${barH - 4}" rx="4" fill="${color}" opacity="0.8"/>`;
       }
 
-      svg += `<text x="${labelW + barAreaW + 4}" y="${y + barH / 2 + 1}" dominant-baseline="central" font-size="7.5" fill="var(--tx)" font-weight="600">${escHtml(d.valueLabel || ('¥' + fmt(d.value)))}</text>`;
+      svg += `<text x="${labelW + barAreaW + 4}" y="${y + barH / 2 + 1}" dominant-baseline="central" font-size="7.5" fill="var(--c-tx)" font-weight="600">${escHtml(d.valueLabel || ('¥' + fmt(d.value)))}</text>`;
     });
 
     svg += '</svg>';
     return svg;
   }
 
-  /**
-   * 積み上げ横棒（PF構成の横長バー）
-   */
   function svgStackedBar(data, opts) {
     const w = opts.width || 300;
     const h = opts.height || 32;
@@ -301,14 +287,14 @@
     let svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;border-radius:8px;overflow:hidden">`;
 
     if (total === 0) {
-      svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="var(--sbBg,#eee)"/>`;
-      svg += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="var(--mt)">データなし</text>`;
+      svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="var(--c-fill-quaternary)"/>`;
+      svg += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="var(--c-tx-muted)">データなし</text>`;
     } else {
       let x = 0;
       data.forEach(d => {
         if (d.value <= 0) return;
         const bw = (d.value / total) * w;
-        svg += `<rect x="${x}" y="0" width="${bw}" height="${h}" fill="${d.color || 'var(--p)'}">`;
+        svg += `<rect x="${x}" y="0" width="${bw}" height="${h}" fill="${d.color || 'var(--c-primary)'}">`;
         svg += `<title>${escHtml(d.label)}: ¥${fmt(d.value)} (${Math.round(d.value / total * 100)}%)</title>`;
         svg += `</rect>`;
         if (bw > 35) {
@@ -322,9 +308,6 @@
     return svg;
   }
 
-  /**
-   * ミニ折れ線グラフ（トレンド）
-   */
   function svgLineChart(data, opts) {
     const w = opts.width || 320;
     const h = opts.height || 100;
@@ -333,16 +316,15 @@
     const ch = h - pad.t - pad.b;
 
     const maxVal = Math.max(...data.map(d => d.value), 1);
-    const minVal = 0;
     const stepX = data.length > 1 ? cw / (data.length - 1) : cw;
 
     let svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block">`;
 
     for (let i = 0; i <= 3; i++) {
       const yy = pad.t + (ch / 3) * i;
-      svg += `<line x1="${pad.l}" y1="${yy}" x2="${w - pad.r}" y2="${yy}" stroke="var(--bd,#eee)" stroke-width="0.5"/>`;
+      svg += `<line x1="${pad.l}" y1="${yy}" x2="${w - pad.r}" y2="${yy}" stroke="var(--c-border)" stroke-width="0.5"/>`;
       const val = maxVal - (maxVal / 3) * i;
-      svg += `<text x="${pad.l - 4}" y="${yy + 3}" text-anchor="end" font-size="6.5" fill="var(--mt)">${val >= 10000 ? Math.round(val / 1000) + 'k' : fmt(Math.round(val))}</text>`;
+      svg += `<text x="${pad.l - 4}" y="${yy + 3}" text-anchor="end" font-size="6.5" fill="var(--c-tx-muted)">${val >= 10000 ? Math.round(val / 1000) + 'k' : fmt(Math.round(val))}</text>`;
     }
 
     if (data.length > 0) {
@@ -353,7 +335,7 @@
       });
 
       const gradId = 'grad_' + Math.random().toString(36).substr(2, 5);
-      svg += `<defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--p,#ff6b00)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--p,#ff6b00)" stop-opacity="0.02"/></linearGradient></defs>`;
+      svg += `<defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--c-primary)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--c-primary)" stop-opacity="0.02"/></linearGradient></defs>`;
 
       let areaPath = `M${points[0].x},${pad.t + ch}`;
       points.forEach(p => { areaPath += ` L${p.x},${p.y}`; });
@@ -364,10 +346,10 @@
       for (let i = 1; i < points.length; i++) {
         linePath += ` L${points[i].x},${points[i].y}`;
       }
-      svg += `<path d="${linePath}" fill="none" stroke="var(--p,#ff6b00)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+      svg += `<path d="${linePath}" fill="none" stroke="var(--c-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
 
       points.forEach((p, i) => {
-        svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--p,#ff6b00)" stroke="#fff" stroke-width="1.5">`;
+        svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--c-primary)" stroke="#fff" stroke-width="1.5">`;
         svg += `<title>${escHtml(data[i].label)}: ¥${fmt(data[i].value)}</title>`;
         svg += `</circle>`;
       });
@@ -375,7 +357,7 @@
       data.forEach((d, i) => {
         if (d.shortLabel && (data.length <= 10 || i % Math.ceil(data.length / 8) === 0)) {
           const x = pad.l + stepX * i;
-          svg += `<text x="${x}" y="${h - 4}" text-anchor="middle" font-size="6" fill="var(--mt)">${escHtml(d.shortLabel)}</text>`;
+          svg += `<text x="${x}" y="${h - 4}" text-anchor="middle" font-size="6" fill="var(--c-tx-muted)">${escHtml(d.shortLabel)}</text>`;
         }
       });
     }
@@ -451,7 +433,6 @@
     const daysCnt = daysSet.size;
     const dailyAvg = daysCnt ? Math.round(tot / daysCnt) : 0;
 
-    /* PF breakdown */
     const pfMap = {};
     earns.forEach(r => {
       const pf = extractPf(r.m) || 'その他';
@@ -465,7 +446,6 @@
     }));
     pfArr.sort((a, b) => b.a - a.a);
 
-    /* Expense category breakdown */
     const ecMap = {};
     exps.forEach(e => {
       const c = e.cat || 'その他';
@@ -505,31 +485,29 @@
     let html = '';
 
     /* Period tabs */
-    html += '<div class="ds-period-bar" style="display:flex;gap:4px;padding:8px 0;overflow-x:auto;-webkit-overflow-scrolling:touch">';
+    html += '<div class="ds-period-bar">';
     periods.forEach(p => {
       html += `<button class="ds-ptab${_statPeriod === p.id ? ' on' : ''}" onclick="setStatPeriod('${p.id}')">${p.label}</button>`;
     });
     html += '</div>';
 
     /* Section tabs */
-    html += '<div style="display:flex;gap:4px;padding:4px 0 8px;overflow-x:auto;border-bottom:1px solid var(--bd,#eee);margin-bottom:8px">';
+    html += '<div style="display:flex;gap:4px;padding:4px 0 8px;overflow-x:auto;border-bottom:1px solid var(--c-divider);margin-bottom:8px">';
     sections.forEach(s => {
       html += `<button class="ds-stab${_statSection === s.id ? ' on' : ''}" onclick="setStatSection('${s.id}')">${s.label}</button>`;
     });
     html += '</div>';
 
-    /* Data */
     const pd = getStatPeriodData();
 
     /* Period label + nav arrows */
     html += `<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:4px 0 8px">
-      <button class="btn bsm bs2" onclick="statPeriodPrev()" style="padding:4px 10px;font-size:.85rem">◀</button>
-      <span style="font-size:.82rem;font-weight:600;color:var(--tx)">${escHtml(pd.label)}</span>
-      <button class="btn bsm bs2" onclick="statPeriodNext()" style="padding:4px 10px;font-size:.85rem">▶</button>
+      <button class="btn btn-secondary btn-sm" onclick="statPeriodPrev()" style="padding:4px 10px;font-size:.85rem">◀</button>
+      <span style="font-size:.82rem;font-weight:600;color:var(--c-tx)">${escHtml(pd.label)}</span>
+      <button class="btn btn-secondary btn-sm" onclick="statPeriodNext()" style="padding:4px 10px;font-size:.85rem">▶</button>
     </div>`;
-    html += '<div style="text-align:center;font-size:.6rem;color:var(--mt);margin-bottom:8px">← スワイプで期間移動 →</div>';
+    html += '<div style="text-align:center;font-size:.6rem;color:var(--c-tx-muted);margin-bottom:8px">← スワイプで期間移動 →</div>';
 
-    /* Content area (swipe target) */
     html += '<div id="stat-swipe-area">';
     switch (_statSection) {
       case 'overview': html += _renderOverview(pd); break;
@@ -629,21 +607,21 @@
 
   function _diffBadge(cur, prev) {
     if (prev === 0 && cur === 0) return '';
-    if (prev === 0) return cur > 0 ? '<span style="font-size:.6rem;color:var(--gn)">NEW</span>' : '';
+    if (prev === 0) return cur > 0 ? '<span style="font-size:.6rem;color:var(--c-success)">NEW</span>' : '';
     const diff = cur - prev;
     const pct = Math.round(Math.abs(diff) / prev * 100);
-    if (diff === 0) return '<span style="font-size:.6rem;color:var(--mt)">±0%</span>';
-    const color = diff > 0 ? 'var(--gn,#22c55e)' : 'var(--rd,#ef4444)';
+    if (diff === 0) return '<span style="font-size:.6rem;color:var(--c-tx-muted)">±0%</span>';
+    const color = diff > 0 ? 'var(--c-success)' : 'var(--c-danger)';
     const arrow = diff > 0 ? '↑' : '↓';
     return `<span style="font-size:.6rem;color:${color}">${arrow}${pct}%</span>`;
   }
 
-  /* ===== 統計ページから編集/削除 ===== */
+  /* ===== Edit/Delete from stats ===== */
   function _statEditEarn(ts) {
     if (typeof window.openEditEarn === 'function') {
       window.openEditEarn(ts);
       const checkInterval = setInterval(() => {
-        if (!document.querySelector('.exit-cf')) {
+        if (!document.querySelector('.confirm-overlay')) {
           clearInterval(checkInterval);
           renderStats();
         }
@@ -667,7 +645,7 @@
     if (typeof window.openEditExpense === 'function') {
       window.openEditExpense(ts);
       const checkInterval = setInterval(() => {
-        if (!document.querySelector('.exit-cf')) {
+        if (!document.querySelector('.confirm-overlay')) {
           clearInterval(checkInterval);
           renderStats();
         }
@@ -689,7 +667,6 @@
   function _renderOverview(pd) {
     let h = '';
 
-    /* Hero */
     let heroContent = '<div class="ds-hero">';
     heroContent += '<div class="ds-hero-val">¥' + fmt(pd.tot) + '</div>';
     heroContent += '<div class="ds-hero-sub">売上合計</div>';
@@ -701,7 +678,6 @@
     heroContent += '<div class="ds-gbox"><div class="ds-gl">日平均</div><div class="ds-gv">¥' + fmt(pd.dailyAvg) + '</div></div>';
     heroContent += '</div>';
 
-    /* PF構成の積み上げバー（概要に簡易表示） */
     if (pd.pfArr.length > 0) {
       const stackData = pd.pfArr.map(p => ({
         label: p.pf, value: p.a, color: pfColor(p.pf)
@@ -711,45 +687,42 @@
       heroContent += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;justify-content:center">';
       pd.pfArr.forEach(p => {
         const pct = pd.tot ? Math.round(p.a / pd.tot * 100) : 0;
-        heroContent += `<span style="font-size:.65rem;display:flex;align-items:center;gap:3px"><span class="pf-d" style="background:${pfColor(p.pf)}"></span>${escHtml(p.pf)} ${pct}%</span>`;
+        heroContent += `<span style="font-size:.65rem;display:flex;align-items:center;gap:3px"><span class="pf-dot" style="background:${pfColor(p.pf)}"></span>${escHtml(p.pf)} ${pct}%</span>`;
       });
       heroContent += '</div></div>';
     }
 
     h += foldCard('stat', 'hero', '📊 売上サマリー', heroContent);
 
-    /* Profit card */
-    const profitColor = pd.profit >= 0 ? 'var(--gn,#22c55e)' : 'var(--rd,#ef4444)';
+    const profitColor = pd.profit >= 0 ? 'var(--c-success)' : 'var(--c-danger)';
     let profitC = '<div class="ds-grid3">';
-    profitC += '<div class="ds-gbox"><div class="ds-gl">売上</div><div class="ds-gv" style="color:var(--p)">¥' + fmt(pd.tot) + '</div></div>';
-    profitC += '<div class="ds-gbox"><div class="ds-gl">経費</div><div class="ds-gv" style="color:var(--rd,#ef4444)">¥' + fmt(pd.expTot) + '</div></div>';
+    profitC += '<div class="ds-gbox"><div class="ds-gl">売上</div><div class="ds-gv" style="color:var(--c-primary)">¥' + fmt(pd.tot) + '</div></div>';
+    profitC += '<div class="ds-gbox"><div class="ds-gl">経費</div><div class="ds-gv" style="color:var(--c-danger)">¥' + fmt(pd.expTot) + '</div></div>';
     profitC += '<div class="ds-gbox"><div class="ds-gl">利益</div><div class="ds-gv" style="color:' + profitColor + '">¥' + fmt(pd.profit) + '</div></div>';
     profitC += '</div>';
     if (pd.tot > 0 || pd.expTot > 0) {
       profitC += svgStackedBar([
-        { label: '売上', value: pd.tot, color: 'var(--gn,#22c55e)' },
-        { label: '経費', value: pd.expTot, color: 'var(--rd,#ef4444)' }
+        { label: '売上', value: pd.tot, color: 'var(--c-success)' },
+        { label: '経費', value: pd.expTot, color: 'var(--c-danger)' }
       ], { height: 28 });
       if (pd.tot > 0) {
         const profitRate = Math.round(pd.profit / pd.tot * 100);
-        profitC += '<div style="text-align:center;font-size:.72rem;color:var(--mt);margin-top:6px">利益率: ' + profitRate + '%</div>';
+        profitC += '<div style="text-align:center;font-size:.72rem;color:var(--c-tx-muted);margin-top:6px">利益率: ' + profitRate + '%</div>';
       }
     }
     h += foldCard('stat', 'profit', '💰 収支', profitC);
 
-    /* 前期比較 */
     const prev = _getPrevPeriodData();
     if (prev.tot > 0 || pd.tot > 0) {
       let compC = '<div class="ds-grid">';
-      compC += '<div class="ds-gbox"><div class="ds-gl">売上 ' + _diffBadge(pd.tot, prev.tot) + '</div><div class="ds-gv" style="color:var(--p)">¥' + fmt(pd.tot) + '</div><div style="font-size:.6rem;color:var(--mt)">' + prev.label + ': ¥' + fmt(prev.tot) + '</div></div>';
-      compC += '<div class="ds-gbox"><div class="ds-gl">件数 ' + _diffBadge(pd.cnt, prev.cnt) + '</div><div class="ds-gv">' + pd.cnt + '件</div><div style="font-size:.6rem;color:var(--mt)">' + prev.label + ': ' + prev.cnt + '件</div></div>';
-      compC += '<div class="ds-gbox"><div class="ds-gl">経費 ' + _diffBadge(pd.expTot, prev.expTot) + '</div><div class="ds-gv" style="color:var(--rd,#ef4444)">¥' + fmt(pd.expTot) + '</div><div style="font-size:.6rem;color:var(--mt)">' + prev.label + ': ¥' + fmt(prev.expTot) + '</div></div>';
-      compC += '<div class="ds-gbox"><div class="ds-gl">利益 ' + _diffBadge(pd.profit, prev.profit) + '</div><div class="ds-gv" style="color:' + (pd.profit >= 0 ? 'var(--gn,#22c55e)' : 'var(--rd,#ef4444)') + '">¥' + fmt(pd.profit) + '</div><div style="font-size:.6rem;color:var(--mt)">' + prev.label + ': ¥' + fmt(prev.profit) + '</div></div>';
+      compC += '<div class="ds-gbox"><div class="ds-gl">売上 ' + _diffBadge(pd.tot, prev.tot) + '</div><div class="ds-gv" style="color:var(--c-primary)">¥' + fmt(pd.tot) + '</div><div style="font-size:.6rem;color:var(--c-tx-muted)">' + prev.label + ': ¥' + fmt(prev.tot) + '</div></div>';
+      compC += '<div class="ds-gbox"><div class="ds-gl">件数 ' + _diffBadge(pd.cnt, prev.cnt) + '</div><div class="ds-gv">' + pd.cnt + '件</div><div style="font-size:.6rem;color:var(--c-tx-muted)">' + prev.label + ': ' + prev.cnt + '件</div></div>';
+      compC += '<div class="ds-gbox"><div class="ds-gl">経費 ' + _diffBadge(pd.expTot, prev.expTot) + '</div><div class="ds-gv" style="color:var(--c-danger)">¥' + fmt(pd.expTot) + '</div><div style="font-size:.6rem;color:var(--c-tx-muted)">' + prev.label + ': ¥' + fmt(prev.expTot) + '</div></div>';
+      compC += '<div class="ds-gbox"><div class="ds-gl">利益 ' + _diffBadge(pd.profit, prev.profit) + '</div><div class="ds-gv" style="color:' + (pd.profit >= 0 ? 'var(--c-success)' : 'var(--c-danger)') + '">¥' + fmt(pd.profit) + '</div><div style="font-size:.6rem;color:var(--c-tx-muted)">' + prev.label + ': ¥' + fmt(prev.profit) + '</div></div>';
       compC += '</div>';
       h += foldCard('stat', 'compare', '🔄 ' + prev.label + '比較', compC);
     }
 
-    /* ペース予測 (月のみ) */
     if (_statPeriod === 'month') {
       const mk = _statDateStr || MK;
       const mp = (mk.length > 7 ? mk.substring(0, 7) : mk).split('-');
@@ -760,42 +733,31 @@
       const pace = elapsed > 0 ? Math.round(pd.tot / elapsed * dim) : 0;
       const pct = pace > 0 ? Math.min(Math.round(pd.tot / pace * 100), 100) : 0;
       let paceC = '<div class="ds-grid">';
-      paceC += '<div class="ds-gbox"><div class="ds-gl">現在</div><div class="ds-gv" style="color:var(--p)">¥' + fmt(pd.tot) + '</div></div>';
-      paceC += '<div class="ds-gbox"><div class="ds-gl">着地見込み</div><div class="ds-gv" style="color:var(--p)">¥' + fmt(pace) + '</div></div>';
+      paceC += '<div class="ds-gbox"><div class="ds-gl">現在</div><div class="ds-gv" style="color:var(--c-primary)">¥' + fmt(pd.tot) + '</div></div>';
+      paceC += '<div class="ds-gbox"><div class="ds-gl">着地見込み</div><div class="ds-gv" style="color:var(--c-primary)">¥' + fmt(pace) + '</div></div>';
       paceC += '</div>';
-      paceC += '<div class="ds-progress"><div class="ds-progress-bar"><div class="ds-progress-fill" style="width:' + pct + '%;background:var(--p,#ff6b00)"></div></div>';
+      paceC += '<div class="ds-progress"><div class="ds-progress-bar"><div class="ds-progress-fill" style="width:' + pct + '%;background:var(--c-primary)"></div></div>';
       paceC += '<div class="ds-progress-label">' + elapsed + '/' + dim + '日経過 (' + pct + '%)</div></div>';
       h += foldCard('stat', 'pace', '📈 月間ペース予測', paceC);
     }
 
-    /* 日別売上トレンド（折れ線グラフ） */
     if (pd.daysCnt > 1) {
       const dayArr = Array.from(pd.daysSet).sort();
       const lineData = dayArr.map(dk => {
         const dp = dk.split('-');
-        return {
-          label: (+dp[1]) + '/' + (+dp[2]),
-          shortLabel: (+dp[2]) + '',
-          value: sumA(eByDate(dk))
-        };
+        return { label: (+dp[1]) + '/' + (+dp[2]), shortLabel: (+dp[2]) + '', value: sumA(eByDate(dk)) };
       });
       let trendC = svgLineChart(lineData, { height: 120 });
       const barData = dayArr.map(dk => {
         const dp = dk.split('-');
         const dobj = new Date(+dp[0], +dp[1] - 1, +dp[2]);
         const isWe = dobj.getDay() === 0 || dobj.getDay() === 6;
-        return {
-          label: (+dp[1]) + '/' + (+dp[2]) + '(' + DAYS[dobj.getDay()] + ')',
-          shortLabel: (+dp[2]) + '',
-          value: sumA(eByDate(dk)),
-          color: isWe ? 'var(--rd,#ef4444)' : 'var(--p,#ff6b00)'
-        };
+        return { label: (+dp[1]) + '/' + (+dp[2]) + '(' + DAYS[dobj.getDay()] + ')', shortLabel: (+dp[2]) + '', value: sumA(eByDate(dk)), color: isWe ? 'var(--c-danger)' : 'var(--c-primary)' };
       });
       trendC += '<div style="margin-top:12px">' + svgBarChart(barData, { height: 130 }) + '</div>';
       h += foldCard('stat', 'dailyTrend', '📈 日別売上トレンド', trendC);
     }
 
-    /* 曜日別パフォーマンス */
     if (pd.daysCnt > 1) {
       const dowData = [0, 1, 2, 3, 4, 5, 6].map(() => ({ tot: 0, cnt: 0, days: new Set() }));
       pd.earns.forEach(r => {
@@ -805,50 +767,32 @@
         dowData[dow].cnt += Number(r.c) || 0;
         dowData[dow].days.add(r.d);
       });
-
       const dowBarData = [1, 2, 3, 4, 5, 6, 0].filter(dow => dowData[dow].days.size > 0).map(dow => {
         const dd = dowData[dow];
         const avg = dd.days.size ? Math.round(dd.tot / dd.days.size) : 0;
         const isWe = dow === 0 || dow === 6;
-        return {
-          label: DAYS[dow] + ' (' + dd.days.size + '日)',
-          value: avg,
-          valueLabel: '¥' + fmt(avg) + '/日',
-          color: isWe ? 'var(--rd,#ef4444)' : 'var(--p,#ff6b00)',
-          dot: isWe ? 'var(--rd)' : 'var(--p)'
-        };
+        return { label: DAYS[dow] + ' (' + dd.days.size + '日)', value: avg, valueLabel: '¥' + fmt(avg) + '/日', color: isWe ? 'var(--c-danger)' : 'var(--c-primary)', dot: isWe ? 'var(--c-danger)' : 'var(--c-primary)' };
       });
-
       let dowC = svgHBarChart(dowBarData, { barHeight: 24, labelWidth: 75, valueWidth: 80 });
       h += foldCard('stat', 'dowPerf', '📅 曜日別パフォーマンス', dowC);
     }
 
-    /* PFクイック */
     if (pd.pfArr.length > 0) {
       const pfBarData = pd.pfArr.slice(0, 6).map(p => ({
-        label: p.pf,
-        value: p.a,
-        valueLabel: '¥' + fmt(p.a) + ' (' + (pd.tot ? Math.round(p.a / pd.tot * 100) : 0) + '%)',
-        color: pfColor(p.pf),
-        dot: pfColor(p.pf)
+        label: p.pf, value: p.a, valueLabel: '¥' + fmt(p.a) + ' (' + (pd.tot ? Math.round(p.a / pd.tot * 100) : 0) + '%)', color: pfColor(p.pf), dot: pfColor(p.pf)
       }));
       let pfQC = svgHBarChart(pfBarData, { barHeight: 24, labelWidth: 70, valueWidth: 90 });
-      h += foldCard('stat', 'pfQuick', '📦 PF別 <span style="font-size:.65rem;color:var(--p);cursor:pointer" onclick="event.stopPropagation();setStatSection(\'pf\')">詳しく見る →</span>', pfQC);
+      h += foldCard('stat', 'pfQuick', '📦 PF別 <span style="font-size:.65rem;color:var(--c-primary);cursor:pointer" onclick="event.stopPropagation();setStatSection(\'pf\')">詳しく見る →</span>', pfQC);
     }
 
-    /* 経費クイック */
     if (pd.expTot > 0) {
       const ecBarData = pd.ecArr.slice(0, 5).map(ec => ({
-        label: ec.cat,
-        value: ec.a,
-        valueLabel: '¥' + fmt(ec.a),
-        color: 'var(--rd,#ef4444)'
+        label: ec.cat, value: ec.a, valueLabel: '¥' + fmt(ec.a), color: 'var(--c-danger)'
       }));
       let expQC = svgHBarChart(ecBarData, { barHeight: 22, labelWidth: 80, valueWidth: 70 });
-      h += foldCard('stat', 'expQuick', '💸 経費 <span style="font-size:.65rem;color:var(--p);cursor:pointer" onclick="event.stopPropagation();setStatSection(\'expense\')">詳しく見る →</span>', expQC);
+      h += foldCard('stat', 'expQuick', '💸 経費 <span style="font-size:.65rem;color:var(--c-primary);cursor:pointer" onclick="event.stopPropagation();setStatSection(\'expense\')">詳しく見る →</span>', expQC);
     }
 
-    /* 月別推移 (3ヶ月/年) */
     if (_statPeriod === '3month' || _statPeriod === 'year') {
       const fromP = pd.from.split('-');
       const toP = pd.to.split('-');
@@ -863,15 +807,9 @@
         curM.setMonth(curM.getMonth() + 1);
       }
       if (months.length > 1) {
-        const lineData2 = months.map(m => {
-          const mmp = m.mk.split('-');
-          return { label: (+mmp[1]) + '月', shortLabel: (+mmp[1]) + '月', value: m.tot };
-        });
+        const lineData2 = months.map(m => { const mmp = m.mk.split('-'); return { label: (+mmp[1]) + '月', shortLabel: (+mmp[1]) + '月', value: m.tot }; });
         let trendC2 = svgLineChart(lineData2, { height: 120 });
-        const barData2 = months.map(m => {
-          const mmp = m.mk.split('-');
-          return { label: (+mmp[1]) + '月', shortLabel: (+mmp[1]) + '', value: m.tot, color: 'var(--p,#ff6b00)' };
-        });
+        const barData2 = months.map(m => { const mmp = m.mk.split('-'); return { label: (+mmp[1]) + '月', shortLabel: (+mmp[1]) + '', value: m.tot, color: 'var(--c-primary)' }; });
         trendC2 += '<div style="margin-top:8px">' + svgBarChart(barData2, { height: 120 }) + '</div>';
         h += foldCard('stat', 'monthTrend', '📈 月別推移', trendC2);
       }
@@ -885,59 +823,38 @@
     let h = '';
     if (pd.pfArr.length === 0) return '<div class="ds-empty">PFデータがありません</div>';
 
-    /* ドーナツチャート — svgDonut関数で100%バグ修正済 */
-    const donutData = pd.pfArr.map(p => ({
-      label: p.pf,
-      value: p.a,
-      color: pfColor(p.pf)
-    }));
-
+    const donutData = pd.pfArr.map(p => ({ label: p.pf, value: p.a, color: pfColor(p.pf) }));
     let donutC = '<div style="text-align:center">';
-    donutC += svgDonut(donutData, {
-      size: 180,
-      radius: 75,
-      innerRadius: 48,
-      centerText: '¥' + (pd.tot >= 10000 ? Math.round(pd.tot / 1000) + 'k' : fmt(pd.tot)),
-      centerSub: '合計'
-    });
+    donutC += svgDonut(donutData, { size: 180, radius: 75, innerRadius: 48, centerText: '¥' + (pd.tot >= 10000 ? Math.round(pd.tot / 1000) + 'k' : fmt(pd.tot)), centerSub: '合計' });
     donutC += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center">';
     pd.pfArr.forEach(p => {
       const pct = pd.tot ? Math.round(p.a / pd.tot * 100) : 0;
-      donutC += `<span style="font-size:.72rem;display:flex;align-items:center;gap:4px"><span class="pf-d" style="background:${pfColor(p.pf)}"></span>${escHtml(p.pf)} <b>¥${fmt(p.a)}</b> <span style="color:var(--mt)">${pct}%</span></span>`;
+      donutC += `<span style="font-size:.72rem;display:flex;align-items:center;gap:4px"><span class="pf-dot" style="background:${pfColor(p.pf)}"></span>${escHtml(p.pf)} <b>¥${fmt(p.a)}</b> <span style="color:var(--c-tx-muted)">${pct}%</span></span>`;
     });
     donutC += '</div></div>';
     h += foldCard('stat', 'pfDonut', '🍩 PF構成比', donutC);
 
-    /* PF別 水平バーチャート */
-    const pfBarData = pd.pfArr.map(p => ({
-      label: p.pf,
-      value: p.a,
-      valueLabel: '¥' + fmt(p.a) + ' ' + p.c + '件',
-      color: pfColor(p.pf),
-      dot: pfColor(p.pf)
-    }));
+    const pfBarData = pd.pfArr.map(p => ({ label: p.pf, value: p.a, valueLabel: '¥' + fmt(p.a) + ' ' + p.c + '件', color: pfColor(p.pf), dot: pfColor(p.pf) }));
     h += foldCard('stat', 'pfBars', '📊 PF別売上', svgHBarChart(pfBarData, { barHeight: 28, labelWidth: 75, valueWidth: 95 }));
 
-    /* PF detail table */
     let pfDetC = '';
     pd.pfArr.forEach(p => {
       const pctOf = pd.tot ? Math.round(p.a / pd.tot * 100) : 0;
       pfDetC += '<div class="ds-row">';
-      pfDetC += '<div class="ds-rl"><span class="pf-d" style="background:' + pfColor(p.pf) + '"></span>' + escHtml(p.pf) + '</div>';
-      pfDetC += '<div class="ds-rv">¥' + fmt(p.a) + ' <span style="font-size:.65rem;color:var(--mt)">' + p.c + '件 @¥' + fmt(p.u) + ' ' + pctOf + '%</span></div>';
+      pfDetC += '<div class="ds-rl"><span class="pf-dot" style="background:' + pfColor(p.pf) + '"></span>' + escHtml(p.pf) + '</div>';
+      pfDetC += '<div class="ds-rv">¥' + fmt(p.a) + ' <span style="font-size:.65rem;color:var(--c-tx-muted)">' + p.c + '件 @¥' + fmt(p.u) + ' ' + pctOf + '%</span></div>';
       pfDetC += '</div>';
     });
     h += foldCard('stat', 'pfDetail', '📦 PF別詳細', pfDetC);
 
-    /* 単価分布 — 日本のデリバリー配達報酬に合わせた区間 */
     const UNIT_BUCKETS = [
-      { l: '~¥400',         mn: 0,    mx: 400,   n: 0 },
-      { l: '¥400~¥600',     mn: 400,  mx: 600,   n: 0 },
-      { l: '¥600~¥800',     mn: 600,  mx: 800,   n: 0 },
-      { l: '¥800~¥1,000',   mn: 800,  mx: 1000,  n: 0 },
-      { l: '¥1,000~¥1,500', mn: 1000, mx: 1500,  n: 0 },
-      { l: '¥1,500~¥2,000', mn: 1500, mx: 2000,  n: 0 },
-      { l: '¥2,000~',       mn: 2000, mx: Infinity, n: 0 }
+      { l: '~¥400', mn: 0, mx: 400, n: 0 },
+      { l: '¥400~¥600', mn: 400, mx: 600, n: 0 },
+      { l: '¥600~¥800', mn: 600, mx: 800, n: 0 },
+      { l: '¥800~¥1,000', mn: 800, mx: 1000, n: 0 },
+      { l: '¥1,000~¥1,500', mn: 1000, mx: 1500, n: 0 },
+      { l: '¥1,500~¥2,000', mn: 1500, mx: 2000, n: 0 },
+      { l: '¥2,000~', mn: 2000, mx: Infinity, n: 0 }
     ];
     pd.earns.forEach(r2 => {
       const u2 = r2.c > 0 ? r2.a / r2.c : r2.a;
@@ -945,14 +862,8 @@
         if (u2 >= UNIT_BUCKETS[i2].mn && u2 < UNIT_BUCKETS[i2].mx) { UNIT_BUCKETS[i2].n++; break; }
       }
     });
-    const unitBarData = UNIT_BUCKETS.map(b => ({
-      label: b.l,
-      value: b.n,
-      valueLabel: b.n + '件',
-      color: b.n > 0 ? 'var(--p,#ff6b00)' : 'var(--bd,#ddd)'
-    }));
+    const unitBarData = UNIT_BUCKETS.map(b => ({ label: b.l, value: b.n, valueLabel: b.n + '件', color: b.n > 0 ? 'var(--c-primary)' : 'var(--c-border)' }));
     let unitC = svgHBarChart(unitBarData, { barHeight: 22, labelWidth: 90, valueWidth: 40 });
-
     if (pd.cnt > 0) {
       const allUnits = pd.earns.map(r => r.c > 0 ? Math.round(r.a / r.c) : r.a).sort((a, b) => a - b);
       const median = allUnits[Math.floor(allUnits.length / 2)] || 0;
@@ -961,22 +872,21 @@
       unitC += '<div class="ds-grid" style="margin-top:10px">';
       unitC += '<div class="ds-gbox"><div class="ds-gl">平均</div><div class="ds-gv">¥' + fmt(pd.avg) + '</div></div>';
       unitC += '<div class="ds-gbox"><div class="ds-gl">中央値</div><div class="ds-gv">¥' + fmt(median) + '</div></div>';
-      unitC += '<div class="ds-gbox"><div class="ds-gl">最低</div><div class="ds-gv" style="color:var(--rd)">¥' + fmt(min) + '</div></div>';
-      unitC += '<div class="ds-gbox"><div class="ds-gl">最高</div><div class="ds-gv" style="color:var(--gn)">¥' + fmt(max) + '</div></div>';
+      unitC += '<div class="ds-gbox"><div class="ds-gl">最低</div><div class="ds-gv" style="color:var(--c-danger)">¥' + fmt(min) + '</div></div>';
+      unitC += '<div class="ds-gbox"><div class="ds-gl">最高</div><div class="ds-gv" style="color:var(--c-success)">¥' + fmt(max) + '</div></div>';
       unitC += '</div>';
     }
     h += foldCard('stat', 'unitDist', '💵 単価分布', unitC);
 
-    /* PF前期比較 */
     const prevPd = _getPrevPeriodData();
     if (Object.keys(prevPd.pfMap).length > 0) {
-      let pfCompC = '<div style="font-size:.7rem;color:var(--mt);margin-bottom:8px">' + prevPd.label + 'との比較</div>';
+      let pfCompC = '<div style="font-size:.7rem;color:var(--c-tx-muted);margin-bottom:8px">' + prevPd.label + 'との比較</div>';
       pd.pfArr.forEach(p => {
         const prevA = prevPd.pfMap[p.pf] ? prevPd.pfMap[p.pf].a : 0;
         const prevC = prevPd.pfMap[p.pf] ? prevPd.pfMap[p.pf].c : 0;
         pfCompC += '<div class="ds-row">';
-        pfCompC += '<div class="ds-rl"><span class="pf-d" style="background:' + pfColor(p.pf) + '"></span>' + escHtml(p.pf) + '</div>';
-        pfCompC += '<div class="ds-rv">¥' + fmt(p.a) + ' ' + _diffBadge(p.a, prevA) + '<div style="font-size:.6rem;color:var(--mt)">' + prevPd.label + ': ¥' + fmt(prevA) + ' (' + prevC + '件)</div></div>';
+        pfCompC += '<div class="ds-rl"><span class="pf-dot" style="background:' + pfColor(p.pf) + '"></span>' + escHtml(p.pf) + '</div>';
+        pfCompC += '<div class="ds-rv">¥' + fmt(p.a) + ' ' + _diffBadge(p.a, prevA) + '<div style="font-size:.6rem;color:var(--c-tx-muted)">' + prevPd.label + ': ¥' + fmt(prevA) + ' (' + prevC + '件)</div></div>';
         pfCompC += '</div>';
       });
       h += foldCard('stat', 'pfComp', '🔄 PF ' + prevPd.label + '比較', pfCompC);
@@ -991,82 +901,63 @@
     if (pd.expTot === 0) return '<div class="ds-empty">経費データがありません</div>';
 
     let expHC = '<div class="ds-hero">';
-    expHC += '<div class="ds-hero-val" style="color:var(--rd,#ef4444)">¥' + fmt(pd.expTot) + '</div>';
+    expHC += '<div class="ds-hero-val" style="color:var(--c-danger)">¥' + fmt(pd.expTot) + '</div>';
     expHC += '<div class="ds-hero-sub">経費合計</div>';
     expHC += '</div>';
     expHC += '<div class="ds-grid">';
     expHC += '<div class="ds-gbox"><div class="ds-gl">売上</div><div class="ds-gv">¥' + fmt(pd.tot) + '</div></div>';
-    expHC += '<div class="ds-gbox"><div class="ds-gl">利益</div><div class="ds-gv" style="color:' + (pd.profit >= 0 ? 'var(--gn)' : 'var(--rd)') + '">¥' + fmt(pd.profit) + '</div></div>';
+    expHC += '<div class="ds-gbox"><div class="ds-gl">利益</div><div class="ds-gv" style="color:' + (pd.profit >= 0 ? 'var(--c-success)' : 'var(--c-danger)') + '">¥' + fmt(pd.profit) + '</div></div>';
     expHC += '</div>';
     h += foldCard('stat', 'expHero', '💸 経費合計', expHC);
 
-    /* 経費カテゴリドーナツ */
     if (pd.ecArr.length > 0) {
       const ecColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#64748b'];
-      const ecDonutData = pd.ecArr.map((ec, i) => ({
-        label: ec.cat,
-        value: ec.a,
-        color: ecColors[i % ecColors.length]
-      }));
+      const ecDonutData = pd.ecArr.map((ec, i) => ({ label: ec.cat, value: ec.a, color: ecColors[i % ecColors.length] }));
       let ecDonutC = '<div style="text-align:center">';
-      ecDonutC += svgDonut(ecDonutData, {
-        size: 160,
-        radius: 65,
-        innerRadius: 40,
-        centerText: '¥' + (pd.expTot >= 10000 ? Math.round(pd.expTot / 1000) + 'k' : fmt(pd.expTot)),
-        centerSub: '経費合計'
-      });
+      ecDonutC += svgDonut(ecDonutData, { size: 160, radius: 65, innerRadius: 40, centerText: '¥' + (pd.expTot >= 10000 ? Math.round(pd.expTot / 1000) + 'k' : fmt(pd.expTot)), centerSub: '経費合計' });
       ecDonutC += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;justify-content:center">';
       pd.ecArr.forEach((ec, i) => {
         const pct = pd.expTot ? Math.round(ec.a / pd.expTot * 100) : 0;
-        ecDonutC += `<span style="font-size:.68rem;display:flex;align-items:center;gap:3px"><span class="pf-d" style="background:${ecColors[i % ecColors.length]}"></span>${escHtml(ec.cat)} ${pct}%</span>`;
+        ecDonutC += `<span style="font-size:.68rem;display:flex;align-items:center;gap:3px"><span class="pf-dot" style="background:${ecColors[i % ecColors.length]}"></span>${escHtml(ec.cat)} ${pct}%</span>`;
       });
       ecDonutC += '</div></div>';
       h += foldCard('stat', 'expDonut', '🍩 経費構成比', ecDonutC);
     }
 
-    /* カテゴリ別バー */
-    const ecBarData = pd.ecArr.map(ec => ({
-      label: ec.cat,
-      value: ec.a,
-      valueLabel: '¥' + fmt(ec.a) + ' (' + (pd.expTot ? Math.round(ec.a / pd.expTot * 100) : 0) + '%)',
-      color: 'var(--rd,#ef4444)'
-    }));
+    const ecBarData = pd.ecArr.map(ec => ({ label: ec.cat, value: ec.a, valueLabel: '¥' + fmt(ec.a) + ' (' + (pd.expTot ? Math.round(ec.a / pd.expTot * 100) : 0) + '%)', color: 'var(--c-danger)' }));
     h += foldCard('stat', 'expCat', '🏷 カテゴリ別', svgHBarChart(ecBarData, { barHeight: 24, labelWidth: 80, valueWidth: 90 }));
 
-    /* 経費前期比較 */
     const prevPd = _getPrevPeriodData();
     if (prevPd.expTot > 0 || pd.expTot > 0) {
       let expCompC = '<div class="ds-grid">';
-      expCompC += '<div class="ds-gbox"><div class="ds-gl">経費合計 ' + _diffBadge(pd.expTot, prevPd.expTot) + '</div><div class="ds-gv" style="color:var(--rd,#ef4444)">¥' + fmt(pd.expTot) + '</div><div style="font-size:.6rem;color:var(--mt)">' + prevPd.label + ': ¥' + fmt(prevPd.expTot) + '</div></div>';
-      expCompC += '<div class="ds-gbox"><div class="ds-gl">利益 ' + _diffBadge(pd.profit, prevPd.profit) + '</div><div class="ds-gv" style="color:' + (pd.profit >= 0 ? 'var(--gn,#22c55e)' : 'var(--rd,#ef4444)') + '">¥' + fmt(pd.profit) + '</div><div style="font-size:.6rem;color:var(--mt)">' + prevPd.label + ': ¥' + fmt(prevPd.profit) + '</div></div>';
+      expCompC += '<div class="ds-gbox"><div class="ds-gl">経費合計 ' + _diffBadge(pd.expTot, prevPd.expTot) + '</div><div class="ds-gv" style="color:var(--c-danger)">¥' + fmt(pd.expTot) + '</div><div style="font-size:.6rem;color:var(--c-tx-muted)">' + prevPd.label + ': ¥' + fmt(prevPd.expTot) + '</div></div>';
+      expCompC += '<div class="ds-gbox"><div class="ds-gl">利益 ' + _diffBadge(pd.profit, prevPd.profit) + '</div><div class="ds-gv" style="color:' + (pd.profit >= 0 ? 'var(--c-success)' : 'var(--c-danger)') + '">¥' + fmt(pd.profit) + '</div><div style="font-size:.6rem;color:var(--c-tx-muted)">' + prevPd.label + ': ¥' + fmt(prevPd.profit) + '</div></div>';
       expCompC += '</div>';
       if (pd.ecArr.length > 0) {
         pd.ecArr.forEach(ec => {
           const prevCatA = prevPd.ecMap[ec.cat] || 0;
           expCompC += '<div class="ds-row"><div class="ds-rl">' + escHtml(ec.cat) + '</div>';
-          expCompC += '<div class="ds-rv">¥' + fmt(ec.a) + ' ' + _diffBadge(ec.a, prevCatA) + '<div style="font-size:.6rem;color:var(--mt)">' + prevPd.label + ': ¥' + fmt(prevCatA) + '</div></div></div>';
+          expCompC += '<div class="ds-rv">¥' + fmt(ec.a) + ' ' + _diffBadge(ec.a, prevCatA) + '<div style="font-size:.6rem;color:var(--c-tx-muted)">' + prevPd.label + ': ¥' + fmt(prevCatA) + '</div></div></div>';
         });
       }
       h += foldCard('stat', 'expComp', '🔄 経費 ' + prevPd.label + '比較', expCompC);
     }
 
-    /* 経費明細 */
     let elC = '';
     const sorted2 = pd.exps.slice().sort((a, b) => b.ts - a.ts);
     sorted2.slice(0, 30).forEach(e => {
       elC += '<div class="ds-rec" style="flex-wrap:wrap">';
       elC += '<div class="ds-rec-l" style="flex:1;min-width:0">' + escHtml(e.cat || 'その他');
-      if (e.memo) elC += ' <span style="font-size:.65rem;color:var(--mt)">' + escHtml(e.memo) + '</span>';
-      if (e.date) elC += ' <span style="font-size:.6rem;color:var(--mt)">' + e.date + '</span>';
+      if (e.memo) elC += ' <span style="font-size:.65rem;color:var(--c-tx-muted)">' + escHtml(e.memo) + '</span>';
+      if (e.date) elC += ' <span style="font-size:.6rem;color:var(--c-tx-muted)">' + e.date + '</span>';
       elC += '</div>';
       elC += '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">';
-      elC += '<span style="color:var(--rd);font-weight:700;font-size:.82rem">-¥' + fmt(e.amount) + '</span>';
-      elC += '<button class="btn bs2 bsm" style="padding:2px 6px;font-size:.65rem" onclick="statEditExp(' + e.ts + ')">編集</button>';
-      elC += '<button class="btn brd bsm" style="padding:2px 6px;font-size:.65rem" onclick="statDelExp(' + e.ts + ')">削除</button>';
+      elC += '<span style="color:var(--c-danger);font-weight:700;font-size:.82rem">-¥' + fmt(e.amount) + '</span>';
+      elC += '<button class="btn btn-secondary btn-xs" onclick="statEditExp(' + e.ts + ')">編集</button>';
+      elC += '<button class="btn btn-danger btn-xs" onclick="statDelExp(' + e.ts + ')">削除</button>';
       elC += '</div></div>';
     });
-    if (sorted2.length > 30) elC += '<div style="text-align:center;font-size:.7rem;color:var(--mt);padding:8px">他 ' + (sorted2.length - 30) + '件...</div>';
+    if (sorted2.length > 30) elC += '<div style="text-align:center;font-size:.7rem;color:var(--c-tx-muted);padding:8px">他 ' + (sorted2.length - 30) + '件...</div>';
     h += foldCard('stat', 'expList', '📋 経費明細', elC);
 
     return h;
@@ -1078,7 +969,7 @@
     if (pd.earns.length === 0) return '<div class="ds-empty">配達記録がありません</div>';
 
     let recC = '<div class="ds-grid3" style="margin-bottom:12px">';
-    recC += '<div class="ds-gbox"><div class="ds-gl">合計</div><div class="ds-gv" style="color:var(--p)">¥' + fmt(pd.tot) + '</div></div>';
+    recC += '<div class="ds-gbox"><div class="ds-gl">合計</div><div class="ds-gv" style="color:var(--c-primary)">¥' + fmt(pd.tot) + '</div></div>';
     recC += '<div class="ds-gbox"><div class="ds-gl">件数</div><div class="ds-gv">' + pd.cnt + '件</div></div>';
     recC += '<div class="ds-gbox"><div class="ds-gl">単価</div><div class="ds-gv">¥' + fmt(pd.avg) + '</div></div>';
     recC += '</div>';
@@ -1090,21 +981,20 @@
         lastDate = r3.d;
         const rp = r3.d.split('-');
         const robj = new Date(+rp[0], +rp[1] - 1, +rp[2]);
-        recC += '<div style="font-size:.7rem;font-weight:600;color:var(--mt);margin-top:10px;margin-bottom:4px">' + (+rp[1]) + '/' + (+rp[2]) + '(' + DAYS[robj.getDay()] + ')</div>';
+        recC += '<div style="font-size:.7rem;font-weight:600;color:var(--c-tx-muted);margin-top:10px;margin-bottom:4px">' + (+rp[1]) + '/' + (+rp[2]) + '(' + DAYS[robj.getDay()] + ')</div>';
       }
       const pf3 = extractPf(r3.m) || '';
       recC += '<div class="ds-rec" style="flex-wrap:wrap">';
-      recC += '<div class="ds-rec-l" style="flex:1;min-width:0">' + (pf3 ? '<span class="pf-d" style="background:' + pfColor(pf3) + '"></span>' + escHtml(pf3) : 'ー') + '</div>';
+      recC += '<div class="ds-rec-l" style="flex:1;min-width:0">' + (pf3 ? '<span class="pf-dot" style="background:' + pfColor(pf3) + '"></span>' + escHtml(pf3) : 'ー') + '</div>';
       recC += '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">';
       recC += '<div class="ds-rec-r"><div class="ds-rec-amt">¥' + fmt(r3.a) + '</div><div class="ds-rec-cnt">' + r3.c + '件</div></div>';
-      recC += '<button class="btn bs2 bsm" style="padding:2px 6px;font-size:.65rem" onclick="statEditEarn(' + r3.ts + ')">編集</button>';
-      recC += '<button class="btn brd bsm" style="padding:2px 6px;font-size:.65rem" onclick="statDelEarn(' + r3.ts + ')">削除</button>';
+      recC += '<button class="btn btn-secondary btn-xs" onclick="statEditEarn(' + r3.ts + ')">編集</button>';
+      recC += '<button class="btn btn-danger btn-xs" onclick="statDelEarn(' + r3.ts + ')">削除</button>';
       recC += '</div></div>';
     });
-    if (sorted3.length > 50) recC += '<div style="text-align:center;font-size:.7rem;color:var(--mt);padding:8px">他 ' + (sorted3.length - 50) + '件...</div>';
+    if (sorted3.length > 50) recC += '<div style="text-align:center;font-size:.7rem;color:var(--c-tx-muted);padding:8px">他 ' + (sorted3.length - 50) + '件...</div>';
     h += foldCard('stat', 'records', '📋 配達記録 (' + pd.earns.length + '件)', recC);
 
-    /* 日別集計バーチャート */
     if (pd.daysCnt > 1) {
       const allDays = Array.from(pd.daysSet).sort().reverse();
       const dayBarData = allDays.map(dk => {
@@ -1113,13 +1003,7 @@
         const dv = sumA(eByDate(dk));
         const dc = sumC(eByDate(dk));
         const unit = dc > 0 ? Math.round(dv / dc) : 0;
-        return {
-          label: (+dp[1]) + '/' + (+dp[2]) + '(' + DAYS[dobj.getDay()] + ')',
-          value: dv,
-          valueLabel: '¥' + fmt(dv) + ' ' + dc + '件 @¥' + fmt(unit),
-          color: (dobj.getDay() === 0 || dobj.getDay() === 6) ? 'var(--rd,#ef4444)' : 'var(--p,#ff6b00)',
-          dot: (dobj.getDay() === 0 || dobj.getDay() === 6) ? 'var(--rd)' : 'var(--p)'
-        };
+        return { label: (+dp[1]) + '/' + (+dp[2]) + '(' + DAYS[dobj.getDay()] + ')', value: dv, valueLabel: '¥' + fmt(dv) + ' ' + dc + '件 @¥' + fmt(unit), color: (dobj.getDay() === 0 || dobj.getDay() === 6) ? 'var(--c-danger)' : 'var(--c-primary)', dot: (dobj.getDay() === 0 || dobj.getDay() === 6) ? 'var(--c-danger)' : 'var(--c-primary)' };
       });
       h += foldCard('stat', 'daySum', '📊 日別集計 (' + allDays.length + '日)', svgHBarChart(dayBarData, { barHeight: 22, labelWidth: 75, valueWidth: 115 }));
     }
@@ -1128,18 +1012,8 @@
   }
 
   /* ===== Setters ===== */
-  function setStatPeriod(p) {
-    hp();
-    _statPeriod = p;
-    _statDateStr = null;
-    renderStats();
-  }
-
-  function setStatSection(s) {
-    hp();
-    _statSection = s;
-    renderStats();
-  }
+  function setStatPeriod(p) { hp(); _statPeriod = p; _statDateStr = null; renderStats(); }
+  function setStatSection(s) { hp(); _statSection = s; renderStats(); }
 
   /* ===== Expose ===== */
   window.renderStats = renderStats;
@@ -1151,37 +1025,23 @@
   window.statDelEarn = _statDelEarn;
   window.statEditExp = _statEditExp;
   window.statDelExp = _statDelExp;
-
-  /* SVGチャートヘルパーもexposeしてカスタムタブ等から利用可能に */
   window._svgDonut = svgDonut;
   window._svgBarChart = svgBarChart;
   window._svgHBarChart = svgHBarChart;
   window._svgStackedBar = svgStackedBar;
   window._svgLineChart = svgLineChart;
 
-  /* ===== openStatDetail → オーバーレイ表示 ===== */
   window.openStatDetail = function(type, context, dateStr) {
     hp();
-
-    if (context === 'today' || context === 'calDay') {
-      window._dashPeriod = 'day';
-    } else if (context === 'week') {
-      window._dashPeriod = 'week';
-    } else if (context === 'month' || context === 'calMonth') {
-      window._dashPeriod = 'month';
-    } else {
-      window._dashPeriod = 'month';
-    }
-
+    if (context === 'today' || context === 'calDay') window._dashPeriod = 'day';
+    else if (context === 'week') window._dashPeriod = 'week';
+    else if (context === 'month' || context === 'calMonth') window._dashPeriod = 'month';
+    else window._dashPeriod = 'month';
     window._dashDateStr = dateStr || null;
     window._dashSection = 'overview';
-
     if (type === 'expense') window._dashSection = 'expense';
     else if (type === 'pf' || type === 'count' || type === 'unit') window._dashSection = 'pf';
     else if (type === 'records') window._dashSection = 'records';
-
-    if (typeof window.renderDashOverlay === 'function') {
-      window.renderDashOverlay();
-    }
+    if (typeof window.renderDashOverlay === 'function') window.renderDashOverlay();
   };
 })();

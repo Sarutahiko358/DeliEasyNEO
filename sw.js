@@ -1,5 +1,5 @@
-/* sw.js — DeliEasy Service Worker v2 */
-const CACHE_NAME = 'delieasy-v7';
+/* sw.js — DeliEasy Service Worker v2.1 */
+const CACHE_NAME = 'delieasy-v8';
 const PRE_CACHE = [
   './',
   './index.html',
@@ -17,8 +17,6 @@ const PRE_CACHE = [
   './icon-512.png',
   './apple-touch-icon.png',
   /* v2 Styles */
-  './styles/legacy-structures.css',
-  './styles/legacy-compat.css',
   './styles/base.css',
   './styles/design-styles.css',
   './styles/color-palettes.css',

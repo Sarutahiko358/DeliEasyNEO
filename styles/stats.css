@@ -1,111 +1,80 @@
 /* ==========================================================
    DeliEasy v2 — styles/stats.css
-   統計オーバーレイ内のスタイル調整（Phase 6）
-   既存 main.css の統計/ダッシュボードスタイルを v2 変数にマッピング
+   統計/ダッシュボード固有スタイル（Phase 7.1 統合版）
    ========================================================== */
 
-/* オーバーレイ内の #pg2 に適用 */
-.overlay-body #pg2 {
-  padding: 0;
+/* ===== オーバーレイ内調整 ===== */
+.overlay-body #pg2 { padding: 0; }
+
+/* ===== Period Bar ===== */
+.ds-period-bar {
+  display: flex; gap: 0; padding: 8px 0; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; background: var(--c-fill-quaternary); border-radius: var(--ds-radius-sm); margin-bottom: 8px;
+}
+.ds-period-bar::-webkit-scrollbar { display: none; }
+
+.ds-ptab {
+  flex: 1; padding: 8px 12px; border-radius: 10px; font-size: .75rem; font-weight: 500;
+  border: none; background: transparent; color: var(--c-tx-secondary); cursor: pointer;
+  white-space: nowrap; transition: all .2s cubic-bezier(.28,.11,.32,1);
+}
+.ds-ptab:active { transform: scale(.95); }
+.ds-ptab.on {
+  background: var(--c-card); color: var(--c-tx); font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 
-/* stat-tabs → v2テーマ対応 */
-.overlay-body .stat-tabs {
-  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
-  border-radius: var(--ds-radius-sm, 12px);
-  margin-bottom: 12px;
+/* ===== Section Tabs ===== */
+.ds-stab {
+  padding: 6px 12px; border-radius: 980px; font-size: .6875rem; font-weight: 500;
+  border: none; background: transparent; color: var(--c-tx-muted); cursor: pointer;
+  white-space: nowrap; transition: all .15s;
 }
+.ds-stab:active { transform: scale(.95); }
+.ds-stab.on { background: var(--c-primary-light); color: var(--c-primary); font-weight: 600; }
 
-.overlay-body .stat-tabs button {
-  border-radius: 10px;
+/* ===== Hero ===== */
+.ds-hero { text-align: center; padding: 16px 0 20px; }
+.ds-hero-val {
+  font-size: 2.75rem; font-weight: 700; color: var(--c-primary); line-height: 1.05;
+  letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
 }
+.ds-hero-sub { font-size: .75rem; color: var(--c-tx-muted); margin-top: 6px; font-weight: 400; }
 
-.overlay-body .stat-tabs button.on {
-  background: var(--c-card, var(--apple-group-bg, #fff));
-  color: var(--c-tx, var(--tx, #1d1d1f));
-}
+/* ===== Grid ===== */
+.ds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.ds-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.ds-gbox { background: var(--c-fill-quaternary); border-radius: var(--ds-radius-sm); padding: 14px 10px; text-align: center; }
+.ds-gbox .ds-gl { font-size: .625rem; color: var(--c-tx-muted); }
+.ds-gbox .ds-gv { font-size: 1.125rem; font-weight: 700; margin-top: 3px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 
-/* ds系カード */
-.overlay-body .ds-card {
-  background: var(--c-card, var(--apple-group-bg, #fff));
-  border-radius: var(--ds-radius, 16px);
-  border: var(--ds-card-border, none);
-  box-shadow: var(--ds-shadow-card, none);
-}
+/* ===== Progress ===== */
+.ds-progress { margin: 10px 0; }
+.ds-progress-bar { background: var(--c-fill-quaternary); border-radius: 4px; height: 6px; overflow: hidden; }
+.ds-progress-fill { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.28,.11,.32,1); }
+.ds-progress-label { font-size: .6875rem; color: var(--c-tx-muted); text-align: center; margin-top: 6px; }
 
-/* ds-ptab */
-.overlay-body .ds-ptab {
-  border-radius: 10px;
-}
+/* ===== Row ===== */
+.ds-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: .5px solid var(--c-divider); }
+.ds-row:last-child { border-bottom: none; }
+.ds-row .ds-rl { font-size: .8125rem; color: var(--c-tx); display: flex; align-items: center; gap: 6px; }
+.ds-row .ds-rv { font-size: .8125rem; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 
-.overlay-body .ds-ptab.on {
-  background: var(--c-card, var(--apple-group-bg, #fff));
+/* ===== Record ===== */
+.ds-rec {
+  display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;
+  margin-bottom: 4px; background: var(--c-fill-quaternary); border-radius: var(--ds-radius-sm);
 }
+.ds-rec .ds-rec-l { font-size: .75rem; display: flex; align-items: center; gap: 6px; }
+.ds-rec .ds-rec-r { text-align: right; }
+.ds-rec .ds-rec-r .ds-rec-amt { font-size: .8125rem; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.ds-rec .ds-rec-r .ds-rec-cnt { font-size: .625rem; color: var(--c-tx-muted); }
 
-/* ds-stab */
-.overlay-body .ds-stab.on {
-  background: var(--c-primary-light, var(--pl, rgba(0,122,255,.08)));
-  color: var(--c-primary, var(--p, #007aff));
-}
+/* ===== Empty ===== */
+.ds-empty { text-align: center; color: var(--c-tx-muted); font-size: .8125rem; padding: 32px 0; }
 
-/* ds-hero */
-.overlay-body .ds-hero-val {
-  color: var(--c-primary, var(--p, #007aff));
-}
-
-/* ds-gbox */
-.overlay-body .ds-gbox {
-  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
-  border-radius: var(--ds-radius-sm, 12px);
-}
-
-/* ds-rec */
-.overlay-body .ds-rec {
-  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
-  border-radius: var(--ds-radius-sm, 12px);
-}
-
-/* ds-row border */
-.overlay-body .ds-row {
-  border-bottom-color: var(--c-divider, var(--apple-separator, rgba(60,60,67,.12)));
-}
-
-/* foldCard in stats */
-.overlay-body .card.mb12 {
-  background: var(--c-card, var(--apple-group-bg, #fff));
-  border-radius: var(--ds-radius, 16px);
-  border: var(--ds-card-border, none);
-  box-shadow: var(--ds-shadow-card, none);
-  overflow: hidden;
-}
-
-.overlay-body .card-header {
-  border-bottom-color: var(--c-divider, var(--apple-separator, rgba(60,60,67,.12)));
-}
-
-/* ds-progress */
-.overlay-body .ds-progress-bar {
-  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
-}
-
-.overlay-body .ds-progress-fill {
-  background: var(--c-primary, var(--p, #007aff));
-}
-
-/* sb (stat box) 互換 */
-.overlay-body .sb {
-  background: var(--c-fill-quaternary, var(--apple-fill-quaternary, rgba(116,116,128,.08)));
-  border-radius: var(--ds-radius-sm, 12px);
-}
-
-.overlay-body .sb.hl {
-  background: var(--c-primary-light, var(--pl, rgba(0,122,255,.08)));
-}
-
-.overlay-body .sb.gl {
-  background: var(--c-success-light, var(--gnl, rgba(52,199,89,.1)));
-}
-
-.overlay-body .sb.rl {
-  background: var(--c-danger-light, var(--rdl, rgba(255,59,48,.1)));
-}
+/* ===== Bar ===== */
+.ds-bar-row { margin-bottom: 10px; }
+.ds-bar-hdr { display: flex; justify-content: space-between; font-size: .75rem; margin-bottom: 4px; }
+.ds-bar { height: 6px; background: var(--c-fill-quaternary); border-radius: 3px; overflow: hidden; }
+.ds-bar-fill { height: 100%; border-radius: 3px; transition: width .4s cubic-bezier(.28,.11,.32,1); }

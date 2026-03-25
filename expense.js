@@ -1,10 +1,10 @@
-/* expense.js — DeliEasy Expense Manager */
+/* expense.js — DeliEasy Expense Manager (v2 CSS版) */
 (function(){
   'use strict';
 
   const DEFAULT_CATS = ['ガソリン','バイク維持費','スマホ通信費','配達バッグ','雨具','駐輪場','食費','保険','その他'];
-  let expMonth, expYear, expMode = 'month'; /* month / year */
-  let expYearStart = 1; /* 1=1月, 4=4月 */
+  let expMonth, expYear, expMode = 'month';
+  let expYearStart = 1;
   let expCatFilter = '';
 
   function initExpense() {
@@ -19,7 +19,6 @@
     return [...DEFAULT_CATS, ...custom];
   }
 
-  /* データに存在するカテゴリも含めた全カテゴリを返す */
   function getAllExpCatsIncludingData(exps) {
     const baseCats = getCats();
     const dataCats = new Set();
@@ -40,26 +39,26 @@
     let html = '';
 
     /* Input form */
-    html += `<div class="cd mb12"><div class="ch open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('hide')">
-      <span>💸 経費入力</span><span class="arr">▼</span></div>
-      <div class="cb">
-        <div class="fg"><label>カテゴリ</label>
-          <select class="fi" id="exp-cat">${getCats().map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('')}</select>
+    html += `<div class="card"><div class="card-header open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('hidden')">
+      <span>💸 経費入力</span><span class="card-arrow">▼</span></div>
+      <div class="card-body">
+        <div class="input-group"><label class="input-label">カテゴリ</label>
+          <select class="input" id="exp-cat">${getCats().map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('')}</select>
         </div>
-        <div class="fg"><label>日付</label><input type="date" class="fi" id="exp-date" value="${TD}"></div>
-        <div class="fg"><label>金額</label><input type="number" class="fi" id="exp-amount" placeholder="金額"></div>
-        <div class="fg"><label>メモ</label><input type="text" class="fi" id="exp-memo" placeholder="メモ"></div>
-        <button class="btn bp bbl" onclick="addExpense()">経費を記録</button>
+        <div class="input-group"><label class="input-label">日付</label><input type="date" class="input" id="exp-date" value="${TD}"></div>
+        <div class="input-group"><label class="input-label">金額</label><input type="number" class="input" id="exp-amount" placeholder="金額"></div>
+        <div class="input-group"><label class="input-label">メモ</label><input type="text" class="input" id="exp-memo" placeholder="メモ"></div>
+        <button class="btn btn-primary btn-block" onclick="addExpense()">経費を記録</button>
         <div class="mt8">
-          <button class="btn bs2 bsm" onclick="openMo('addExpCat')">+ カテゴリ追加</button>
+          <button class="btn btn-secondary btn-sm" onclick="openMo('addExpCat')">+ カテゴリ追加</button>
         </div>
       </div>
     </div>`;
 
     /* Period switch */
-    html += `<div class="stat-tabs mb12">
-      <button class="${expMode==='month'?'on':''}" onclick="setExpMode('month')">月次</button>
-      <button class="${expMode==='year'?'on':''}" onclick="setExpMode('year')">年度</button>
+    html += `<div class="segmented mb12">
+      <button class="segmented-item ${expMode==='month'?'active':''}" onclick="setExpMode('month')">月次</button>
+      <button class="segmented-item ${expMode==='year'?'active':''}" onclick="setExpMode('year')">年度</button>
     </div>`;
 
     if (expMode === 'month') {
@@ -69,10 +68,10 @@
     }
 
     /* Export */
-    html += `<div class="fr mt12" style="justify-content:center;gap:8px">
-      <button class="btn bs2 bsm" onclick="exportExpCSV()">経費CSV</button>
-      <button class="btn bs2 bsm" onclick="exportRecCSV()">売上CSV</button>
-      <button class="btn bs2 bsm" onclick="exportBackupJSON()">バックアップJSON</button>
+    html += `<div class="flex items-center mt12" style="justify-content:center;gap:8px">
+      <button class="btn btn-secondary btn-sm" onclick="exportExpCSV()">経費CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportRecCSV()">売上CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportBackupJSON()">バックアップJSON</button>
     </div>`;
 
     pg.innerHTML = html;
@@ -85,7 +84,6 @@
     const mExps = allExps.filter(e => e.date && e.date.substring(0, 7) === mk);
     const total = mExps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
 
-    /* category breakdown */
     const catMap = {};
     mExps.forEach(e => {
       const c = e.cat || 'その他';
@@ -97,24 +95,24 @@
     let html = '';
 
     /* nav */
-    html += `<div class="cd mb12"><div class="cb">
-      <div class="fr" style="justify-content:space-between;align-items:center">
-        <button class="btn bs2 bsm" onclick="expMonthPrev()">◀</button>
+    html += `<div class="card"><div class="card-body">
+      <div class="flex items-center" style="justify-content:space-between">
+        <button class="btn btn-secondary btn-sm" onclick="expMonthPrev()">◀</button>
         <span class="fw6">${y}年${m}月</span>
-        <button class="btn bs2 bsm" onclick="expMonthNext()">▶</button>
+        <button class="btn btn-secondary btn-sm" onclick="expMonthNext()">▶</button>
       </div>
-      <div class="text-c mt8"><span class="fw6 c-p" style="font-size:1.5rem">¥${fmt(total)}</span></div>
+      <div class="text-c mt8"><span class="fw6 c-primary" style="font-size:1.5rem">¥${fmt(total)}</span></div>
     </div></div>`;
 
     /* category bars */
     if (catArr.length > 0) {
-      html += `<div class="cd mb12"><div class="ch open"><span>カテゴリ別内訳</span></div><div class="cb">`;
+      html += `<div class="card"><div class="card-header open"><span>カテゴリ別内訳</span></div><div class="card-body">`;
       catArr.forEach(([cat, amt]) => {
         const pct = Math.round(amt / maxCat * 100);
-        html += `<div class="fr mb8" style="gap:8px">
+        html += `<div class="flex items-center mb8" style="gap:8px">
           <span class="fz-s" style="min-width:85px">${escHtml(cat)}</span>
-          <div style="flex:1;background:var(--sbBg);border-radius:4px;height:16px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:var(--pbg);border-radius:4px"></div>
+          <div style="flex:1;background:var(--c-fill-quaternary);border-radius:4px;height:16px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:var(--c-primary);border-radius:4px"></div>
           </div>
           <span class="fz-s fw6" style="min-width:65px;text-align:right">¥${fmt(amt)}</span>
         </div>`;
@@ -138,20 +136,6 @@
     const yExps = allExps.filter(e => e.date >= fromDate && e.date <= toDate);
     const total = yExps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
 
-    let html = `<div class="cd mb12"><div class="cb">
-      <div class="fr" style="justify-content:space-between;align-items:center">
-        <button class="btn bs2 bsm" onclick="expYear--;renderExpense()">◀</button>
-        <span class="fw6">${expYear}年度 (${startM}月始)</span>
-        <button class="btn bs2 bsm" onclick="expYear++;renderExpense()">▶</button>
-      </div>
-      <div class="fr mt8" style="justify-content:center;gap:8px">
-        <button class="s-btn ${expYearStart===1?'on':''}" onclick="expYearStart=1;S.s('expYearStart',1);renderExpense()">1月始</button>
-        <button class="s-btn ${expYearStart===4?'on':''}" onclick="expYearStart=4;S.s('expYearStart',4);renderExpense()">4月始</button>
-      </div>
-      <div class="text-c mt8"><span class="fw6 c-p" style="font-size:1.5rem">¥${fmt(total)}</span></div>
-    </div></div>`;
-
-    /* category breakdown */
     const catMap = {};
     yExps.forEach(e => {
       const c = e.cat || 'その他';
@@ -160,14 +144,27 @@
     const catArr = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
     const maxCat = catArr.length > 0 ? catArr[0][1] : 1;
 
+    let html = `<div class="card"><div class="card-body">
+      <div class="flex items-center" style="justify-content:space-between">
+        <button class="btn btn-secondary btn-sm" onclick="expYear--;renderExpense()">◀</button>
+        <span class="fw6">${expYear}年度 (${startM}月始)</span>
+        <button class="btn btn-secondary btn-sm" onclick="expYear++;renderExpense()">▶</button>
+      </div>
+      <div class="flex items-center mt8" style="justify-content:center;gap:8px">
+        <button class="pill ${expYearStart===1?'active':''}" onclick="expYearStart=1;S.s('expYearStart',1);renderExpense()">1月始</button>
+        <button class="pill ${expYearStart===4?'active':''}" onclick="expYearStart=4;S.s('expYearStart',4);renderExpense()">4月始</button>
+      </div>
+      <div class="text-c mt8"><span class="fw6 c-primary" style="font-size:1.5rem">¥${fmt(total)}</span></div>
+    </div></div>`;
+
     if (catArr.length > 0) {
-      html += `<div class="cd mb12"><div class="ch open"><span>カテゴリ別内訳</span></div><div class="cb">`;
+      html += `<div class="card"><div class="card-header open"><span>カテゴリ別内訳</span></div><div class="card-body">`;
       catArr.forEach(([cat, amt]) => {
         const pct = Math.round(amt / maxCat * 100);
-        html += `<div class="fr mb8" style="gap:8px">
+        html += `<div class="flex items-center mb8" style="gap:8px">
           <span class="fz-s" style="min-width:85px">${escHtml(cat)}</span>
-          <div style="flex:1;background:var(--sbBg);border-radius:4px;height:16px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:var(--pbg);border-radius:4px"></div>
+          <div style="flex:1;background:var(--c-fill-quaternary);border-radius:4px;height:16px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:var(--c-primary);border-radius:4px"></div>
           </div>
           <span class="fz-s fw6" style="min-width:65px;text-align:right">¥${fmt(amt)}</span>
         </div>`;
@@ -184,19 +181,18 @@
     if (expCatFilter) filtered = filtered.filter(e => e.cat === expCatFilter);
     filtered.sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.ts - a.ts);
 
-    /* filter UI — データにのみ存在するカテゴリも表示 */
     const displayCats = getAllExpCatsIncludingData(allExps || exps);
 
-    let html = `<div class="fr mb8" style="gap:6px;flex-wrap:wrap">
-      <button class="s-btn ${!expCatFilter?'on':''}" onclick="setExpCatFilter('')">全て</button>
+    let html = `<div class="flex items-center mb8" style="gap:6px;flex-wrap:wrap">
+      <button class="pill ${!expCatFilter?'active':''}" onclick="setExpCatFilter('')">全て</button>
       ${displayCats.map(c => {
         const isOrphan = !getCats().includes(c);
-        return `<button class="s-btn ${expCatFilter===c?'on':''}" style="${isOrphan?'font-style:italic;opacity:.7':''}" onclick="setExpCatFilter('${escJs(c)}')">${escHtml(c)}${isOrphan?' (削除済)':''}</button>`;
+        return `<button class="pill ${expCatFilter===c?'active':''}" style="${isOrphan?'font-style:italic;opacity:.7':''}" onclick="setExpCatFilter('${escJs(c)}')">${escHtml(c)}${isOrphan?' (削除済)':''}</button>`;
       }).join('')}
     </div>`;
 
     if (filtered.length === 0) {
-      html += '<p class="fz-s c-mt text-c">経費がありません</p>';
+      html += '<p class="fz-s c-muted text-c">経費がありません</p>';
       return html;
     }
 
@@ -209,17 +205,17 @@
     });
 
     Object.entries(groups).forEach(([date, items]) => {
-      html += `<div class="fz-xs fw6 c-mt mt8 mb8">${date}</div>`;
+      html += `<div class="fz-xs fw6 c-muted mt8 mb8">${date}</div>`;
       items.forEach(e => {
-        html += `<div class="fr mb8" style="justify-content:space-between;padding:8px;background:var(--card);border-radius:8px;border:1px solid var(--bd)">
+        html += `<div class="flex items-center mb8" style="justify-content:space-between;padding:8px;background:var(--c-card);border-radius:8px;border:1px solid var(--c-border)">
           <div>
             <div class="fz-s fw6">${escHtml(e.cat || 'その他')}</div>
-            ${e.memo ? `<div class="fz-xs c-mt">${escHtml(e.memo)}</div>` : ''}
+            ${e.memo ? `<div class="fz-xs c-muted">${escHtml(e.memo)}</div>` : ''}
           </div>
-          <div class="fr gap8">
-            <span class="fz-s fw6 c-rd">-¥${fmt(e.amount)}</span>
-            <button class="btn bs2 bsm" style="padding:2px 6px;font-size:.7rem" onclick="openEditExpense(${e.ts})">編集</button>
-            <button class="btn brd bsm" style="padding:2px 6px;font-size:.7rem" onclick="delExpense(${e.ts})">削除</button>
+          <div class="flex items-center gap8">
+            <span class="fz-s fw6 c-danger">-¥${fmt(e.amount)}</span>
+            <button class="btn btn-secondary btn-xs" onclick="openEditExpense(${e.ts})">編集</button>
+            <button class="btn btn-danger btn-xs" onclick="delExpense(${e.ts})">削除</button>
           </div>
         </div>`;
       });
@@ -241,25 +237,25 @@
       `<option value="${escHtml(exp.cat)}" selected>${escHtml(exp.cat)} (削除済)</option>` : '';
 
     const div = document.createElement('div');
-    div.className = 'exit-cf';
+    div.className = 'confirm-overlay';
     div.innerHTML = `
-      <div class="exit-cf-box" style="max-width:340px">
-        <h3 style="margin-bottom:12px">経費を編集</h3>
-        <div class="fg"><label>カテゴリ</label>
-          <select class="fi" id="edit-exp-cat">${catOptions}${extraOpt}</select>
+      <div class="confirm-box" style="max-width:340px;text-align:left">
+        <h3 style="margin-bottom:12px;text-align:center">経費を編集</h3>
+        <div class="input-group"><label class="input-label">カテゴリ</label>
+          <select class="input" id="edit-exp-cat">${catOptions}${extraOpt}</select>
         </div>
-        <div class="fg"><label>日付</label>
-          <input type="date" class="fi" id="edit-exp-date" value="${exp.date || TD}">
+        <div class="input-group"><label class="input-label">日付</label>
+          <input type="date" class="input" id="edit-exp-date" value="${exp.date || TD}">
         </div>
-        <div class="fg"><label>金額</label>
-          <input type="number" class="fi" id="edit-exp-amount" value="${exp.amount || 0}">
+        <div class="input-group"><label class="input-label">金額</label>
+          <input type="number" class="input" id="edit-exp-amount" value="${exp.amount || 0}">
         </div>
-        <div class="fg"><label>メモ</label>
-          <input type="text" class="fi" id="edit-exp-memo" value="${escHtml(exp.memo || '')}">
+        <div class="input-group"><label class="input-label">メモ</label>
+          <input type="text" class="input" id="edit-exp-memo" value="${escHtml(exp.memo || '')}">
         </div>
-        <div class="fr mt12" style="justify-content:center;gap:8px">
-          <button class="btn bp bsm" id="edit-exp-save">保存</button>
-          <button class="btn bs2 bsm" id="edit-exp-cancel">キャンセル</button>
+        <div class="flex justify-center gap8 mt12">
+          <button class="btn btn-primary btn-sm" id="edit-exp-save">保存</button>
+          <button class="btn btn-secondary btn-sm" id="edit-exp-cancel">キャンセル</button>
         </div>
       </div>`;
     document.body.appendChild(div);

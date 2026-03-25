@@ -1,140 +1,200 @@
 /* ==========================================================
    DeliEasy v2 — styles/calendar.css
-   カレンダーオーバーレイ内のスタイル調整（Phase 6）
-   既存 main.css のカレンダースタイルを v2 変数にマッピング
+   カレンダー固有スタイル（Phase 7.1 統合版）
    ========================================================== */
 
-/* オーバーレイ内の #pg1 に適用 */
-.overlay-body #pg1 {
-  padding: 0;
+/* ===== オーバーレイ内調整 ===== */
+.overlay-body #pg1 { padding: 0; }
+.overlay-body .cal-wrap { padding: 0; }
+.overlay-body .cal-hdr { background: var(--c-card); color: var(--c-tx); border-radius: var(--ds-radius); }
+.overlay-body .cal-body { background: var(--c-card); border-radius: var(--ds-radius); }
+.overlay-body .cal-det { background: var(--c-card); border-radius: var(--ds-radius); }
+.overlay-body .cal-acc { background: var(--c-card); }
+.overlay-body .cal-acc-btn-primary { background: var(--c-primary) !important; }
+.overlay-body .cal-acc-btn-secondary { background: var(--c-fill-tertiary) !important; color: var(--c-primary) !important; }
+.overlay-body .cal-legend { padding: 8px 4px 12px; }
+.overlay-body .home-input-toggle { margin: 0 0 12px; }
+.overlay-body .cal-sum-row { padding: 0 4px; }
+.overlay-body .numpad { gap: 8px; }
+.overlay-body .numpad-key { height: 50px; font-size: 1.2rem; }
+
+/* ===== カレンダーヘッダー ===== */
+.cal-hdr {
+  background: var(--c-card);
+  color: var(--c-tx);
+  border-radius: var(--ds-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.cal-hdr .cal-nav {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px;
+}
+.cal-hdr .cal-nav button {
+  background: none; border: none; color: var(--c-primary);
+  width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer; transition: background .1s;
+}
+.cal-hdr .cal-nav button:active { background: var(--c-fill-quaternary); }
+.cal-hdr .cal-nav span { font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.024em; flex: 1; }
+.cal-hdr .cal-today-btn {
+  background: var(--c-fill-quaternary); border: none; color: var(--c-primary);
+  padding: 6px 16px; border-radius: 980px; font-size: .75rem; font-weight: 500; cursor: pointer;
 }
 
-/* カレンダーラップ */
-.overlay-body .cal-wrap {
-  padding: 0;
+/* ===== カレンダーグリッド ===== */
+.cal-body { background: var(--c-card); border-radius: var(--ds-radius); overflow: hidden; }
+.cal-wk {
+  display: grid; grid-template-columns: repeat(7, 1fr); text-align: center;
+  font-size: .6875rem; font-weight: 600; color: var(--c-tx-muted); padding: 10px 0 6px;
+  border-bottom: .5px solid var(--c-divider);
+}
+.cal-wk span:first-child { color: var(--c-danger); }
+.cal-wk span:last-child { color: var(--c-primary); }
+.cal-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; padding: 4px; }
+.cal-c {
+  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: .78rem; cursor: pointer; transition: all .12s; position: relative; gap: 0;
+}
+.cal-c:active { opacity: .6; }
+.cal-c .cal-da { font-weight: 500; font-size: .875rem; line-height: 1; }
+.cal-c .cal-am {
+  font-size: .45rem; color: var(--c-tx-secondary); line-height: 1; white-space: nowrap;
+  font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.cal-c .cal-am.lv1 { color: #bf8f00; }
+.cal-c .cal-am.lv2 { color: #c46200; }
+.cal-c .cal-am.lv3 { color: #c41e18; }
+.cal-c .cal-am.lv4 { color: #c4175a; }
+.cal-c .cal-am.lv5 { color: #7d21a8; }
+.cal-c.empty { cursor: default; }
+.cal-c.today { background: var(--c-primary); border-radius: 50%; }
+.cal-c.today .cal-da { color: #fff !important; font-weight: 700; }
+.cal-c.today .cal-am { color: rgba(255,255,255,.85) !important; }
+.cal-c.sel:not(.today) { background: var(--c-fill-tertiary); }
+.cal-c .cal-tag { position: absolute; bottom: 0; right: 2px; font-size: .4rem; }
+.cal-c.cal-sun .cal-da { color: var(--c-danger); }
+.cal-c.cal-sat .cal-da { color: var(--c-primary); }
+
+/* ===== 日付詳細 ===== */
+.cal-det {
+  background: var(--c-card); border-radius: var(--ds-radius); margin-top: 16px; overflow: hidden;
+  animation: v2-slide-up .35s cubic-bezier(.28,.11,.32,1);
 }
 
-/* v2テーマカラー互換 — 旧変数が未定義の場合のフォールバック */
-.overlay-body .cal-hdr {
-  background: var(--c-card, var(--apple-group-bg, #fff));
-  color: var(--c-tx, var(--tx, #1d1d1f));
-  border-radius: var(--ds-radius, 16px);
+/* ===== PFバー ===== */
+.cal-earn-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cal-earn-bar .bar { flex: 1; height: 5px; background: var(--c-fill-quaternary); border-radius: 2.5px; overflow: hidden; }
+.cal-earn-bar .bar-fill { height: 100%; border-radius: 2.5px; transition: width .4s cubic-bezier(.28,.11,.32,1); }
+
+/* ===== レジェンド ===== */
+.cal-legend {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 20px 12px;
+  font-size: .6875rem; color: var(--c-tx-muted); justify-content: center;
 }
+.cal-legend span { display: flex; align-items: center; gap: 4px; }
+.cal-legend .dot { width: 8px; height: 8px; border-radius: 2px; }
 
-.overlay-body .cal-body {
-  background: var(--c-card, var(--apple-group-bg, #fff));
-  border-radius: var(--ds-radius, 16px);
+/* ===== サマリー行 ===== */
+.cal-sum-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 10px; padding: 0 4px; }
+.cal-sum-item { font-size: .6875rem; color: var(--c-tx-secondary); text-align: center; line-height: 1.3; flex: 1; }
+.cal-sum-item b { display: block; font-size: .8125rem; color: var(--c-tx); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.cal-today-btn2 {
+  background: var(--c-fill-quaternary); color: var(--c-primary); border: none; border-radius: 980px;
+  padding: 8px 16px; font-size: .75rem; font-weight: 500; cursor: pointer; white-space: nowrap; flex-shrink: 0;
 }
+.cal-today-btn2:active { transform: scale(.95); background: var(--c-fill-secondary); }
 
-.overlay-body .cal-det {
-  background: var(--c-card, var(--apple-group-bg, #fff));
-  border-radius: var(--ds-radius, 16px);
+/* ===== アコーディオン ===== */
+.cal-acc {
+  background: var(--c-card); margin: 0 0 1px; border-radius: 0; overflow: hidden; border: none; box-shadow: none;
 }
-
-.overlay-body .cal-acc {
-  background: var(--c-card, var(--apple-group-bg, #fff));
+.cal-acc:first-child { border-radius: var(--ds-radius) var(--ds-radius) 0 0; }
+.cal-acc:last-child { border-radius: 0 0 var(--ds-radius) var(--ds-radius); margin-bottom: 16px; }
+.cal-acc:only-child { border-radius: var(--ds-radius); }
+.cal-acc + .cal-acc { border-top: .5px solid var(--c-divider); }
+.cal-acc-header {
+  display: flex; justify-content: space-between; align-items: center; padding: 13px 20px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .1s;
 }
-
-/* ボタン互換 */
-.overlay-body .cal-acc-btn-primary {
-  background: var(--c-primary, var(--pbg, #007aff)) !important;
+.cal-acc-header:active { background: var(--c-fill-quaternary); }
+.cal-acc-title { font-size: .8125rem; font-weight: 600; color: var(--c-tx); letter-spacing: -0.008em; }
+.cal-acc-arrow { font-size: .6rem; color: var(--c-tx-muted); transition: transform .3s cubic-bezier(.28,.11,.32,1); display: inline-block; }
+.cal-acc.cal-acc-open .cal-acc-arrow { transform: rotate(180deg); }
+.cal-acc-body { max-height: 0; overflow: hidden; transition: max-height .35s cubic-bezier(.28,.11,.32,1); }
+.cal-acc.cal-acc-open .cal-acc-body { max-height: 2000px; }
+.cal-acc-content { padding: 0 20px 16px; }
+.cal-acc-list-item {
+  justify-content: space-between; padding: 10px 0; border-bottom: .5px solid var(--c-divider); align-items: center;
 }
-
-.overlay-body .cal-acc-btn-secondary {
-  background: var(--c-fill-tertiary, var(--apple-fill-tertiary, rgba(118,118,128,.12))) !important;
-  color: var(--c-primary, var(--p, #007aff)) !important;
+.cal-acc-list-item:last-child { border-bottom: none; }
+.cal-acc-btn-primary {
+  width: 100%; padding: 14px; border: none; border-radius: var(--ds-radius-sm);
+  background: var(--c-primary) !important; color: #fff !important;
+  font-size: .9375rem; font-weight: 600; cursor: pointer; margin-top: 4px;
 }
-
-/* レジェンド */
-.overlay-body .cal-legend {
-  padding: 8px 4px 12px;
+.cal-acc-btn-primary:active { opacity: .7; transform: scale(.98); }
+.cal-acc-btn-secondary {
+  width: 100%; padding: 14px; border: none; border-radius: var(--ds-radius-sm);
+  background: var(--c-fill-tertiary) !important; color: var(--c-primary) !important;
+  font-size: .875rem; font-weight: 600; cursor: pointer; margin-top: 4px;
 }
+.cal-acc-btn-secondary:active { opacity: .7; transform: scale(.98); }
+.cal-acc-btn-mini { padding: 4px 10px !important; font-size: .6875rem !important; border-radius: var(--ds-radius-sm); }
+#cal-det-swipe { transition: none; }
 
-/* 入力トグル */
-.overlay-body .home-input-toggle {
-  margin: 0 0 12px;
+/* ===== 入力トグル ===== */
+.home-input-toggle {
+  display: flex; background: var(--c-fill-quaternary); border-radius: var(--ds-radius-sm);
+  padding: 2px; gap: 0; margin: 0 0 16px; border: none; overflow: visible;
 }
-
-/* cal-sum-row */
-.overlay-body .cal-sum-row {
-  padding: 0 4px;
+.home-toggle-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 8px; font-size: .8125rem; font-weight: 500; border: none; background: transparent;
+  color: var(--c-tx-secondary); cursor: pointer; position: relative;
+  transition: all .2s cubic-bezier(.28,.11,.32,1); border-radius: 10px; letter-spacing: -0.008em;
 }
-
-/* テンキー */
-.overlay-body .np {
-  gap: 8px;
+.home-toggle-btn::after { display: none; }
+.home-toggle-btn.active {
+  color: var(--c-tx); background: var(--c-card);
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 .5px 1px rgba(0,0,0,.04); font-weight: 600;
 }
-.overlay-body .np button {
-  height: 50px;
-  font-size: 1.2rem;
-}
+.home-toggle-btn:not(.active):active { opacity: .5; }
+.home-toggle-icon { font-size: 1rem; }
 
-/* ダークパレットでのカレンダー金額レベル色 */
-[data-color="blue-dark"] .cal-c .cal-am.lv1,
-[data-color="green-dark"] .cal-c .cal-am.lv1,
-[data-color="pink-dark"] .cal-c .cal-am.lv1,
-[data-color="orange-dark"] .cal-c .cal-am.lv1,
-[data-color="purple-dark"] .cal-c .cal-am.lv1,
-[data-color="midnight"] .cal-c .cal-am.lv1,
-[data-color="sumi-dark"] .cal-c .cal-am.lv1,
-[data-color="charcoal"] .cal-c .cal-am.lv1 { color: #ffd60a; }
+/* ===== ダークパレット金額レベル色 ===== */
+[data-color="blue-dark"] .cal-c .cal-am.lv1, [data-color="green-dark"] .cal-c .cal-am.lv1,
+[data-color="pink-dark"] .cal-c .cal-am.lv1, [data-color="orange-dark"] .cal-c .cal-am.lv1,
+[data-color="purple-dark"] .cal-c .cal-am.lv1, [data-color="midnight"] .cal-c .cal-am.lv1,
+[data-color="sumi-dark"] .cal-c .cal-am.lv1, [data-color="charcoal"] .cal-c .cal-am.lv1 { color: #ffd60a; }
 
-[data-color="blue-dark"] .cal-c .cal-am.lv2,
-[data-color="green-dark"] .cal-c .cal-am.lv2,
-[data-color="pink-dark"] .cal-c .cal-am.lv2,
-[data-color="orange-dark"] .cal-c .cal-am.lv2,
-[data-color="purple-dark"] .cal-c .cal-am.lv2,
-[data-color="midnight"] .cal-c .cal-am.lv2,
-[data-color="sumi-dark"] .cal-c .cal-am.lv2,
-[data-color="charcoal"] .cal-c .cal-am.lv2 { color: #ff9f0a; }
+[data-color="blue-dark"] .cal-c .cal-am.lv2, [data-color="green-dark"] .cal-c .cal-am.lv2,
+[data-color="pink-dark"] .cal-c .cal-am.lv2, [data-color="orange-dark"] .cal-c .cal-am.lv2,
+[data-color="purple-dark"] .cal-c .cal-am.lv2, [data-color="midnight"] .cal-c .cal-am.lv2,
+[data-color="sumi-dark"] .cal-c .cal-am.lv2, [data-color="charcoal"] .cal-c .cal-am.lv2 { color: #ff9f0a; }
 
-[data-color="blue-dark"] .cal-c .cal-am.lv3,
-[data-color="green-dark"] .cal-c .cal-am.lv3,
-[data-color="pink-dark"] .cal-c .cal-am.lv3,
-[data-color="orange-dark"] .cal-c .cal-am.lv3,
-[data-color="purple-dark"] .cal-c .cal-am.lv3,
-[data-color="midnight"] .cal-c .cal-am.lv3,
-[data-color="sumi-dark"] .cal-c .cal-am.lv3,
-[data-color="charcoal"] .cal-c .cal-am.lv3 { color: #ff6961; }
+[data-color="blue-dark"] .cal-c .cal-am.lv3, [data-color="green-dark"] .cal-c .cal-am.lv3,
+[data-color="pink-dark"] .cal-c .cal-am.lv3, [data-color="orange-dark"] .cal-c .cal-am.lv3,
+[data-color="purple-dark"] .cal-c .cal-am.lv3, [data-color="midnight"] .cal-c .cal-am.lv3,
+[data-color="sumi-dark"] .cal-c .cal-am.lv3, [data-color="charcoal"] .cal-c .cal-am.lv3 { color: #ff6961; }
 
-[data-color="blue-dark"] .cal-c .cal-am.lv4,
-[data-color="green-dark"] .cal-c .cal-am.lv4,
-[data-color="pink-dark"] .cal-c .cal-am.lv4,
-[data-color="orange-dark"] .cal-c .cal-am.lv4,
-[data-color="purple-dark"] .cal-c .cal-am.lv4,
-[data-color="midnight"] .cal-c .cal-am.lv4,
-[data-color="sumi-dark"] .cal-c .cal-am.lv4,
-[data-color="charcoal"] .cal-c .cal-am.lv4 { color: #ff6482; }
+[data-color="blue-dark"] .cal-c .cal-am.lv4, [data-color="green-dark"] .cal-c .cal-am.lv4,
+[data-color="pink-dark"] .cal-c .cal-am.lv4, [data-color="orange-dark"] .cal-c .cal-am.lv4,
+[data-color="purple-dark"] .cal-c .cal-am.lv4, [data-color="midnight"] .cal-c .cal-am.lv4,
+[data-color="sumi-dark"] .cal-c .cal-am.lv4, [data-color="charcoal"] .cal-c .cal-am.lv4 { color: #ff6482; }
 
-[data-color="blue-dark"] .cal-c .cal-am.lv5,
-[data-color="green-dark"] .cal-c .cal-am.lv5,
-[data-color="pink-dark"] .cal-c .cal-am.lv5,
-[data-color="orange-dark"] .cal-c .cal-am.lv5,
-[data-color="purple-dark"] .cal-c .cal-am.lv5,
-[data-color="midnight"] .cal-c .cal-am.lv5,
-[data-color="sumi-dark"] .cal-c .cal-am.lv5,
-[data-color="charcoal"] .cal-c .cal-am.lv5 { color: #bf5af2; }
+[data-color="blue-dark"] .cal-c .cal-am.lv5, [data-color="green-dark"] .cal-c .cal-am.lv5,
+[data-color="pink-dark"] .cal-c .cal-am.lv5, [data-color="orange-dark"] .cal-c .cal-am.lv5,
+[data-color="purple-dark"] .cal-c .cal-am.lv5, [data-color="midnight"] .cal-c .cal-am.lv5,
+[data-color="sumi-dark"] .cal-c .cal-am.lv5, [data-color="charcoal"] .cal-c .cal-am.lv5 { color: #bf5af2; }
 
-/* ダークパレットでの toast 影 */
-[data-color="blue-dark"] .toast,
-[data-color="green-dark"] .toast,
-[data-color="pink-dark"] .toast,
-[data-color="orange-dark"] .toast,
-[data-color="purple-dark"] .toast,
-[data-color="midnight"] .toast,
-[data-color="sumi-dark"] .toast,
-[data-color="charcoal"] .toast {
+/* ===== ダークパレット toast/sync-popup 影 ===== */
+[data-color="blue-dark"] .toast, [data-color="green-dark"] .toast, [data-color="pink-dark"] .toast,
+[data-color="orange-dark"] .toast, [data-color="purple-dark"] .toast, [data-color="midnight"] .toast,
+[data-color="sumi-dark"] .toast, [data-color="charcoal"] .toast {
   box-shadow: 0 8px 40px rgba(0,0,0,.5), 0 0 0 .5px rgba(255,255,255,.08);
 }
-
-/* ダークパレットでの sync-popup 影 */
-[data-color="blue-dark"] .sync-popup,
-[data-color="green-dark"] .sync-popup,
-[data-color="pink-dark"] .sync-popup,
-[data-color="orange-dark"] .sync-popup,
-[data-color="purple-dark"] .sync-popup,
-[data-color="midnight"] .sync-popup,
-[data-color="sumi-dark"] .sync-popup,
-[data-color="charcoal"] .sync-popup {
+[data-color="blue-dark"] .sync-popup, [data-color="green-dark"] .sync-popup, [data-color="pink-dark"] .sync-popup,
+[data-color="orange-dark"] .sync-popup, [data-color="purple-dark"] .sync-popup, [data-color="midnight"] .sync-popup,
+[data-color="sumi-dark"] .sync-popup, [data-color="charcoal"] .sync-popup {
   box-shadow: 0 8px 40px rgba(0,0,0,.5), 0 0 0 .5px rgba(255,255,255,.08);
 }

@@ -372,3 +372,74 @@ textarea.input { resize: vertical; min-height: 80px; }
 .direct-amount-input:focus {
   box-shadow: 0 0 0 4px rgba(0,122,255,.25) !important;
 }
+/* ==========================================================
+   以下を components.css の末尾に追加
+   ========================================================== */
+
+/* ---------- Stat Box tappable ---------- */
+.stat-box.tappable { cursor: pointer; position: relative; transition: transform .15s cubic-bezier(.28,.11,.32,1), opacity .1s; }
+.stat-box.tappable:active { transform: scale(.94); opacity: .65; }
+
+/* ---------- Exit Confirm (legacy compat alias) ---------- */
+.exit-cf { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-overlay); z-index: 250; display: flex; align-items: center; justify-content: center; }
+.exit-cf-box { background: var(--c-card); -webkit-backdrop-filter: var(--ds-backdrop); backdrop-filter: var(--ds-backdrop); border-radius: var(--ds-radius); padding: 24px 20px; width: 270px; text-align: center; }
+
+/* ---------- Toggle — iOS Switch ---------- */
+.toggle-w { display: flex; align-items: center; gap: 10px; }
+.toggle {
+  width: 51px; height: 31px;
+  background: var(--c-fill-primary);
+  border-radius: 15.5px;
+  position: relative; cursor: pointer;
+  transition: background .3s cubic-bezier(.28,.11,.32,1);
+  border: none;
+}
+.toggle.on { background: var(--c-success); }
+.toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 27px; height: 27px; background: #fff; border-radius: 50%;
+  transition: transform .3s cubic-bezier(.28,.11,.32,1);
+  box-shadow: 0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.06);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ---------- Item Manager ---------- */
+.im-list { margin-top: 10px; }
+.im-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; margin-bottom: 0; background: var(--c-card); border: none; border-bottom: .5px solid var(--c-divider); border-radius: 0; font-size: .8125rem; }
+.im-item:first-child { border-radius: var(--ds-radius) var(--ds-radius) 0 0; }
+.im-item:last-child { border-radius: 0 0 var(--ds-radius) var(--ds-radius); border-bottom: none; }
+.im-item:only-child { border-radius: var(--ds-radius); }
+.im-item .im-left { display: flex; align-items: center; gap: 10px; }
+.im-item .im-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.im-item .im-name { font-weight: 400; }
+.im-item .im-tag { font-size: .5625rem; padding: 2px 7px; border-radius: 980px; margin-left: 4px; font-weight: 500; }
+.im-item .im-tag.def { background: var(--c-primary-light); color: var(--c-primary); }
+.im-item .im-tag.custom { background: var(--c-warning-light); color: #8a6d00; }
+.im-item .im-tag.renamed { background: rgba(175,82,222,.1); color: #af52de; }
+.im-item .im-btns { display: flex; gap: 4px; }
+.im-item .im-btns button { padding: 4px 10px; font-size: .6875rem; border-radius: 980px; border: none; background: var(--c-fill-quaternary); color: var(--c-primary); font-weight: 500; cursor: pointer; }
+.im-item .im-btns button:active { background: var(--c-fill-secondary); }
+.im-trash-section { margin-top: 16px; padding-top: 16px; border-top: .5px solid var(--c-divider); }
+.im-trash-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; margin-bottom: 0; background: var(--c-card); border-bottom: .5px solid var(--c-divider); border-radius: 0; font-size: .8125rem; opacity: .4; }
+.im-add-row { display: flex; gap: 8px; margin-top: 12px; }
+.im-add-row input { flex: 1; }
+.im-inline { margin-top: 8px; padding: 12px; background: var(--c-card); border: none; border-radius: var(--ds-radius); }
+.im-inline-toggle { font-size: .75rem; color: var(--c-primary); cursor: pointer; margin-top: 6px; display: inline-block; font-weight: 500; }
+
+/* ---------- Quick Amount ---------- */
+.qa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.qa button { padding: 12px 4px; border: none; border-radius: var(--ds-radius-sm); background: var(--c-fill-quaternary); color: var(--c-tx); font-size: .9375rem; font-weight: 500; cursor: pointer; transition: all .1s; }
+.qa button:active { background: var(--c-fill-secondary); }
+
+/* ---------- Scrollable table ---------- */
+.rec-s { max-height: 400px; overflow-y: auto; }
+.rtb { width: 100%; border-collapse: collapse; font-size: .8125rem; }
+.rtb th { background: var(--c-fill-quaternary); padding: 10px 14px; text-align: left; font-weight: 600; font-size: .75rem; color: var(--c-tx-secondary); position: sticky; top: 0; }
+.rtb td { padding: 10px 14px; border-bottom: .5px solid var(--c-divider); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 359px) {
+  .numpad-key { height: 48px; font-size: 1.15rem; }
+  .qa button { padding: 8px 2px; font-size: .82rem; }
+  .stat-box-value { font-size: 1.1rem; }
+}
