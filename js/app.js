@@ -183,29 +183,47 @@
 
     if (typeof initEarnsDB === 'function') {
       initEarnsDB().then(function() {
-        // 経費DBの初期化（earnsの後に実行 — DB_VER競合回避）
         if (typeof initExpensesDB === 'function') {
           return initExpensesDB();
         }
       }).then(function() {
-        if (typeof initFirebaseAuth === 'function') initFirebaseAuth();
 
-        /* Render home (via home.js) */
+        /* ホーム画面を先に表示（Firebase不要） */
         if (typeof renderHome === 'function') renderHome();
-
         if (typeof renderFab === 'function') renderFab();
         if (typeof initSidebarGestures === 'function') initSidebarGestures();
-
-        /* Phase 4: トップバー・ボトムバー・右パネル */
         if (typeof renderTopbar === 'function') renderTopbar();
         if (typeof renderBottombar === 'function') renderBottombar();
         if (typeof initRightPanelGestures === 'function') initRightPanelGestures();
         if (typeof startTopbarUpdater === 'function') startTopbarUpdater();
 
-        updateSyncIndicator();
-        if (typeof onFirebaseSyncStatusChange === 'function') {
-          onFirebaseSyncStatusChange(function() { updateSyncIndicator(); });
+        /* Firebase SDK の読み込み完了を待ってから同期を初期化 */
+        function initFirebase() {
+          if (typeof initFirebaseAuth === 'function') initFirebaseAuth();
+          updateSyncIndicator();
+          if (typeof onFirebaseSyncStatusChange === 'function') {
+            onFirebaseSyncStatusChange(function() { updateSyncIndicator(); });
+          }
         }
+
+        if (window._firebaseSDKReady) {
+          /* 既に読み込み済み */
+          initFirebase();
+        } else {
+          /* まだ読み込み中 → コールバック登録 */
+          window._onFirebaseSDKReady = function() {
+            console.log('[App] Firebase SDK ready, initializing auth...');
+            initFirebase();
+          };
+          /* 10秒でタイムアウト（オフライン対策） */
+          setTimeout(function() {
+            if (!window._firebaseSDKReady) {
+              console.warn('[App] Firebase SDK load timeout, skipping sync init');
+              updateSyncIndicator();
+            }
+          }, 10000);
+        }
+
         if (typeof maybeWarnStoragePressure === 'function') maybeWarnStoragePressure();
 
       }).catch(function(e) {

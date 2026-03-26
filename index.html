@@ -173,9 +173,55 @@
 <div id="toast-area"></div>
 
 <!-- ===== Scripts: Untouched core files ===== -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<!-- Firebase SDK 非同期ローダー -->
+<script>
+(function(){
+  'use strict';
+  var FIREBASE_SCRIPTS = [
+    'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js'
+  ];
+  var loaded = 0;
+  var total = FIREBASE_SCRIPTS.length;
+
+  function onScriptLoad() {
+    loaded++;
+    if (loaded === total) {
+      console.log('[Firebase] All SDK scripts loaded');
+      window._firebaseSDKReady = true;
+      if (typeof window._onFirebaseSDKReady === 'function') {
+        window._onFirebaseSDKReady();
+      }
+    }
+  }
+
+  function onScriptError(url) {
+    console.error('[Firebase] Failed to load:', url);
+    onScriptLoad();
+  }
+
+  function loadNext(index) {
+    if (index >= total) return;
+    var script = document.createElement('script');
+    script.src = FIREBASE_SCRIPTS[index];
+    script.onload = function() {
+      onScriptLoad();
+      loadNext(index + 1);
+    };
+    script.onerror = function() {
+      onScriptError(FIREBASE_SCRIPTS[index]);
+      loadNext(index + 1);
+    };
+    document.head.appendChild(script);
+  }
+
+  window._firebaseSDKReady = false;
+  loadNext(0);
+})();
+</script>
+
 <script src="./firebase-config.js"></script>
 <script src="./storage.js"></script>
 <script src="./earns-db.js"></script>
