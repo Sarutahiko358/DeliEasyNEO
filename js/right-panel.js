@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/right-panel.js
-   右サイドバー（情報パネル）— スワイプで閉じる対応
+   右サイドバー（情報パネル）— スワイプで閉じる対応 + 感度設定対応
    ========================================================== */
 (function(){
   'use strict';
@@ -15,6 +15,17 @@
   var _panelTouchStartX = 0;
   var _panelTracking = false;
   var _panelTranslateX = 0;
+
+  /* ---------- ジェスチャー設定参照ヘルパー ---------- */
+  function _gc(key) {
+    if (typeof getGestureConfig === 'function') {
+      var cfg = getGestureConfig();
+      if (cfg[key] !== undefined) return cfg[key];
+    }
+    /* フォールバック */
+    var defaults = { rightEdgeWidth: 25, rightOpenThreshold: 60, closeThreshold: 50 };
+    return defaults[key] || 50;
+  }
 
   /* ---------- セクション定義 ---------- */
   var RIGHT_PANEL_SECTIONS = [
@@ -130,7 +141,7 @@
       var overlay = document.getElementById('right-panel-overlay');
       if (overlay) overlay.style.opacity = '';
 
-      if (_panelTranslateX > 80) {
+      if (_panelTranslateX > _gc('closeThreshold')) {
         /* 十分にスワイプした → 閉じる */
         closeRightPanel();
       } else {
@@ -306,8 +317,8 @@
       var screenW = window.innerWidth;
       _touchStartX = e.touches[0].clientX;
       _touchStartY = e.touches[0].clientY;
-      /* 画面右端25px以内からのスワイプを検知 */
-      _tracking = (_touchStartX > screenW - 25) && !_isOpen;
+      /* 画面右端から検出幅以内のスワイプを検知 */
+      _tracking = (_touchStartX > screenW - _gc('rightEdgeWidth')) && !_isOpen;
     }, { passive: true });
 
     document.addEventListener('touchmove', function(e) {
@@ -315,7 +326,7 @@
       _touchCurrentX = e.touches[0].clientX;
       var dx = _touchStartX - _touchCurrentX;
       var dy = Math.abs(e.touches[0].clientY - _touchStartY);
-      if (dx > 60 && dx > dy * 1.5) {
+      if (dx > _gc('rightOpenThreshold') && dx > dy * 1.5) {
         _tracking = false;
         openRightPanel();
       }

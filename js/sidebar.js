@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/sidebar.js
-   左サイドバー — 感度改善版
+   左サイドバー — 感度改善版 + 設定対応
    ========================================================== */
 (function(){
   'use strict';
@@ -13,10 +13,28 @@
   var _panelTracking = false;
   var _panelTranslateX = 0;
 
-  /* ---------- 感度設定 ---------- */
-  var EDGE_WIDTH = 30;         /* 端からの検出幅 px */
-  var OPEN_THRESHOLD = 40;     /* 開くのに必要なスワイプ距離 px */
-  var CLOSE_THRESHOLD = 50;    /* 閉じるのに必要なスワイプ距離 px */
+  /* ---------- デフォルト感度設定 ---------- */
+  var DEFAULT_GESTURE_CFG = {
+    edgeWidth: 45,
+    openThreshold: 40,
+    closeThreshold: 50,
+    rightEdgeWidth: 25,
+    rightOpenThreshold: 60
+  };
+
+  /* ---------- 感度設定の取得/保存 ---------- */
+  function getGestureConfig() {
+    return S.g('gesture_cfg', DEFAULT_GESTURE_CFG);
+  }
+
+  function saveGestureConfig(cfg) {
+    S.s('gesture_cfg', cfg);
+  }
+
+  function _gc(key) {
+    var cfg = getGestureConfig();
+    return cfg[key] !== undefined ? cfg[key] : DEFAULT_GESTURE_CFG[key];
+  }
 
   /* ---------- Menu definition ---------- */
   var MENU = [
@@ -148,7 +166,7 @@
       var overlay = document.getElementById('sidebar-overlay');
       if (overlay) overlay.style.opacity = '';
 
-      if (_panelTranslateX < -CLOSE_THRESHOLD) {
+      if (_panelTranslateX < -_gc('closeThreshold')) {
         closeSidebar();
       } else {
         panel.style.transform = '';
@@ -192,7 +210,7 @@
     document.addEventListener('touchstart', function(e) {
       _touchStartX = e.touches[0].clientX;
       _touchStartY = e.touches[0].clientY;
-      _edgeTracking = (_touchStartX <= EDGE_WIDTH) && !_isOpen;
+      _edgeTracking = (_touchStartX <= _gc('edgeWidth')) && !_isOpen;
     }, { passive: true });
 
     document.addEventListener('touchmove', function(e) {
@@ -200,7 +218,7 @@
       var dx = e.touches[0].clientX - _touchStartX;
       var dy = Math.abs(e.touches[0].clientY - _touchStartY);
       /* 水平方向が優勢で、しきい値を超えたら開く */
-      if (dx > OPEN_THRESHOLD && dx > dy * 1.2) {
+      if (dx > _gc('openThreshold') && dx > dy * 1.2) {
         _edgeTracking = false;
         openSidebar();
       }
@@ -211,6 +229,85 @@
     }, { passive: true });
   }
 
+  /* ---------- ジェスチャー設定UI ---------- */
+  function renderGestureSettings() {
+    var cfg = getGestureConfig();
+    var html = '';
+
+    html += '<div class="card mb12"><div class="card-body">';
+    html += '<div class="fz-s fw6 mb12">👆 ジェスチャー設定</div>';
+    html += '<div class="fz-xs c-muted mb12">画面端からのスワイプでサイドバーや右パネルを開く操作を調整します。<br>端末のOS戻るジェスチャーと競合する場合は、検出幅を広めに設定してください。</div>';
+
+    /* 左サイドバー: 端からの検出幅 */
+    html += '<div class="mb12">';
+    html += '<div class="fz-xs fw6 c-secondary mb4">左サイドバー — 検出幅: <span id="gesture-edge-val">' + cfg.edgeWidth + '</span>px</div>';
+    html += '<input type="range" class="input-range" min="20" max="80" step="5" value="' + cfg.edgeWidth + '" ';
+    html += 'oninput="document.getElementById(\'gesture-edge-val\').textContent=this.value" ';
+    html += 'onchange="_gestureSet(\'edgeWidth\',Number(this.value))">';
+    html += '<div class="flex flex-between fz-xxs c-muted"><span>20px（狭い）</span><span>80px（広い）</span></div>';
+    html += '</div>';
+
+    /* 左サイドバー: 開くためのスワイプ距離 */
+    html += '<div class="mb12">';
+    html += '<div class="fz-xs fw6 c-secondary mb4">左サイドバー — 開く距離: <span id="gesture-open-val">' + cfg.openThreshold + '</span>px</div>';
+    html += '<input type="range" class="input-range" min="20" max="80" step="5" value="' + cfg.openThreshold + '" ';
+    html += 'oninput="document.getElementById(\'gesture-open-val\').textContent=this.value" ';
+    html += 'onchange="_gestureSet(\'openThreshold\',Number(this.value))">';
+    html += '<div class="flex flex-between fz-xxs c-muted"><span>20px（敏感）</span><span>80px（鈍い）</span></div>';
+    html += '</div>';
+
+    /* サイドバー閉じるスワイプ距離 */
+    html += '<div class="mb12">';
+    html += '<div class="fz-xs fw6 c-secondary mb4">サイドバー — 閉じる距離: <span id="gesture-close-val">' + cfg.closeThreshold + '</span>px</div>';
+    html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.closeThreshold + '" ';
+    html += 'oninput="document.getElementById(\'gesture-close-val\').textContent=this.value" ';
+    html += 'onchange="_gestureSet(\'closeThreshold\',Number(this.value))">';
+    html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
+    html += '</div>';
+
+    /* 右パネル: 端からの検出幅 */
+    html += '<div class="mb12">';
+    html += '<div class="fz-xs fw6 c-secondary mb4">右パネル — 検出幅: <span id="gesture-redge-val">' + cfg.rightEdgeWidth + '</span>px</div>';
+    html += '<input type="range" class="input-range" min="15" max="60" step="5" value="' + cfg.rightEdgeWidth + '" ';
+    html += 'oninput="document.getElementById(\'gesture-redge-val\').textContent=this.value" ';
+    html += 'onchange="_gestureSet(\'rightEdgeWidth\',Number(this.value))">';
+    html += '<div class="flex flex-between fz-xxs c-muted"><span>15px（狭い）</span><span>60px（広い）</span></div>';
+    html += '</div>';
+
+    /* 右パネル: 開くためのスワイプ距離 */
+    html += '<div class="mb12">';
+    html += '<div class="fz-xs fw6 c-secondary mb4">右パネル — 開く距離: <span id="gesture-ropen-val">' + cfg.rightOpenThreshold + '</span>px</div>';
+    html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.rightOpenThreshold + '" ';
+    html += 'oninput="document.getElementById(\'gesture-ropen-val\').textContent=this.value" ';
+    html += 'onchange="_gestureSet(\'rightOpenThreshold\',Number(this.value))">';
+    html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
+    html += '</div>';
+
+    /* リセットボタン */
+    html += '<button class="btn btn-secondary btn-sm btn-block" onclick="_gestureReset()">初期値に戻す</button>';
+
+    html += '</div></div>';
+    return html;
+  }
+
+  /* ---------- 設定変更操作 ---------- */
+  window._gestureSet = function(key, val) {
+    hp();
+    var cfg = getGestureConfig();
+    cfg[key] = val;
+    saveGestureConfig(cfg);
+  };
+
+  window._gestureReset = function() {
+    hp();
+    saveGestureConfig(JSON.parse(JSON.stringify(DEFAULT_GESTURE_CFG)));
+    toast('👆 ジェスチャー設定を初期値に戻しました');
+    /* 設定画面を再描画 */
+    if (typeof window._refreshSettingsOverlay === 'function') {
+      window._refreshSettingsOverlay();
+    }
+  };
+
   /* ---------- Expose ---------- */
   window.openSidebar = openSidebar;
   window.closeSidebar = closeSidebar;
@@ -218,5 +315,8 @@
   window.isSidebarOpen = isSidebarOpen;
   window.renderSidebar = renderSidebar;
   window.initSidebarGestures = initSidebarGestures;
+  window.getGestureConfig = getGestureConfig;
+  window.saveGestureConfig = saveGestureConfig;
+  window.renderGestureSettings = renderGestureSettings;
 
 })();

@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/settings-view.js
-   設定オーバーレイ拡張（Phase 6）
+   設定オーバーレイ拡張（Phase 6）+ ジェスチャー設定
    overlay.js の _renderSettingsOverlay を置き換える
    ========================================================== */
 (function(){
@@ -96,6 +96,11 @@
     html += '</div>';
 
     html += '</div></div>';
+
+    /* ===== ジェスチャー設定 ===== */
+    if (typeof renderGestureSettings === 'function') {
+      html += renderGestureSettings();
+    }
 
     /* ===== テーマ ===== */
     html += '<div class="card mb12"><div class="card-body">';
