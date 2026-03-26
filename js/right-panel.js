@@ -13,6 +13,7 @@
 
   /* パネル内スワイプ用 */
   var _panelTouchStartX = 0;
+  var _panelTouchStartY = 0;
   var _panelTracking = false;
   var _panelTranslateX = 0;
 
@@ -112,6 +113,7 @@
     panel.addEventListener('touchstart', function(e) {
       if (!_isOpen) return;
       _panelTouchStartX = e.touches[0].clientX;
+      _panelTouchStartY = e.touches[0].clientY;
       _panelTracking = true;
       _panelTranslateX = 0;
       panel.style.transition = 'none';
@@ -120,6 +122,16 @@
     panel.addEventListener('touchmove', function(e) {
       if (!_panelTracking) return;
       var dx = e.touches[0].clientX - _panelTouchStartX;
+      var dy = Math.abs(e.touches[0].clientY - _panelTouchStartY);
+
+      /* 縦スクロールが主なら追跡をやめる */
+      if (dy > Math.abs(dx) * 2 && Math.abs(dx) < 20) {
+        _panelTracking = false;
+        panel.style.transition = '';
+        panel.style.transform = '';
+        return;
+      }
+
       /* 右方向のみ（正の値） */
       if (dx > 0) {
         _panelTranslateX = dx;
