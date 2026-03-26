@@ -31,8 +31,9 @@
         dateStr += ' (' + dayNames[now.getDay()] + ')';
         var fontSize = w.size === 'half' ? '1.6rem' : '2.4rem';
         var dateFz = w.size === 'half' ? '.65rem' : '.75rem';
+        var clockId = 'widget-clock-time-' + Math.random().toString(36).substr(2, 6);
         return '<div class="widget-clock">' +
-          '<div class="widget-clock-time" id="widget-clock-time" style="font-size:' + fontSize + '">' + h + ':' + m + '<span style="opacity:.4;font-size:.7em">:' + s + '</span></div>' +
+          '<div class="widget-clock-time" id="' + clockId + '" data-clock="true" style="font-size:' + fontSize + '">' + h + ':' + m + '<span style="opacity:.4;font-size:.7em">:' + s + '</span></div>' +
           '<div class="widget-clock-date" style="font-size:' + dateFz + '">' + dateStr + '</div>' +
         '</div>';
       }
@@ -409,13 +410,14 @@
   function startWidgetClock() {
     if (_clockTimer) clearInterval(_clockTimer);
     _clockTimer = setInterval(function() {
-      var el = document.getElementById('widget-clock-time');
-      if (!el) { clearInterval(_clockTimer); _clockTimer = null; return; }
+      var els = document.querySelectorAll('[data-clock="true"]');
+      if (!els || els.length === 0) { clearInterval(_clockTimer); _clockTimer = null; return; }
       var now = new Date();
       var h = String(now.getHours()).padStart(2,'0');
       var m = String(now.getMinutes()).padStart(2,'0');
       var s = String(now.getSeconds()).padStart(2,'0');
-      el.innerHTML = h + ':' + m + '<span style="opacity:.4;font-size:.7em">:' + s + '</span>';
+      var content = h + ':' + m + '<span style="opacity:.4;font-size:.7em">:' + s + '</span>';
+      els.forEach(function(el) { el.innerHTML = content; });
     }, 1000);
   }
 

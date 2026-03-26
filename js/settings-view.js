@@ -66,7 +66,7 @@
         html += '<div class="flex items-center gap8 mb8" style="padding:8px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm)">';
         html += '<span>' + escHtml(co.icon) + '</span>';
         html += '<span class="fz-s" style="flex:1">' + escHtml(co.title) + '</span>';
-        html += '<button class="btn btn-danger btn-xs" onclick="deleteCustomOverlay(\'' + escJs(co.id) + '\');_settingsRefresh()">削除</button>';
+        html += '<button class="btn btn-danger btn-xs" onclick="_settingsDeleteCustomOverlay(\'' + escJs(co.id) + '\')">削除</button>';
         html += '</div>';
       });
     }
@@ -641,6 +641,14 @@
     var body = document.getElementById('overlay-body-settings');
     if (body) _render(body);
   }
+
+  window._settingsDeleteCustomOverlay = function(coId) {
+    customConfirm('このカスタムオーバーレイを削除しますか？', function() {
+      if (typeof deleteCustomOverlay === 'function') deleteCustomOverlay(coId);
+      toast('🗑 削除しました');
+      _settingsRefresh();
+    });
+  };
 
   /* refreshSettingsModalIfOpen の上書き */
   window._refreshSettingsOverlay = _settingsRefresh;

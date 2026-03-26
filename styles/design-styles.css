@@ -210,6 +210,125 @@
 [data-style="pop"] .topbar-title { font-weight: 800; }
 [data-style="pop"] .card-header { font-weight: 700; }
 
+/* ---------- Style 5: ポップ (pop) — テキスト崩れ修正 ---------- */
+
+/* stat-box の値がはみ出す問題 */
+[data-style="pop"] .stat-box {
+  padding: 16px 12px;
+  overflow: hidden;
+}
+[data-style="pop"] .stat-box-value {
+  font-size: 1.2rem;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+[data-style="pop"] .stat-grid-3 .stat-box-value {
+  font-size: 1rem;
+}
+
+/* pill ボタンのテキストが見切れる問題 */
+[data-style="pop"] .pill {
+  padding: 8px 16px;
+  font-size: .75rem;
+  border-radius: 980px;
+  line-height: 1.3;
+}
+
+/* segmented-item のテキストが太すぎて潰れる問題 */
+[data-style="pop"] .segmented-item {
+  font-weight: 600;
+  padding: 10px 10px;
+  font-size: .78rem;
+}
+[data-style="pop"] .segmented {
+  border-radius: 20px;
+}
+
+/* card-header のテキストが太すぎる問題 */
+[data-style="pop"] .card-header {
+  padding: 14px 20px;
+}
+
+/* numpad-display の数字が大きすぎる問題 */
+[data-style="pop"] .numpad-display {
+  font-size: 1.6rem;
+  padding: 14px;
+  border-radius: 20px;
+}
+
+/* ds-hero の値が大きすぎてはみ出す問題（stats.js） */
+[data-style="pop"] .ds-hero-val {
+  font-size: 2.2rem;
+  word-break: break-all;
+}
+
+/* ds-gbox 内テキストのオーバーフロー防止 */
+[data-style="pop"] .ds-gbox .ds-gv {
+  font-size: 1rem;
+  word-break: break-all;
+}
+
+/* overlay-title が太すぎて見切れる問題 */
+[data-style="pop"] .overlay-title {
+  font-size: 1rem;
+}
+
+/* confirm-box 内のボタンが角丸すぎて押しにくい問題 */
+[data-style="pop"] .confirm-box {
+  border-radius: 24px;
+  padding: 28px 24px;
+}
+[data-style="pop"] .confirm-box .btn {
+  min-height: 44px;
+}
+
+/* topbar-title が太すぎてはみ出す問題 */
+[data-style="pop"] .topbar-data {
+  font-size: .78rem;
+}
+
+/* calendar の金額表示がはみ出す問題 */
+[data-style="pop"] .cal-c .cal-am {
+  font-size: .4rem;
+}
+
+/* 入力フォームの角丸が大きすぎる問題 */
+[data-style="pop"] .input {
+  border-radius: 16px;
+  padding: 12px 18px;
+}
+
+/* widget 内テキストのオーバーフロー対策 */
+[data-style="pop"] .widget-inner {
+  overflow: hidden;
+}
+[data-style="pop"] .widget-pf-val {
+  font-size: .65rem;
+}
+[data-style="pop"] .widget-pf-name {
+  font-size: .65rem;
+}
+
+/* exit-cf-box（firebase-sync.js同期ダイアログ）のボタン文字崩れ */
+[data-style="pop"] .exit-cf-box .btn {
+  border-radius: 980px;
+  padding: 12px 18px;
+  font-size: .8rem;
+  min-height: 48px;
+}
+[data-style="pop"] .exit-cf-box {
+  border-radius: 24px;
+}
+
+/* cal-acc アコーディオン内のボタン */
+[data-style="pop"] .cal-acc-btn-primary,
+[data-style="pop"] .cal-acc-btn-secondary {
+  border-radius: 16px;
+}
+[data-style="pop"] .cal-acc-btn-mini {
+  border-radius: 980px;
+}
+
 /* ---------- Style 6: 和モダン (wabi) ---------- */
 /* 余白重視、繊細な線、日本的な落ち着き。 */
 [data-style="wabi"] {

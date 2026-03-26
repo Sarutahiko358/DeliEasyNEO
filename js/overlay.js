@@ -478,6 +478,8 @@
     customConfirm('このカスタムオーバーレイを削除しますか？', function() {
       if (typeof deleteCustomOverlay === 'function') deleteCustomOverlay(coId);
       toast('🗑 削除しました');
+      /* confirm-overlayを全て除去してから再表示 */
+      document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
       var existing = document.getElementById('overlay-manager-dialog');
       if (existing) existing.remove();
       openOverlayManager();

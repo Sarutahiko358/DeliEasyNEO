@@ -154,6 +154,9 @@ textarea.input { resize: vertical; min-height: 80px; }
   font-weight: 700;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
 }
 .stat-box.accent-primary { background: var(--c-primary-light); }
 .stat-box.accent-primary .stat-box-value { color: var(--c-primary); }

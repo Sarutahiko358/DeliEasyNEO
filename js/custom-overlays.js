@@ -69,6 +69,10 @@
     /* Clean up dynamic OVERLAYS entry and render function */
     if (window.OVERLAYS) delete window.OVERLAYS[id];
     delete window['renderOverlay_' + id];
+    /* サイドバーのカスタムオーバーレイ一覧を更新 */
+    if (typeof renderSidebar === 'function') {
+      try { renderSidebar(); } catch(e) {}
+    }
   }
 
   /* ============================================================
@@ -80,7 +84,15 @@
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === id) { overlay = list[i]; break; }
     }
-    if (!overlay) { toast('オーバーレイが見つかりません'); return; }
+    if (!overlay) {
+      toast('オーバーレイが見つかりません');
+      /* 既にOVERLAYSに登録されていたら掃除する */
+      if (window.OVERLAYS && window.OVERLAYS[id]) {
+        delete window.OVERLAYS[id];
+      }
+      delete window['renderOverlay_' + id];
+      return;
+    }
 
     /* Step 1: Register in OVERLAYS so overlay.js recognizes it */
     if (window.OVERLAYS) {
@@ -439,6 +451,9 @@
       if (list[i].id === id && list[i].data.items && list[i].data.items[idx]) {
         list[i].data.items[idx].done = done;
         saveCustomOverlays(list);
+        /* 画面を即座に再描画して取り消し線などを反映 */
+        var body = document.getElementById('overlay-body-' + id);
+        if (body) _renderChecklistOverlay(body, list[i]);
         return;
       }
     }
@@ -550,16 +565,25 @@
       if (window.OVERLAYS) {
         window.OVERLAYS[id] = { title: overlay.icon + ' ' + overlay.title };
       }
-      var titleEl = document.querySelector('#overlay-sheet-' + id + ' .overlay-title');
-      if (titleEl) titleEl.textContent = overlay.icon + ' ' + overlay.title;
+      var sheet = document.getElementById('overlay-sheet-' + id);
+      if (sheet) {
+        var titleEl = sheet.querySelector('.overlay-title');
+        if (titleEl) titleEl.textContent = overlay.icon + ' ' + overlay.title;
+      }
     };
     document.getElementById('co-edit-cancel').onclick = function() { div.remove(); };
     document.getElementById('co-edit-delete').onclick = function() {
       customConfirm('このオーバーレイを削除しますか？', function() {
-        deleteCustomOverlay(id);
         div.remove();
+        /* まずオーバーレイを閉じる（closeOverlayはスタックからpopする） */
         if (typeof closeOverlay === 'function') closeOverlay();
-        toast('🗑 削除しました');
+        /* 少し遅延してからデータ削除（DOMの整合性を保つため） */
+        setTimeout(function() {
+          deleteCustomOverlay(id);
+          toast('🗑 削除しました');
+          /* ホーム画面を更新 */
+          if (typeof refreshHome === 'function') refreshHome();
+        }, 100);
       });
     };
   };
