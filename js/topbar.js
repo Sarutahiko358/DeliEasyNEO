@@ -266,6 +266,7 @@
     var cfg = getTopbarConfig();
     var html = '';
 
+    html += '<div id="topbar-settings-container">';
     html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">📐 トップバー設定</div>';
 
@@ -288,6 +289,7 @@
     }
 
     html += '</div></div>';
+    html += '</div>';
     return html;
   }
 
@@ -314,6 +316,7 @@
     cfg.show = show;
     saveTopbarConfig(cfg);
     renderTopbar();
+    _refreshTopbarSettingsUI();
   }
 
   function setTopbarSlot(slotName, optionId) {
@@ -322,9 +325,13 @@
     cfg[slotName] = optionId;
     saveTopbarConfig(cfg);
     renderTopbar();
-    /* 編集モード中は設定UIも再描画 */
-    if (typeof isEditMode === 'function' && isEditMode()) {
-      if (typeof renderHome === 'function') renderHome();
+    _refreshTopbarSettingsUI();
+  }
+
+  function _refreshTopbarSettingsUI() {
+    var container = document.getElementById('topbar-settings-container');
+    if (container) {
+      container.outerHTML = renderTopbarSettings();
     }
   }
 

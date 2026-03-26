@@ -6,6 +6,16 @@
 (function(){
   'use strict';
 
+  /* セクション登録 */
+  if (typeof registerOverlaySections === 'function') {
+    registerOverlaySections('stats', [
+      { id: 'statsOverview', name: '概要', icon: '📊', defaultVisible: true },
+      { id: 'statsPf', name: 'PF別', icon: '📦', defaultVisible: true },
+      { id: 'statsExpense', name: '経費', icon: '💰', defaultVisible: true },
+      { id: 'statsRecords', name: '記録一覧', icon: '📋', defaultVisible: true }
+    ]);
+  }
+
   function renderOverlay_stats(body) {
     if (!body) return;
 

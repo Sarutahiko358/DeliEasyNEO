@@ -100,8 +100,25 @@
     });
     html += '</div>';
 
+    /* カスタムオーバーレイ */
+    var customOverlays = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
+    if (customOverlays.length > 0) {
+      html += '<hr class="sidebar-divider">';
+      customOverlays.forEach(function(co) {
+        html += '<button class="sidebar-item" data-custom-overlay="' + escHtml(co.id) + '">';
+        html += '<span class="sidebar-item-icon">' + escHtml(co.icon) + '</span>';
+        html += '<span class="sidebar-item-label">' + escHtml(co.title) + '</span>';
+        html += '</button>';
+      });
+    }
+    /* オーバーレイ追加ボタン */
+    html += '<button class="sidebar-item" id="sidebar-add-overlay">';
+    html += '<span class="sidebar-item-icon">＋</span>';
+    html += '<span class="sidebar-item-label" style="color:var(--c-primary)">オーバーレイ追加</span>';
+    html += '</button>';
+
     /* Footer */
-    html += '<div class="sidebar-footer">DeliEasy v2.0</div>';
+    html += '<div class="sidebar-footer">DeliEasy v2.1</div>';
 
     panel.innerHTML = html;
 
@@ -123,6 +140,24 @@
         }
       });
     });
+
+    /* カスタムオーバーレイのクリック */
+    panel.querySelectorAll('.sidebar-item[data-custom-overlay]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var coId = el.getAttribute('data-custom-overlay');
+        closeSidebar();
+        setTimeout(function() { openCustomOverlay(coId); }, 150);
+      });
+    });
+
+    /* オーバーレイ追加ボタン */
+    var addBtn = document.getElementById('sidebar-add-overlay');
+    if (addBtn) {
+      addBtn.addEventListener('click', function() {
+        closeSidebar();
+        setTimeout(function() { openCreateCustomOverlayDialog(); }, 200);
+      });
+    }
 
     /* サイドバー内スワイプで閉じる */
     _initPanelSwipeToClose(panel);

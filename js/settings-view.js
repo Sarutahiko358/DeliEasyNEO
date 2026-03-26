@@ -123,6 +123,22 @@
     html += '<button class="btn btn-secondary btn-block btn-sm" onclick="closeOverlay();setTimeout(function(){if(typeof enterEditMode===\'function\')enterEditMode()},200)">ホーム画面を編集</button>';
     html += '</div></div>';
 
+    /* ===== カスタムオーバーレイ管理 ===== */
+    html += '<div class="card mb12"><div class="card-body">';
+    html += '<div class="fz-s fw6 mb8">📄 カスタムオーバーレイ</div>';
+    var customOverlays = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
+    if (customOverlays.length > 0) {
+      customOverlays.forEach(function(co) {
+        html += '<div class="flex items-center gap8 mb8" style="padding:8px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm)">';
+        html += '<span>' + escHtml(co.icon) + '</span>';
+        html += '<span class="fz-s" style="flex:1">' + escHtml(co.title) + '</span>';
+        html += '<button class="btn btn-danger btn-xs" onclick="deleteCustomOverlay(\'' + escJs(co.id) + '\');_render()">削除</button>';
+        html += '</div>';
+      });
+    }
+    html += '<button class="btn btn-secondary btn-sm btn-block" onclick="openCreateCustomOverlayDialog(function(){_render()})">＋ 新規作成</button>';
+    html += '</div></div>';
+
     /* ===== バージョン情報 ===== */
     html += '<div class="text-c c-muted fz-xs mt16 mb16">';
     html += 'DeliEasy v2.0<br>';

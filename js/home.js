@@ -64,6 +64,7 @@
       if (typeof renderTopbarSettings === 'function') html += renderTopbarSettings();
       if (typeof renderBottombarSettings === 'function') html += renderBottombarSettings();
       if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
+      if (typeof renderFabSettings === 'function') html += renderFabSettings();
       html += '</div></div>';
     }
 

@@ -6,6 +6,17 @@
 (function(){
   'use strict';
 
+  /* セクション登録 */
+  if (typeof registerOverlaySections === 'function') {
+    registerOverlaySections('tax', [
+      { id: 'taxCalc', name: '税金計算', icon: '🧾', defaultVisible: true },
+      { id: 'taxBreakdown', name: '内訳', icon: '📋', defaultVisible: true },
+      { id: 'taxFurusato', name: 'ふるさと納税', icon: '🏠', defaultVisible: true },
+      { id: 'taxSchedule', name: 'スケジュール', icon: '📅', defaultVisible: true },
+      { id: 'taxTips', name: '節税ティップス', icon: '💡', defaultVisible: true }
+    ]);
+  }
+
   function renderOverlay_tax(body) {
     if (!body) return;
 

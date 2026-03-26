@@ -343,6 +343,7 @@
     var activeSections = cfg.sections || DEFAULT_RIGHT_PANEL_CFG.sections;
 
     var html = '';
+    html += '<div id="right-panel-settings-container">';
     html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">📊 右パネル設定</div>';
     html += '<div class="fz-xs c-muted mb8">表示するセクションを選択してください。</div>';
@@ -359,6 +360,7 @@
     });
 
     html += '</div></div>';
+    html += '</div>';
     return html;
   }
 
@@ -373,6 +375,14 @@
     }
     cfg.sections = sections;
     saveRightPanelConfig(cfg);
+    _refreshRightPanelSettingsUI();
+  }
+
+  function _refreshRightPanelSettingsUI() {
+    var container = document.getElementById('right-panel-settings-container');
+    if (container) {
+      container.outerHTML = renderRightPanelSettings();
+    }
   }
 
   /* ---------- Expose ---------- */

@@ -177,6 +177,15 @@
     else el.classList.add('sync-idle');
   }
 
+  /* ---------- Splash screen ---------- */
+  function hideSplash() {
+    var splash = document.getElementById('splash-screen');
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(function() { splash.remove(); }, 700);
+    }
+  }
+
   /* ---------- Init ---------- */
   function initApp() {
     applyTheme(getThemeStyle(), getThemeColor());
@@ -202,6 +211,7 @@
           onFirebaseSyncStatusChange(function() { updateSyncIndicator(); });
         }
         if (typeof maybeWarnStoragePressure === 'function') maybeWarnStoragePressure();
+        hideSplash();
 
       }).catch(function(e) {
         console.warn('[App] Init error:', e);
@@ -209,8 +219,12 @@
         if (typeof renderFab === 'function') renderFab();
         if (typeof renderTopbar === 'function') renderTopbar();
         if (typeof renderBottombar === 'function') renderBottombar();
+        hideSplash();
       });
     }
+
+    /* フォールバック: 5秒で強制的にスプラッシュを消す */
+    setTimeout(hideSplash, 5000);
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').then(function(reg) {

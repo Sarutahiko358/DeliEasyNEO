@@ -52,12 +52,18 @@
     sheet.setAttribute('data-level', level);
     sheet.setAttribute('data-id', id);
 
+    var customizable = ['calendar', 'stats', 'tax', 'expenseManage'];
+    var actionsHtml = '';
+    if (customizable.indexOf(id) >= 0) {
+      actionsHtml = '<button class="overlay-back" onclick="openOverlayCustomizer(\'' + id + '\', function(){ var b=document.getElementById(\'overlay-body-' + id + '\'); if(b && typeof window[\'renderOverlay_' + id + '\']===\'function\') window[\'renderOverlay_' + id + '\'](b); })" style="font-size:.8rem" title="カスタマイズ">⚙️</button>';
+    }
+
     sheet.innerHTML =
       '<div class="overlay-handle"></div>' +
       '<div class="overlay-header">' +
         '<button class="overlay-back" onclick="closeOverlay()">←</button>' +
         '<span class="overlay-title">' + escHtml(def.title) + '</span>' +
-        '<div class="overlay-actions"></div>' +
+        '<div class="overlay-actions">' + actionsHtml + '</div>' +
       '</div>' +
       '<div class="overlay-body" id="overlay-body-' + id + '">' +
         '<div class="text-c c-muted fz-s" style="padding:60px 0">読み込み中...</div>' +

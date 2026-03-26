@@ -23,7 +23,8 @@
   /* ---------- デフォルト設定 ---------- */
   var DEFAULT_BOTTOMBAR_CFG = {
     show: false,
-    items: ['earnInput', 'calendar', 'stats', 'expense', 'settings']
+    slotCount: 5,
+    items: ['earnInput', 'calendar', 'stats', 'expense', 'settings', 'none']
   };
 
   /* ---------- 設定取得/保存 ---------- */
@@ -59,20 +60,23 @@
     bar.id = 'bottombar';
     bar.className = 'bottombar';
 
+    var slotCount = cfg.slotCount || 5;
     var items = cfg.items || DEFAULT_BOTTOMBAR_CFG.items;
+    while (items.length < slotCount) items.push('none');
     var html = '';
 
-    items.forEach(function(itemId, idx) {
+    for (var idx = 0; idx < slotCount; idx++) {
+      var itemId = items[idx] || 'none';
       var actionDef = _findAction(itemId);
       if (!actionDef || actionDef.id === 'none') {
         html += '<button class="bottombar-item bottombar-item-empty"></button>';
-        return;
+        continue;
       }
       html += '<button class="bottombar-item" data-action-idx="' + idx + '">';
       html += '<span class="bottombar-item-icon">' + actionDef.icon + '</span>';
       html += '<span class="bottombar-item-label">' + escHtml(actionDef.label) + '</span>';
       html += '</button>';
-    });
+    }
 
     bar.innerHTML = html;
     document.getElementById('app').appendChild(bar);
@@ -82,11 +86,11 @@
     buttons.forEach(function(btn) {
       btn.addEventListener('click', function() {
         hp();
-        var idx = parseInt(btn.getAttribute('data-action-idx'), 10);
-        var itemId = items[idx];
-        var actionDef = _findAction(itemId);
-        if (actionDef && typeof actionDef.action === 'function') {
-          actionDef.action();
+        var i = parseInt(btn.getAttribute('data-action-idx'), 10);
+        var iid = items[i];
+        var ad = _findAction(iid);
+        if (ad && typeof ad.action === 'function') {
+          ad.action();
         }
       });
     });
@@ -97,6 +101,16 @@
   function _findAction(id) {
     for (var i = 0; i < BOTTOMBAR_ACTIONS.length; i++) {
       if (BOTTOMBAR_ACTIONS[i].id === id) return BOTTOMBAR_ACTIONS[i];
+    }
+    /* カスタムオーバーレイをチェック */
+    if (id && id.indexOf('custom_') === 0) {
+      var custom = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
+      for (var j = 0; j < custom.length; j++) {
+        if ('custom_' + custom[j].id === id || custom[j].id === id) {
+          var co = custom[j];
+          return { id: id, icon: co.icon, label: co.title, action: (function(cid) { return function() { openCustomOverlay(cid); }; })(co.id) };
+        }
+      }
     }
     return null;
   }
@@ -124,11 +138,26 @@
     }
   }
 
+  function _getBottombarActionsWithCustom() {
+    var actions = BOTTOMBAR_ACTIONS.slice();
+    var custom = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
+    custom.forEach(function(co) {
+      actions.push({
+        id: 'custom_' + co.id,
+        icon: co.icon,
+        label: co.title,
+        action: function() { openCustomOverlay(co.id); }
+      });
+    });
+    return actions;
+  }
+
   /* ---------- ボトムバー設定UI ---------- */
   function renderBottombarSettings() {
     var cfg = getBottombarConfig();
     var html = '';
 
+    html += '<div id="bottombar-settings-container">';
     html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">📱 ボトムバー設定</div>';
 
@@ -142,15 +171,27 @@
     html += '</div>';
 
     if (cfg.show) {
+      var slotCount = cfg.slotCount || 5;
       var items = cfg.items || DEFAULT_BOTTOMBAR_CFG.items;
-      html += '<div class="fz-xs c-muted mb8">最大5スロット。各スロットにアクションを割り当てます。</div>';
 
-      for (var i = 0; i < 5; i++) {
+      /* 表示数選択 */
+      html += '<div class="flex flex-between items-center mb12">';
+      html += '<span class="fz-s">表示アイコン数</span>';
+      html += '<select class="input" style="width:80px" onchange="setBottombarSlotCount(Number(this.value))">';
+      for (var n = 3; n <= 6; n++) {
+        html += '<option value="' + n + '"' + (slotCount === n ? ' selected' : '') + '>' + n + '個</option>';
+      }
+      html += '</select>';
+      html += '</div>';
+
+      html += '<div class="fz-xs c-muted mb8">各スロットにアクションを割り当てます。</div>';
+
+      for (var i = 0; i < slotCount; i++) {
         var currentId = items[i] || 'none';
         html += '<div class="mb8">';
         html += '<div class="fz-xs c-muted mb4">スロット ' + (i + 1) + '</div>';
         html += '<select class="input" onchange="setBottombarItem(' + i + ',this.value)" style="font-size:.8125rem">';
-        BOTTOMBAR_ACTIONS.forEach(function(act) {
+        _getBottombarActionsWithCustom().forEach(function(act) {
           var selected = act.id === currentId ? ' selected' : '';
           html += '<option value="' + escHtml(act.id) + '"' + selected + '>' + act.icon + ' ' + escHtml(act.label) + '</option>';
         });
@@ -159,6 +200,7 @@
     }
 
     html += '</div></div>';
+    html += '</div>';
     return html;
   }
 
@@ -169,11 +211,10 @@
     if (!cfg.items || cfg.items.length === 0) {
       cfg.items = DEFAULT_BOTTOMBAR_CFG.items.slice();
     }
+    if (!cfg.slotCount) cfg.slotCount = 5;
     saveBottombarConfig(cfg);
     renderBottombar();
-    if (typeof isEditMode === 'function' && isEditMode()) {
-      if (typeof renderHome === 'function') renderHome();
-    }
+    _refreshBottombarSettingsUI();
   }
 
   function setBottombarItem(index, actionId) {
@@ -184,6 +225,24 @@
     cfg.items[index] = actionId;
     saveBottombarConfig(cfg);
     renderBottombar();
+  }
+
+  function setBottombarSlotCount(count) {
+    hp();
+    var cfg = getBottombarConfig();
+    cfg.slotCount = Math.max(3, Math.min(6, count));
+    if (!cfg.items) cfg.items = DEFAULT_BOTTOMBAR_CFG.items.slice();
+    while (cfg.items.length < cfg.slotCount) cfg.items.push('none');
+    saveBottombarConfig(cfg);
+    renderBottombar();
+    _refreshBottombarSettingsUI();
+  }
+
+  function _refreshBottombarSettingsUI() {
+    var container = document.getElementById('bottombar-settings-container');
+    if (container) {
+      container.outerHTML = renderBottombarSettings();
+    }
   }
 
   /* ---------- 表示/非表示 ---------- */
@@ -204,6 +263,7 @@
   window.saveBottombarConfig = saveBottombarConfig;
   window.toggleBottombarVisibility = toggleBottombarVisibility;
   window.setBottombarItem = setBottombarItem;
+  window.setBottombarSlotCount = setBottombarSlotCount;
   window.showBottombar = showBottombar;
   window.hideBottombar = hideBottombar;
   window.BOTTOMBAR_ACTIONS = BOTTOMBAR_ACTIONS;

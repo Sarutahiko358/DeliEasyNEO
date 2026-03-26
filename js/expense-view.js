@@ -6,6 +6,15 @@
 (function(){
   'use strict';
 
+  /* セクション登録 */
+  if (typeof registerOverlaySections === 'function') {
+    registerOverlaySections('expenseManage', [
+      { id: 'expInput', name: '入力フォーム', icon: '✏️', defaultVisible: true },
+      { id: 'expCategory', name: 'カテゴリ別', icon: '📊', defaultVisible: true },
+      { id: 'expList', name: '経費一覧', icon: '📋', defaultVisible: true }
+    ]);
+  }
+
   function renderOverlay_expenseManage(body) {
     if (!body) return;
 

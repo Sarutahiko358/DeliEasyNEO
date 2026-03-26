@@ -18,6 +18,7 @@
 | 6 | 機能オーバーレイ群 | 8 | ✅ 完了 | 03-25 | 03-25 |
 | 7 | 統合・仕上げ | 5+ | ✅ 完了 | 03-25 | 03-26 |
 | 8 | 旧CSS完全排除 | 6 | ✅ 完了 | 03-26 | 03-26 |
+| 9 | v2.1 機能拡張 | 8 | ✅ 完了 | - | - |
 
 ---
 
@@ -293,3 +294,23 @@
 - Phase 8 で旧JSファイル（calendar.js, stats.js, expense.js, tax.js）を v2 CSS変数・クラスに完全移行。legacy-structures.css と legacy-compat.css への依存は完全に排除された。
 - 全てのスタイルは v2 の CSS変数（--c-*, --ds-*）とクラス名（.card, .btn, .stat-box等）で動作する。
 - styles/main.css は不要（プロジェクトに残っている場合も未使用）。
+
+---
+
+## Phase 9: v2.1 機能拡張
+
+| 作業 | 状態 | メモ |
+|------|------|------|
+| スプラッシュ画面 | ✅ | index.html + base.css + app.js に実装。initApp完了で自動非表示、5秒フォールバック付き |
+| ボトムバースロット数変更 | ✅ | 3〜6スロット選択可能。bottombar.js に slotCount 設定追加 |
+| 設定変更で編集モード維持 | ✅ | bottombar/topbar/right-panel の設定変更が renderHome() を呼ばずにUI部分更新 |
+| オーバーレイセクションカスタマイズ | ✅ | overlay-customizer.js 新規作成。⚙️ボタンで表示/非表示・並び替え |
+| カスタムオーバーレイ | ✅ | custom-overlays.js 新規作成。メモ/チェックリスト/リンク集の3タイプ |
+| FABカスタマイズ | ✅ | fab.js 全面書き換え。表示/非表示・位置・アクション選択がプリセット保存対応 |
+| サイドバーにカスタムオーバーレイ | ✅ | sidebar.js にカスタムオーバーレイ項目+追加ボタン |
+| 設定にカスタムオーバーレイ管理 | ✅ | settings-view.js に一覧表示・削除・新規作成UI |
+| sw.js キャッシュ更新 | ✅ | CACHE_NAME → delieasy-v9、新規JSファイルをPRE_CACHEに追加 |
+
+**新規ファイル:**
+- js/overlay-customizer.js — オーバーレイセクションの表示/非表示・並び替えカスタマイザー
+- js/custom-overlays.js — ユーザー定義カスタムオーバーレイ（メモ・チェックリスト・リンク集）
