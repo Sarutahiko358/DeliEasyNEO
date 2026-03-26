@@ -19,12 +19,21 @@
     openThreshold: 40,
     closeThreshold: 50,
     rightEdgeWidth: 25,
-    rightOpenThreshold: 60
+    rightOpenThreshold: 60,
+    rightCloseThreshold: 50
   };
 
   /* ---------- 感度設定の取得/保存 ---------- */
   function getGestureConfig() {
-    return S.g('gesture_cfg', DEFAULT_GESTURE_CFG);
+    var saved = S.g('gesture_cfg', null);
+    if (saved && typeof saved === 'object') {
+      /* 既存保存データにrightCloseThresholdがない場合のマイグレーション */
+      if (saved.rightCloseThreshold === undefined) {
+        saved.rightCloseThreshold = DEFAULT_GESTURE_CFG.rightCloseThreshold;
+      }
+      return saved;
+    }
+    return JSON.parse(JSON.stringify(DEFAULT_GESTURE_CFG));
   }
 
   function saveGestureConfig(cfg) {
@@ -238,48 +247,64 @@
     html += '<div class="fz-s fw6 mb12">👆 ジェスチャー設定</div>';
     html += '<div class="fz-xs c-muted mb12">画面端からのスワイプでサイドバーや右パネルを開く操作を調整します。<br>端末のOS戻るジェスチャーと競合する場合は、検出幅を広めに設定してください。</div>';
 
-    /* 左サイドバー: 端からの検出幅 */
+    /* --- 左サイドバー --- */
+    html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">◀ 左サイドバー</div>';
+
+    /* 検出幅 */
     html += '<div class="mb12">';
-    html += '<div class="fz-xs fw6 c-secondary mb4">左サイドバー — 検出幅: <span id="gesture-edge-val">' + cfg.edgeWidth + '</span>px</div>';
+    html += '<div class="fz-xs fw6 c-secondary mb4">検出幅: <span id="gesture-edge-val">' + cfg.edgeWidth + '</span>px</div>';
     html += '<input type="range" class="input-range" min="20" max="80" step="5" value="' + cfg.edgeWidth + '" ';
     html += 'oninput="document.getElementById(\'gesture-edge-val\').textContent=this.value" ';
     html += 'onchange="_gestureSet(\'edgeWidth\',Number(this.value))">';
     html += '<div class="flex flex-between fz-xxs c-muted"><span>20px（狭い）</span><span>80px（広い）</span></div>';
     html += '</div>';
 
-    /* 左サイドバー: 開くためのスワイプ距離 */
+    /* 開く距離 */
     html += '<div class="mb12">';
-    html += '<div class="fz-xs fw6 c-secondary mb4">左サイドバー — 開く距離: <span id="gesture-open-val">' + cfg.openThreshold + '</span>px</div>';
+    html += '<div class="fz-xs fw6 c-secondary mb4">開く距離: <span id="gesture-open-val">' + cfg.openThreshold + '</span>px</div>';
     html += '<input type="range" class="input-range" min="20" max="80" step="5" value="' + cfg.openThreshold + '" ';
     html += 'oninput="document.getElementById(\'gesture-open-val\').textContent=this.value" ';
     html += 'onchange="_gestureSet(\'openThreshold\',Number(this.value))">';
     html += '<div class="flex flex-between fz-xxs c-muted"><span>20px（敏感）</span><span>80px（鈍い）</span></div>';
     html += '</div>';
 
-    /* サイドバー閉じるスワイプ距離 */
+    /* 閉じる距離 */
     html += '<div class="mb12">';
-    html += '<div class="fz-xs fw6 c-secondary mb4">サイドバー — 閉じる距離: <span id="gesture-close-val">' + cfg.closeThreshold + '</span>px</div>';
+    html += '<div class="fz-xs fw6 c-secondary mb4">閉じる距離: <span id="gesture-close-val">' + cfg.closeThreshold + '</span>px</div>';
     html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.closeThreshold + '" ';
     html += 'oninput="document.getElementById(\'gesture-close-val\').textContent=this.value" ';
     html += 'onchange="_gestureSet(\'closeThreshold\',Number(this.value))">';
     html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
     html += '</div>';
 
-    /* 右パネル: 端からの検出幅 */
+    /* --- 右パネル --- */
+    html += '<div style="margin-top:16px;padding-top:12px;border-top:.5px solid var(--c-divider)"></div>';
+    html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">▶ 右パネル</div>';
+
+    /* 検出幅 */
     html += '<div class="mb12">';
-    html += '<div class="fz-xs fw6 c-secondary mb4">右パネル — 検出幅: <span id="gesture-redge-val">' + cfg.rightEdgeWidth + '</span>px</div>';
+    html += '<div class="fz-xs fw6 c-secondary mb4">検出幅: <span id="gesture-redge-val">' + cfg.rightEdgeWidth + '</span>px</div>';
     html += '<input type="range" class="input-range" min="15" max="60" step="5" value="' + cfg.rightEdgeWidth + '" ';
     html += 'oninput="document.getElementById(\'gesture-redge-val\').textContent=this.value" ';
     html += 'onchange="_gestureSet(\'rightEdgeWidth\',Number(this.value))">';
     html += '<div class="flex flex-between fz-xxs c-muted"><span>15px（狭い）</span><span>60px（広い）</span></div>';
     html += '</div>';
 
-    /* 右パネル: 開くためのスワイプ距離 */
+    /* 開く距離 */
     html += '<div class="mb12">';
-    html += '<div class="fz-xs fw6 c-secondary mb4">右パネル — 開く距離: <span id="gesture-ropen-val">' + cfg.rightOpenThreshold + '</span>px</div>';
+    html += '<div class="fz-xs fw6 c-secondary mb4">開く距離: <span id="gesture-ropen-val">' + cfg.rightOpenThreshold + '</span>px</div>';
     html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.rightOpenThreshold + '" ';
     html += 'oninput="document.getElementById(\'gesture-ropen-val\').textContent=this.value" ';
     html += 'onchange="_gestureSet(\'rightOpenThreshold\',Number(this.value))">';
+    html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
+    html += '</div>';
+
+    /* 閉じる距離 */
+    html += '<div class="mb12">';
+    html += '<div class="fz-xs fw6 c-secondary mb4">閉じる距離: <span id="gesture-rclose-val">' + cfg.rightCloseThreshold + '</span>px</div>';
+    html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.rightCloseThreshold + '" ';
+    html += 'oninput="document.getElementById(\'gesture-rclose-val\').textContent=this.value" ';
+    html += 'onchange="_gestureSet(\'rightCloseThreshold\',Number(this.value))">';
     html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
     html += '</div>';
 

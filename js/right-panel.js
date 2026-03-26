@@ -23,7 +23,7 @@
       if (cfg[key] !== undefined) return cfg[key];
     }
     /* フォールバック */
-    var defaults = { rightEdgeWidth: 25, rightOpenThreshold: 60, closeThreshold: 50 };
+    var defaults = { rightEdgeWidth: 25, rightOpenThreshold: 60, rightCloseThreshold: 50, closeThreshold: 50 };
     return defaults[key] || 50;
   }
 
@@ -141,7 +141,7 @@
       var overlay = document.getElementById('right-panel-overlay');
       if (overlay) overlay.style.opacity = '';
 
-      if (_panelTranslateX > _gc('closeThreshold')) {
+      if (_panelTranslateX > _gc('rightCloseThreshold')) {
         /* 十分にスワイプした → 閉じる */
         closeRightPanel();
       } else {
