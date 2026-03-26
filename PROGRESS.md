@@ -269,12 +269,19 @@
 
 ---
 
-## Phase 10: v2.2 (2026-03-26)
+了解です。以下が日本語版です。
 
-- **Circular loading screen**: Replaced 3-dot splash with clean circular spinner, no icon/text
-- **FAB free-position**: Long-press FAB to drag and place anywhere on screen; position saved per-preset
-- **Overlay Manager**: Widget-editing-style management dialog for overlays (add/edit/move/delete custom overlays, open/customize built-in overlays)
-- **Overlay section drag reorder**: Long-press drag to reorder sections in overlay customizer (replaces ▲/▼ buttons)
+---
+
+## Phase 10 — v2.2 (2026-03-26)
+
+- **円形ローディング画面**: 3ドットのスプラッシュをシンプルな円形スピナーに置換。アイコン・テキストなし
+- **FAB自由配置**: FABボタンを長押しで画面上の好きな位置にドラッグ配置可能。位置はプリセットごとに保存
+- **カスタムオーバーレイ閉じる/戻るバグ修正**: openCustomOverlay()をoverlay.jsのスタック管理に統合し、←ボタンとスワイプダウンで正常に閉じられるように修正
+- **ダッシュボード型カスタムオーバーレイ**: 新タイプ「ダッシュボード」を追加。ホーム画面と同じウィジェット（時計、今日の売上、ミニカレンダー等）を自由に追加・削除・並び替え・サイズ変更可能。長押しで編集モードに入る操作感もホーム画面と同一
+- **オーバーレイ管理**: ホーム画面のウィジェット編集と同様のスタイルで、オーバーレイを管理するダイアログを追加（カスタムオーバーレイの追加・編集・並び替え・削除、組み込みオーバーレイの表示・カスタマイズ）
+- **オーバーレイセクション ドラッグ並び替え**: オーバーレイカスタマイザー内のセクション並び替えを、▲▼ボタンから長押しドラッグ方式に変更
+
 | --bg | --c-bg |
 | --tx | --c-tx |
 | --sub | --c-tx-secondary |

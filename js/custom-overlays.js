@@ -1,11 +1,18 @@
 /* ==========================================================
    DeliEasy v2 — js/custom-overlays.js
-   ユーザー定義カスタムオーバーレイ
+   ユーザー定義カスタムオーバーレイ（閉じる/戻る修正 + ダッシュボード型追加）
    ========================================================== */
 (function(){
   'use strict';
 
   var CUSTOM_OVERLAY_TYPES = [
+    {
+      id: 'dashboard',
+      name: 'ダッシュボード',
+      icon: '📊',
+      desc: 'ウィジェットを自由に配置できる画面',
+      render: _renderDashboardOverlay
+    },
     {
       id: 'memo',
       name: 'メモ帳',
@@ -47,6 +54,10 @@
       icon: icon || '📄',
       data: {}
     };
+    /* Dashboard type: initialize with empty widgets array */
+    if (type === 'dashboard') {
+      overlay.data.widgets = [];
+    }
     list.push(overlay);
     saveCustomOverlays(list);
     return overlay;
@@ -55,8 +66,14 @@
   function deleteCustomOverlay(id) {
     var list = getCustomOverlays().filter(function(o) { return o.id !== id; });
     saveCustomOverlays(list);
+    /* Clean up dynamic OVERLAYS entry and render function */
+    if (window.OVERLAYS) delete window.OVERLAYS[id];
+    delete window['renderOverlay_' + id];
   }
 
+  /* ============================================================
+     openCustomOverlay — NOW uses overlay.js stack properly
+     ============================================================ */
   function openCustomOverlay(id) {
     var list = getCustomOverlays();
     var overlay = null;
@@ -65,38 +82,41 @@
     }
     if (!overlay) { toast('オーバーレイが見つかりません'); return; }
 
-    var container = document.getElementById('overlay-container');
-    var backdrop = document.getElementById('overlay-backdrop');
-    if (!container) return;
+    /* Step 1: Register in OVERLAYS so overlay.js recognizes it */
+    if (window.OVERLAYS) {
+      window.OVERLAYS[id] = { title: overlay.icon + ' ' + overlay.title };
+    }
 
-    var sheet = document.createElement('div');
-    sheet.className = 'overlay-sheet';
-    sheet.id = 'overlay-sheet-' + id;
-    sheet.setAttribute('data-level', '1');
-    sheet.setAttribute('data-id', id);
+    /* Step 2: Register render function so overlay.js calls it */
+    window['renderOverlay_' + id] = function(body) {
+      _renderCustomOverlayBody(body, overlay);
+    };
 
-    sheet.innerHTML =
-      '<div class="overlay-handle"></div>' +
-      '<div class="overlay-header">' +
-        '<button class="overlay-back" onclick="closeOverlay()">←</button>' +
-        '<span class="overlay-title">' + escHtml(overlay.icon + ' ' + overlay.title) + '</span>' +
-        '<div class="overlay-actions">' +
-          '<button class="overlay-back" onclick="_editCustomOverlaySettings(\'' + escJs(id) + '\')" style="font-size:.8rem">⚙️</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="overlay-body" id="overlay-body-' + id + '"></div>';
+    /* Step 3: Open via the standard overlay system (uses _stack properly) */
+    if (typeof openOverlay === 'function') {
+      openOverlay(id);
+    }
 
-    container.appendChild(sheet);
-    container.classList.add('has-overlay');
-    if (backdrop) backdrop.classList.add('visible');
+    /* Step 4: After opening, add the settings gear button to the header */
+    setTimeout(function() {
+      var sheet = document.getElementById('overlay-sheet-' + id);
+      if (sheet) {
+        var actions = sheet.querySelector('.overlay-actions');
+        if (actions && !actions.querySelector('.co-settings-btn')) {
+          var btn = document.createElement('button');
+          btn.className = 'overlay-back co-settings-btn';
+          btn.style.fontSize = '.8rem';
+          btn.title = 'カスタマイズ';
+          btn.textContent = '⚙️';
+          btn.onclick = function() { _editCustomOverlaySettings(id); };
+          actions.appendChild(btn);
+        }
+      }
+    }, 100);
+  }
 
-    document.body.style.overscrollBehavior = 'none';
-
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() { sheet.classList.add('open'); });
-    });
-
-    var body = document.getElementById('overlay-body-' + id);
+  /* Dispatch to the correct renderer based on overlay type */
+  function _renderCustomOverlayBody(body, overlay) {
     var typeDef = null;
     for (var j = 0; j < CUSTOM_OVERLAY_TYPES.length; j++) {
       if (CUSTOM_OVERLAY_TYPES[j].id === overlay.type) { typeDef = CUSTOM_OVERLAY_TYPES[j]; break; }
@@ -106,11 +126,253 @@
     } else {
       body.innerHTML = '<div class="text-c c-muted fz-s" style="padding:40px">不明なタイプ: ' + escHtml(overlay.type) + '</div>';
     }
-
-    if (typeof hideFab === 'function') hideFab();
   }
 
-  /* --- メモ帳レンダラー --- */
+  /* ============================================================
+     Dashboard overlay — widget-based custom screen
+     ============================================================ */
+  var _dashEditMode = {};  /* Track edit mode per overlay id */
+
+  function _renderDashboardOverlay(body, overlay) {
+    if (!overlay.data.widgets) overlay.data.widgets = [];
+    var widgets = overlay.data.widgets;
+    var isEditing = !!_dashEditMode[overlay.id];
+
+    var html = '';
+
+    /* Edit mode toggle bar */
+    if (isEditing) {
+      html += '<div class="edit-mode-header" style="margin-bottom:12px">';
+      html += '<button class="btn btn-ghost btn-sm" onclick="_dashExitEdit(\'' + escJs(overlay.id) + '\')">キャンセル</button>';
+      html += '<span class="fw6 fz-s">ウィジェット編集</span>';
+      html += '<button class="btn btn-primary btn-sm" onclick="_dashExitEdit(\'' + escJs(overlay.id) + '\')">完了</button>';
+      html += '</div>';
+    }
+
+    /* Widget grid */
+    html += '<div class="widget-grid' + (isEditing ? ' widget-grid-editing' : '') + '" id="dash-widget-grid-' + escHtml(overlay.id) + '">';
+
+    if (widgets.length === 0 && !isEditing) {
+      html += '<div class="widget widget-full">';
+      html += '<div class="widget-empty" style="padding:40px">';
+      html += '<div style="font-size:2rem;margin-bottom:8px">📊</div>';
+      html += '<div class="fz-s c-muted mb8">ウィジェットがまだありません</div>';
+      html += '<button class="btn btn-primary btn-sm" onclick="_dashEnterEdit(\'' + escJs(overlay.id) + '\')">ウィジェットを追加</button>';
+      html += '</div></div>';
+    } else {
+      widgets.forEach(function(w, idx) {
+        var def = window.WIDGET_DEFS ? window.WIDGET_DEFS[w.id] : null;
+        if (!def) return;
+        var sizeClass = 'widget-' + (w.size || def.size || 'full');
+        var tappable = !isEditing && def.tappable ? ' widget-tappable' : '';
+        var tapAttr = '';
+        if (!isEditing && def.tappable && def.tapAction) {
+          tapAttr = ' onclick="widgetTap(\'' + def.tapAction + '\')"';
+        }
+
+        html += '<div class="widget ' + sizeClass + tappable + '"' + tapAttr + '>';
+        html += '<div class="widget-title">';
+        html += '<span>' + def.icon + ' ' + escHtml(def.name) + '</span>';
+
+        if (isEditing) {
+          html += '<div class="widget-edit-controls">';
+          /* Move up */
+          if (idx > 0) {
+            html += '<button class="widget-edit-btn" onclick="event.stopPropagation();_dashMoveWidget(\'' + escJs(overlay.id) + '\',' + idx + ',-1)" title="上へ">▲</button>';
+          }
+          /* Move down */
+          if (idx < widgets.length - 1) {
+            html += '<button class="widget-edit-btn" onclick="event.stopPropagation();_dashMoveWidget(\'' + escJs(overlay.id) + '\',' + idx + ',1)" title="下へ">▼</button>';
+          }
+          /* Size cycle */
+          if (def.sizeOptions && def.sizeOptions.length > 1) {
+            html += '<button class="widget-edit-btn" onclick="event.stopPropagation();_dashCycleSize(\'' + escJs(overlay.id) + '\',' + idx + ')" title="サイズ変更">↔</button>';
+          }
+          /* Remove */
+          html += '<button class="widget-edit-btn widget-edit-del" onclick="event.stopPropagation();_dashRemoveWidget(\'' + escJs(overlay.id) + '\',' + idx + ')" title="削除">✕</button>';
+          html += '</div>';
+        }
+
+        html += '</div>';
+
+        try {
+          html += def.render(w);
+        } catch (e) {
+          html += '<div class="widget-empty">表示エラー</div>';
+        }
+        html += '</div>';
+      });
+    }
+
+    /* Add widget button in edit mode */
+    if (isEditing) {
+      html += '<div class="widget widget-full widget-add" onclick="_dashOpenWidgetPicker(\'' + escJs(overlay.id) + '\')">';
+      html += '<div class="widget-add-inner">＋ ウィジェットを追加</div>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+
+    /* Long-press hint when not editing and has widgets */
+    if (!isEditing && widgets.length > 0) {
+      html += '<div class="text-c fz-xs c-muted mt16 mb8" style="opacity:.5">';
+      html += 'ウィジェットを長押しで編集モード';
+      html += '</div>';
+    }
+
+    body.innerHTML = html;
+
+    /* Init long-press to enter edit mode */
+    if (!isEditing && widgets.length > 0) {
+      _initDashLongPress(overlay.id);
+    }
+
+    /* Start clock widget if present */
+    if (widgets.some(function(w) { return w.id === 'clock'; })) {
+      if (typeof startWidgetClock === 'function') startWidgetClock();
+    }
+  }
+
+  /* --- Dashboard edit mode --- */
+  window._dashEnterEdit = function(coId) {
+    hp();
+    _dashEditMode[coId] = true;
+    _refreshDashboard(coId);
+  };
+
+  window._dashExitEdit = function(coId) {
+    _dashEditMode[coId] = false;
+    _refreshDashboard(coId);
+  };
+
+  window._dashRemoveWidget = function(coId, idx) {
+    hp();
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === coId) {
+        if (list[i].data.widgets) {
+          list[i].data.widgets.splice(idx, 1);
+          saveCustomOverlays(list);
+        }
+        _refreshDashboard(coId);
+        return;
+      }
+    }
+  };
+
+  window._dashMoveWidget = function(coId, idx, dir) {
+    hp();
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === coId && list[i].data.widgets) {
+        var ws = list[i].data.widgets;
+        var newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= ws.length) return;
+        var tmp = ws[newIdx];
+        ws[newIdx] = ws[idx];
+        ws[idx] = tmp;
+        saveCustomOverlays(list);
+        _refreshDashboard(coId);
+        return;
+      }
+    }
+  };
+
+  window._dashCycleSize = function(coId, idx) {
+    hp();
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === coId && list[i].data.widgets) {
+        var w = list[i].data.widgets[idx];
+        var def = window.WIDGET_DEFS ? window.WIDGET_DEFS[w.id] : null;
+        if (!def || !def.sizeOptions || def.sizeOptions.length < 2) return;
+        var curIdx = def.sizeOptions.indexOf(w.size || def.size);
+        var nextIdx = (curIdx + 1) % def.sizeOptions.length;
+        w.size = def.sizeOptions[nextIdx];
+        saveCustomOverlays(list);
+        _refreshDashboard(coId);
+        return;
+      }
+    }
+  };
+
+  /* --- Dashboard widget picker --- */
+  window._dashOpenWidgetPicker = function(coId) {
+    hp();
+    var cats = window.WIDGET_CATEGORIES || [];
+    var defs = window.WIDGET_DEFS || {};
+
+    var div = document.createElement('div');
+    div.className = 'confirm-overlay';
+    var h = '<div class="confirm-box" style="width:340px;max-height:80vh;overflow-y:auto;text-align:left">';
+    h += '<h3 class="fz-s fw6 mb12 text-c">ウィジェットを追加</h3>';
+
+    cats.forEach(function(cat) {
+      var items = Object.values(defs).filter(function(w) { return w.category === cat.id; });
+      if (items.length === 0) return;
+      h += '<div class="fz-xs fw6 c-secondary mb8 mt8">' + cat.icon + ' ' + escHtml(cat.name) + '</div>';
+      items.forEach(function(w) {
+        h += '<button class="btn btn-secondary btn-sm btn-block mb4" style="text-align:left;justify-content:flex-start" onclick="_dashAddWidget(\'' + escJs(coId) + '\',\'' + escJs(w.id) + '\');this.closest(\'.confirm-overlay\').remove()">';
+        h += w.icon + ' ' + escHtml(w.name) + ' <span class="fz-xs c-muted">- ' + escHtml(w.desc) + '</span>';
+        h += '</button>';
+      });
+    });
+
+    h += '<button class="btn btn-ghost btn-block mt12" onclick="this.closest(\'.confirm-overlay\').remove()">閉じる</button>';
+    h += '</div>';
+    div.innerHTML = h;
+    document.body.appendChild(div);
+  };
+
+  window._dashAddWidget = function(coId, widgetId) {
+    var def = window.WIDGET_DEFS ? window.WIDGET_DEFS[widgetId] : null;
+    if (!def) return;
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === coId) {
+        if (!list[i].data.widgets) list[i].data.widgets = [];
+        list[i].data.widgets.push({ id: widgetId, size: def.size });
+        saveCustomOverlays(list);
+        toast('✅ ' + def.name + 'を追加しました');
+        _refreshDashboard(coId);
+        return;
+      }
+    }
+  };
+
+  /* --- Dashboard long-press to enter edit --- */
+  function _initDashLongPress(coId) {
+    var grid = document.getElementById('dash-widget-grid-' + coId);
+    if (!grid) return;
+    var timer = null;
+    grid.addEventListener('touchstart', function(e) {
+      var widget = e.target.closest('.widget');
+      if (!widget) return;
+      timer = setTimeout(function() {
+        hp();
+        _dashEditMode[coId] = true;
+        _refreshDashboard(coId);
+      }, 600);
+    }, { passive: true });
+    grid.addEventListener('touchend', function() { clearTimeout(timer); }, { passive: true });
+    grid.addEventListener('touchmove', function() { clearTimeout(timer); }, { passive: true });
+  }
+
+  /* --- Refresh dashboard content --- */
+  function _refreshDashboard(coId) {
+    var body = document.getElementById('overlay-body-' + coId);
+    if (!body) return;
+    var list = getCustomOverlays();
+    var overlay = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === coId) { overlay = list[i]; break; }
+    }
+    if (overlay) _renderDashboardOverlay(body, overlay);
+  }
+
+  /* ============================================================
+     Memo overlay renderer
+     ============================================================ */
   function _renderMemoOverlay(body, overlay) {
     var html = '';
     html += '<div class="card mb12"><div class="card-body">';
@@ -133,7 +395,9 @@
     toast('✅ メモを保存しました');
   };
 
-  /* --- チェックリストレンダラー --- */
+  /* ============================================================
+     Checklist overlay renderer
+     ============================================================ */
   function _renderChecklistOverlay(body, overlay) {
     var items = overlay.data.items || [];
     var html = '';
@@ -193,7 +457,9 @@
     }
   };
 
-  /* --- リンク集レンダラー --- */
+  /* ============================================================
+     Links overlay renderer
+     ============================================================ */
   function _renderLinksOverlay(body, overlay) {
     var links = overlay.data.links || [];
     var html = '';
@@ -245,7 +511,9 @@
     }
   };
 
-  /* --- カスタムオーバーレイ設定編集 --- */
+  /* ============================================================
+     Custom overlay settings editor
+     ============================================================ */
   window._editCustomOverlaySettings = function(id) {
     var list = getCustomOverlays();
     var overlay = null;
@@ -278,6 +546,10 @@
       saveCustomOverlays(list);
       div.remove();
       toast('✅ 設定を保存しました');
+      /* Update OVERLAYS registry and sheet title */
+      if (window.OVERLAYS) {
+        window.OVERLAYS[id] = { title: overlay.icon + ' ' + overlay.title };
+      }
       var titleEl = document.querySelector('#overlay-sheet-' + id + ' .overlay-title');
       if (titleEl) titleEl.textContent = overlay.icon + ' ' + overlay.title;
     };
@@ -286,22 +558,24 @@
       customConfirm('このオーバーレイを削除しますか？', function() {
         deleteCustomOverlay(id);
         div.remove();
-        closeOverlay();
+        if (typeof closeOverlay === 'function') closeOverlay();
         toast('🗑 削除しました');
       });
     };
   };
 
-  /* --- カスタムオーバーレイ作成ダイアログ --- */
+  /* ============================================================
+     Create custom overlay dialog — updated with dashboard option
+     ============================================================ */
   function openCreateCustomOverlayDialog(onCreated) {
     var div = document.createElement('div');
     div.className = 'confirm-overlay';
     var h = '<div class="confirm-box" style="max-width:340px;text-align:left">';
     h += '<h3 class="fz-s fw6 mb12 text-c">新しいオーバーレイを作成</h3>';
     h += '<div class="input-group"><label class="input-label">タイトル</label>';
-    h += '<input type="text" class="input" id="co-new-title" placeholder="例: メモ帳"></div>';
+    h += '<input type="text" class="input" id="co-new-title" placeholder="例: マイダッシュボード"></div>';
     h += '<div class="input-group"><label class="input-label">アイコン（絵文字）</label>';
-    h += '<input type="text" class="input" id="co-new-icon" placeholder="📝" maxlength="2"></div>';
+    h += '<input type="text" class="input" id="co-new-icon" placeholder="📊" maxlength="2"></div>';
     h += '<div class="input-group"><label class="input-label">種類</label>';
     h += '<select class="input" id="co-new-type">';
     CUSTOM_OVERLAY_TYPES.forEach(function(t) {
