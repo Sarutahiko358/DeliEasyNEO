@@ -60,6 +60,7 @@
     { id: 'theme',         icon: '🎨', label: 'テーマ',       overlay: 'theme' },
     { id: 'overlay-mgr',   icon: '📐', label: 'オーバーレイ管理', action: 'openOverlayManager' },
     { id: 'home-edit',     icon: '🏠', label: 'ホーム編集',   action: 'enterEditMode' },
+    { id: 'edit-advanced', icon: '🔧', label: '詳細設定',   action: 'openEditAdvanced' },
     { id: 'settings',      icon: '⚙️', label: '設定',         overlay: 'settings' },
     { id: 'help',          icon: '❓', label: 'ヘルプ',       overlay: 'help' }
   ];
@@ -119,7 +120,7 @@
     html += '</button>';
 
     /* Footer */
-    html += '<div class="sidebar-footer">DeliEasy v2.2</div>';
+    html += '<div class="sidebar-footer">DeliEasy v2.4</div>';
 
     panel.innerHTML = html;
 
@@ -141,6 +142,10 @@
         } else if (actionId === 'enterEditMode') {
           setTimeout(function() {
             if (typeof window.enterEditMode === 'function') window.enterEditMode();
+          }, 150);
+        } else if (actionId === 'openEditAdvanced') {
+          setTimeout(function() {
+            if (typeof window.openEditAdvanced === 'function') window.openEditAdvanced();
           }, 150);
         }
       });

@@ -291,7 +291,15 @@
       { id: 'brutal',  name: 'ブルータル', emoji: '🔨', desc: '太いボーダー・大胆なフォント・インパクト' },
       { id: 'glass',   name: 'グラス',     emoji: '🪟', desc: '全面フロストガラス・透け感とブラー' },
       { id: 'classic', name: 'クラシック', emoji: '📖', desc: '伝統的なWebデザイン・読みやすさ重視' },
-      { id: 'compact', name: 'コンパクト', emoji: '📱', desc: '情報密度最大・一画面に多く表示' }
+      { id: 'compact', name: 'コンパクト', emoji: '📱', desc: '情報密度最大・一画面に多く表示' },
+      { id: 'gradient',  name: 'グラデーション', emoji: '🌈', desc: 'カード/ボタンにグラデーション・華やか' },
+      { id: 'sketch',    name: 'スケッチ',     emoji: '✏️', desc: '手描き風ボーダー・ラフで親しみやすい' },
+      { id: 'terminal',  name: 'ターミナル',   emoji: '💻', desc: '等幅フォント・CUIライクな表示' },
+      { id: 'magazine',  name: 'マガジン',     emoji: '📰', desc: 'セリフ体・大きな文字・雑誌風' },
+      { id: 'material',  name: 'マテリアル',   emoji: '🎯', desc: 'Material Design 3風・影と丸み' },
+      { id: 'dotted',    name: 'ドット',       emoji: '⚫', desc: 'ドットボーダー・レトロゲーム風' },
+      { id: 'outline',   name: 'アウトライン', emoji: '🔲', desc: '塗りなし線のみ・線画的な美しさ' },
+      { id: 'mono',      name: 'モノ',         emoji: '⬛', desc: '完全モノクロ・グレースケールのみ' }
     ];
 
     var lightColors = [

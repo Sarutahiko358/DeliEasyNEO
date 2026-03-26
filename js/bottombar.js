@@ -17,6 +17,7 @@
     { id: 'theme',        icon: '🎨', label: 'テーマ',      action: function(){ openOverlay('theme'); } },
     { id: 'presetNext',   icon: '🔄', label: '次のプリセット', action: _nextPreset },
     { id: 'editMode',     icon: '✏️', label: '編集モード',  action: function(){ if (typeof enterEditMode === 'function') enterEditMode(); } },
+    { id: 'editAdvanced', icon: '🔧', label: '詳細設定',  action: function(){ if (typeof openEditAdvanced === 'function') openEditAdvanced(); } },
     { id: 'none',         icon: '',   label: '空欄',        action: function(){} }
   ];
 

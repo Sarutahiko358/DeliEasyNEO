@@ -34,7 +34,8 @@
       { id: 'settingsIcon',    label: '設定',         render: _renderSettingsIcon },
       { id: 'themeIcon',       label: 'テーマ',       render: _renderThemeIcon },
       { id: 'todaySales',      label: '今日の売上',   render: _renderTodaySalesCompact },
-      { id: 'todayCount',      label: '今日の件数',   render: _renderTodayCountCompact }
+      { id: 'todayCount',      label: '今日の件数',   render: _renderTodayCountCompact },
+      { id: 'editAdvanced', label: '詳細設定',   render: _renderEditAdvancedIcon }
     ]
   };
 
@@ -216,6 +217,10 @@
 
   function _renderThemeIcon() {
     return '<button class="topbar-btn" onclick="openOverlay(\'theme\')" title="テーマ">🎨</button>';
+  }
+
+  function _renderEditAdvancedIcon() {
+    return '<button class="topbar-btn" onclick="if(typeof openEditAdvanced===\'function\')openEditAdvanced()" title="詳細設定">🔧</button>';
   }
 
   function _renderTodaySalesCompact() {

@@ -325,4 +325,26 @@
   window.openPresetMenu = openPresetMenu;
   window.openWidgetPicker = openWidgetPicker;
 
+  function openEditAdvanced() {
+    _editMode = true;
+    if (typeof hideFab === 'function') hideFab();
+    if (typeof hideBottombar === 'function') hideBottombar();
+    renderHome();
+    /* 詳細設定を自動で開く */
+    setTimeout(function() {
+      var advBody = document.getElementById('edit-advanced-body');
+      var advHeader = advBody ? advBody.previousElementSibling : null;
+      if (advBody && advBody.style.display === 'none') {
+        advBody.style.display = '';
+        if (advHeader) advHeader.classList.add('open');
+      }
+      /* 詳細設定までスクロール */
+      if (advBody) {
+        advBody.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }
+
+  window.openEditAdvanced = openEditAdvanced;
+
 })();
