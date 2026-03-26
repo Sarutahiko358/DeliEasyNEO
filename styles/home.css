@@ -26,12 +26,16 @@
 }
 
 /* 編集モードヘッダーを画面上部に固定 */
+/* トップバー有無に応じてJSでクラスを切り替える */
 .edit-mode-header {
   position: sticky;
-  top: 0;
+  top: 44px; /* トップバー表示時（デフォルト） */
   z-index: 50;
   background: var(--c-bg);
   margin: 0 -16px 12px;
   padding: 8px 16px 12px;
   border-bottom: var(--ds-divider);
+}
+.edit-mode-header.no-topbar {
+  top: 0; /* トップバー非表示時 */
 }

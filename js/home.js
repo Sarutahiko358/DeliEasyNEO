@@ -33,7 +33,10 @@
 
     /* === 編集モードヘッダー === */
     if (_editMode) {
-      html += '<div class="edit-mode-header">';
+      /* トップバーの表示状態を確認してクラスを付与 */
+      var topbarCfg = typeof getTopbarConfig === 'function' ? getTopbarConfig() : { show: true };
+      var noTopbarClass = topbarCfg.show === false ? ' no-topbar' : '';
+      html += '<div class="edit-mode-header' + noTopbarClass + '">';
       html += '<button class="btn btn-ghost btn-sm" onclick="exitEditMode()">キャンセル</button>';
       html += '<span class="fw6 fz-s">ホーム編集</span>';
       html += '<button class="btn btn-primary btn-sm" onclick="exitEditMode()">完了</button>';
@@ -228,7 +231,7 @@
       h += '<div class="fz-xs fw6 c-secondary mb8 mt8">' + cat.icon + ' ' + escHtml(cat.name) + '</div>';
       items.forEach(function(w) {
         var isAdded = currentWidgetIds.indexOf(w.id) >= 0;
-        h += '<button class="btn btn-secondary btn-sm btn-block mb4" style="text-align:left;justify-content:flex-start" onclick="addWidgetFromPicker(\'' + w.id + '\')">'; 
+        h += '<button class="btn btn-secondary btn-sm btn-block mb4" style="text-align:left;justify-content:flex-start" onclick="addWidgetFromPicker(\'' + w.id + '\')">';
         h += w.icon + ' ' + escHtml(w.name);
         if (isAdded) {
           h += ' <span class="fz-xxs" style="background:var(--c-success-light);color:var(--c-success);padding:1px 6px;border-radius:980px;margin-left:4px">追加済み</span>';
