@@ -511,12 +511,8 @@
         return;
       }
 
-      /* ログイン成功 → handlePostLoginSyncの同期選択ダイアログが出る場合がある。
-         それを待ってからクラウドデータを削除する */
-      /* 少し待ってダイアログが出ていれば閉じる */
-      await _sleep(500);
-      var existingDialogs = document.querySelectorAll('.exit-cf');
-      existingDialogs.forEach(function(el) { el.remove(); });
+      /* firebase-sync.js の同期選択ダイアログが出たら自動除去（最大5秒待機） */
+      await _waitAndRemoveSyncDialog(5000);
 
       /* クラウドデータ削除 */
       if (typeof deleteCloudData === 'function') {
@@ -609,8 +605,36 @@
   };
 
   /* ---------- ユーティリティ ---------- */
-  function _sleep(ms) {
-    return new Promise(function(resolve) { setTimeout(resolve, ms); });
+
+  /* ---------- 同期選択ダイアログの出現を監視して除去 ---------- */
+  function _waitAndRemoveSyncDialog(timeoutMs) {
+    return new Promise(function(resolve) {
+      /* 既に表示されていれば即除去 */
+      var existing = document.querySelectorAll('.exit-cf');
+      if (existing.length > 0) {
+        existing.forEach(function(el) { el.remove(); });
+        resolve(true);
+        return;
+      }
+
+      var observer = new MutationObserver(function() {
+        var dialogs = document.querySelectorAll('.exit-cf');
+        if (dialogs.length > 0) {
+          dialogs.forEach(function(el) { el.remove(); });
+          observer.disconnect();
+          resolve(true);
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      /* タイムアウト: ダイアログが出なかった場合（クラウドにデータがない等） */
+      setTimeout(function() {
+        observer.disconnect();
+        var dialogs = document.querySelectorAll('.exit-cf');
+        dialogs.forEach(function(el) { el.remove(); });
+        resolve(dialogs.length > 0);
+      }, timeoutMs || 5000);
+    });
   }
 
   function _settingsRefresh() {
