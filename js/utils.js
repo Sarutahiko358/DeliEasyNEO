@@ -77,6 +77,9 @@
     document.body.appendChild(div);
     document.getElementById('v2-cc-yes').onclick = function() { div.remove(); if (onYes) onYes(); };
     document.getElementById('v2-cc-no').onclick = function() { div.remove(); if (onNo) onNo(); };
+    div.addEventListener('click', function(e) {
+      if (e.target === div) { div.remove(); if (onNo) onNo(); }
+    });
   }
 
   /* ---------- Custom Prompt ---------- */
@@ -107,6 +110,9 @@
     };
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') document.getElementById('v2-cp-ok').click();
+    });
+    div.addEventListener('click', function(e) {
+      if (e.target === div) { div.remove(); if (onCancel) onCancel(); }
     });
   }
 

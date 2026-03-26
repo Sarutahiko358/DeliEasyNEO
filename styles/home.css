@@ -23,5 +23,15 @@
   opacity: 0.5;
   transform: scale(1.03);
   box-shadow: 0 12px 40px var(--c-shadow-color);
-  z-index: 10;
+}
+
+/* 編集モードヘッダーを画面上部に固定 */
+.edit-mode-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--c-bg);
+  margin: 0 -16px 12px;
+  padding: 8px 16px 12px;
+  border-bottom: var(--ds-divider);
 }

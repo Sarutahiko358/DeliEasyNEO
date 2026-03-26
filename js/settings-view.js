@@ -15,6 +15,10 @@
     if (!body) body = document.getElementById('overlay-body-settings');
     if (!body) return;
 
+    /* CHANGED: 同期ステータスを取得 */
+    var syncStatus = typeof firebaseGetSyncStatus === 'function' ? firebaseGetSyncStatus() : 'idle';
+    var isSyncing = syncStatus === 'syncing';
+
     var html = '';
 
     /* ===== 同期セクション ===== */
@@ -35,10 +39,9 @@
       html += '</div></div>';
 
       /* 同期ステータス */
-      var status = typeof firebaseGetSyncStatus === 'function' ? firebaseGetSyncStatus() : 'idle';
       var statusLabel = { idle: '待機中', syncing: '同期中...', synced: '同期済み', error: 'エラー', offline: 'オフライン' };
       var statusColor = { idle: 'c-muted', syncing: 'c-warning', synced: 'c-success', error: 'c-danger', offline: 'c-muted' };
-      html += '<div class="fz-xs mb8">ステータス: <span class="fw6 ' + (statusColor[status] || 'c-muted') + '">' + (statusLabel[status] || status) + '</span></div>';
+      html += '<div class="fz-xs mb8">ステータス: <span class="fw6 ' + (statusColor[syncStatus] || 'c-muted') + '">' + (statusLabel[syncStatus] || syncStatus) + '</span></div>';
 
       if (syncInfo.lastSyncTs) {
         html += '<div class="fz-xs c-muted mb8">最終同期: ' + new Date(syncInfo.lastSyncTs).toLocaleString('ja-JP') + '</div>';
@@ -47,15 +50,27 @@
         html += '<div class="fz-xs c-warning mb8">⚡ 未同期の変更があります</div>';
       }
 
-      html += '<div class="flex flex-wrap gap8">';
-      html += '<button class="btn btn-primary btn-sm" onclick="firebaseManualSync()">☁️ アップロード</button>';
-      html += '<button class="btn btn-secondary btn-sm" onclick="firebaseManualDownload()">⬇️ ダウンロード</button>';
-      html += '<button class="btn btn-danger btn-sm" onclick="_settingsSignOut()">ログアウト</button>';
-      html += '</div>';
+      /* CHANGED: 同期中はアップロード/ダウンロードを非表示にし、同期中メッセージを表示 */
+      if (isSyncing) {
+        html += '<div class="flex items-center gap8 mb8" style="padding:12px;background:var(--c-warning-light);border-radius:var(--ds-radius-sm)">';
+        html += '<span style="font-size:1.2rem">🔄</span>';
+        html += '<span class="fz-s fw5">同期中です。しばらくお待ちください...</span>';
+        html += '</div>';
+      } else {
+        html += '<div class="flex flex-wrap gap8">';
+        html += '<button class="btn btn-primary btn-sm" onclick="firebaseManualSync()">☁️ アップロード</button>';
+        html += '<button class="btn btn-secondary btn-sm" onclick="firebaseManualDownload()">⬇️ ダウンロード</button>';
+        html += '<button class="btn btn-danger btn-sm" onclick="_settingsSignOut()">ログアウト</button>';
+        html += '</div>';
+      }
 
-      /* クラウドデータ削除 */
+      /* クラウドデータ削除 — CHANGED: 同期中はdisabled */
       html += '<div style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--c-divider)">';
-      html += '<button class="btn btn-ghost btn-xs" onclick="_settingsDeleteCloud()" style="color:var(--c-danger);font-size:.7rem">⚠️ クラウドデータを削除</button>';
+      if (isSyncing) {
+        html += '<button class="btn btn-ghost btn-xs" disabled style="color:var(--c-tx-muted);font-size:.7rem;opacity:.4;cursor:not-allowed">⚠️ クラウドデータを削除（同期中は操作できません）</button>';
+      } else {
+        html += '<button class="btn btn-ghost btn-xs" onclick="_settingsDeleteCloud()" style="color:var(--c-danger);font-size:.7rem">⚠️ クラウドデータを削除</button>';
+      }
       html += '</div>';
     } else {
       html += '<p class="fz-s c-muted mb12">Googleアカウントでログインすると、複数の端末でデータを同期できます。</p>';
@@ -90,9 +105,13 @@
     html += '<input type="file" id="settings-import-file" accept=".json" style="display:none" onchange="_settingsImportJSON(this)">';
     html += '<button class="btn btn-secondary btn-sm btn-block" onclick="document.getElementById(\'settings-import-file\').click()">📂 JSONファイルから復元</button>';
 
-    /* 全データ削除 */
+    /* 全データ削除 — CHANGED: 同期中はdisabled */
     html += '<div style="margin-top:16px;padding-top:12px;border-top:.5px solid var(--c-divider)">';
-    html += '<button class="btn btn-danger btn-sm btn-block" onclick="_settingsClearAll()">🗑 全データを削除</button>';
+    if (isSyncing) {
+      html += '<button class="btn btn-danger btn-sm btn-block" disabled style="opacity:.4;cursor:not-allowed">🗑 全データを削除（同期中は操作できません）</button>';
+    } else {
+      html += '<button class="btn btn-danger btn-sm btn-block" onclick="_settingsClearAll()">🗑 全データを削除</button>';
+    }
     html += '</div>';
 
     html += '</div></div>';

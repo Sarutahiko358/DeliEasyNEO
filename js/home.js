@@ -215,6 +215,8 @@
   /* ========== ウィジェット追加ピッカー ========== */
   function openWidgetPicker() {
     hp();
+    var preset = getActivePreset();
+    var currentWidgetIds = preset ? preset.widgets.map(function(w) { return w.id; }) : [];
     var div = document.createElement('div');
     div.className = 'confirm-overlay';
     var h = '<div class="confirm-box" style="width:340px;max-height:80vh;overflow-y:auto;text-align:left">';
@@ -225,8 +227,13 @@
       if (items.length === 0) return;
       h += '<div class="fz-xs fw6 c-secondary mb8 mt8">' + cat.icon + ' ' + escHtml(cat.name) + '</div>';
       items.forEach(function(w) {
-        h += '<button class="btn btn-secondary btn-sm btn-block mb4" style="text-align:left;justify-content:flex-start" onclick="addWidgetFromPicker(\'' + w.id + '\')">';
-        h += w.icon + ' ' + escHtml(w.name) + ' <span class="fz-xs c-muted">- ' + escHtml(w.desc) + '</span>';
+        var isAdded = currentWidgetIds.indexOf(w.id) >= 0;
+        h += '<button class="btn btn-secondary btn-sm btn-block mb4" style="text-align:left;justify-content:flex-start" onclick="addWidgetFromPicker(\'' + w.id + '\')">'; 
+        h += w.icon + ' ' + escHtml(w.name);
+        if (isAdded) {
+          h += ' <span class="fz-xxs" style="background:var(--c-success-light);color:var(--c-success);padding:1px 6px;border-radius:980px;margin-left:4px">追加済み</span>';
+        }
+        h += ' <span class="fz-xs c-muted">- ' + escHtml(w.desc) + '</span>';
         h += '</button>';
       });
     });
