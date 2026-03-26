@@ -202,7 +202,12 @@
           if (typeof initFirebaseAuth === 'function') initFirebaseAuth();
           updateSyncIndicator();
           if (typeof onFirebaseSyncStatusChange === 'function') {
-            onFirebaseSyncStatusChange(function() { updateSyncIndicator(); });
+            onFirebaseSyncStatusChange(function() {
+              updateSyncIndicator();
+              if (typeof window._refreshSettingsOverlay === 'function') {
+                window._refreshSettingsOverlay();
+              }
+            });
           }
         }
 
