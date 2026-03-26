@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/overlay.js
-   オーバーレイシステム — インタラクティブ下スワイプ対応
+   オーバーレイシステム — インタラクティブ下スワイプ対応（pull-to-refresh競合修正）
    ========================================================== */
 (function(){
   'use strict';
@@ -21,6 +21,14 @@
 
   /* ---------- State ---------- */
   var _stack = [];
+
+  /* ---------- Pull-to-refresh 制御 ---------- */
+  function _disablePullToRefresh() {
+    document.body.style.overscrollBehavior = 'none';
+  }
+  function _enablePullToRefresh() {
+    document.body.style.overscrollBehavior = '';
+  }
 
   /* ---------- Container refs ---------- */
   function _getContainer() { return document.getElementById('overlay-container'); }
@@ -59,6 +67,9 @@
     container.classList.add('has-overlay');
     if (backdrop) backdrop.classList.add('visible');
 
+    /* pull-to-refresh を無効化 */
+    _disablePullToRefresh();
+
     requestAnimationFrame(function() {
       requestAnimationFrame(function() { sheet.classList.add('open'); });
     });
@@ -78,8 +89,10 @@
       var container = _getContainer();
       var backdrop = _getBackdrop();
       if (container) container.classList.remove('has-overlay');
-      if (backdrop) backdrop.classList.remove('visible');
+      if (backdrop) { backdrop.classList.remove('visible'); backdrop.style.opacity = ''; }
       if (typeof window.showFab === 'function') window.showFab();
+      /* pull-to-refresh を復活 */
+      _enablePullToRefresh();
     }
   }
 
@@ -98,8 +111,9 @@
     var container = _getContainer();
     var backdrop = _getBackdrop();
     if (container) container.classList.remove('has-overlay');
-    if (backdrop) backdrop.classList.remove('visible');
+    if (backdrop) { backdrop.classList.remove('visible'); backdrop.style.opacity = ''; }
     if (typeof window.showFab === 'function') window.showFab();
+    _enablePullToRefresh();
   }
 
   function isOverlayOpen() { return _stack.length > 0; }
@@ -113,45 +127,66 @@
     var startY = 0;
     var currentY = 0;
     var isDragging = false;
+    var canDrag = false;
     var sheetHeight = 0;
-    var CLOSE_THRESHOLD = 0.25; /* シート高さの25%で閉じる */
-    var VELOCITY_THRESHOLD = 0.5; /* px/ms — 速いスワイプで即閉じ */
+    var CLOSE_THRESHOLD = 0.2;
+    var VELOCITY_THRESHOLD = 0.4;
     var startTime = 0;
 
-    /* ハンドルとヘッダーからのドラッグ */
+    function isOnHandleOrHeader(target) {
+      return target === handle || target === header ||
+             handle.contains(target) || header.contains(target);
+    }
+
     function onTouchStart(e) {
-      /* bodyがスクロール中（上部以外）ならスキップ */
-      if (e.target !== handle && e.target !== header &&
-          !handle.contains(e.target) && !header.contains(e.target)) {
-        if (body && body.scrollTop > 5) return;
+      var target = e.touches[0].target || e.target;
+      /* ハンドル/ヘッダーからは常にドラッグ可能 */
+      if (isOnHandleOrHeader(target)) {
+        canDrag = true;
+      } else {
+        /* body内からはスクロール上端の時のみ */
+        canDrag = body && body.scrollTop <= 2;
       }
-      isDragging = true;
+      if (!canDrag) return;
+      isDragging = false;
       startY = e.touches[0].clientY;
       currentY = startY;
       startTime = Date.now();
       sheetHeight = sheet.offsetHeight;
-      sheet.style.transition = 'none';
     }
 
     function onTouchMove(e) {
-      if (!isDragging) return;
+      if (!canDrag) return;
       currentY = e.touches[0].clientY;
       var dy = currentY - startY;
 
-      /* bodyスクロール中（上端以外）で下スワイプ開始した場合はスキップ */
-      if (dy < 0) {
-        /* 上方向は無視 */
+      /* 上方向は無視 */
+      if (dy <= 0) {
+        if (isDragging) {
+          /* ドラッグ中に上に戻った場合はリセット */
+          sheet.style.transform = '';
+          var backdrop = _getBackdrop();
+          if (backdrop) backdrop.style.opacity = '';
+        }
+        isDragging = false;
         return;
       }
 
-      /* body内からのスワイプで、bodyがスクロール途中なら中止 */
-      if (body && body.scrollTop > 5 &&
-          !handle.contains(e.target) && !header.contains(e.target)) {
-        isDragging = false;
-        sheet.style.transition = '';
-        sheet.style.transform = '';
-        return;
+      /* 5px以上動いたらドラッグ開始 */
+      if (!isDragging && dy > 5) {
+        /* ドラッグ開始時にbodyがスクロール途中ならキャンセル */
+        if (body && body.scrollTop > 2 && !isOnHandleOrHeader(e.touches[0].target || e.target)) {
+          canDrag = false;
+          return;
+        }
+        isDragging = true;
+        sheet.style.transition = 'none';
       }
+
+      if (!isDragging) return;
+
+      /* ブラウザのpull-to-refreshとスクロールを完全に止める */
+      e.preventDefault();
 
       /* シートを追従移動 */
       sheet.style.transform = 'translateX(-50%) translateY(' + dy + 'px)';
@@ -164,39 +199,52 @@
       }
     }
 
-    function onTouchEnd(e) {
-      if (!isDragging) return;
+    function onTouchEnd() {
+      if (!isDragging) {
+        canDrag = false;
+        return;
+      }
       isDragging = false;
+      canDrag = false;
 
       var dy = currentY - startY;
       var elapsed = Date.now() - startTime;
-      var velocity = elapsed > 0 ? dy / elapsed : 0; /* px/ms */
+      var velocity = elapsed > 0 ? dy / elapsed : 0;
 
-      sheet.style.transition = '';
       var backdrop = _getBackdrop();
-      if (backdrop) backdrop.style.opacity = '';
 
       if (dy > sheetHeight * CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD) {
-        /* 閉じる — アニメーション付き */
+        /* 閉じる */
         sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
         sheet.style.transform = 'translateX(-50%) translateY(100%)';
+        if (backdrop) {
+          backdrop.style.transition = 'opacity .3s';
+          backdrop.style.opacity = '0';
+        }
         setTimeout(function() {
           sheet.style.transition = '';
           sheet.style.transform = '';
+          if (backdrop) { backdrop.style.transition = ''; backdrop.style.opacity = ''; }
           closeOverlay();
         }, 300);
       } else {
-        /* 元に戻す — バウンスアニメーション */
+        /* 元に戻す */
         sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
         sheet.style.transform = '';
+        if (backdrop) {
+          backdrop.style.transition = 'opacity .3s';
+          backdrop.style.opacity = '';
+        }
         setTimeout(function() {
           sheet.style.transition = '';
+          if (backdrop) backdrop.style.transition = '';
         }, 300);
       }
     }
 
+    /* touchmove は passive: false にして preventDefault を呼べるようにする */
     sheet.addEventListener('touchstart', onTouchStart, { passive: true });
-    sheet.addEventListener('touchmove', onTouchMove, { passive: true });
+    sheet.addEventListener('touchmove', onTouchMove, { passive: false });
     sheet.addEventListener('touchend', onTouchEnd, { passive: true });
   }
 
@@ -205,16 +253,13 @@
     var body = document.getElementById('overlay-body-' + id);
     if (!body) return;
 
-    /* Phase 6+: 外部ファイルで renderOverlay_xxx が定義されていればそちらを使用 */
     var fnName = 'renderOverlay_' + id;
     if (typeof window[fnName] === 'function') { window[fnName](body); return; }
 
-    /* 内蔵レンダラー（theme のみ残す） */
     switch (id) {
       case 'theme':    _renderThemeOverlay(body); return;
     }
 
-    /* フォールバック */
     body.innerHTML =
       '<div class="text-c" style="padding:60px 20px">' +
         '<div style="font-size:2.5rem;margin-bottom:12px">🚧</div>' +
@@ -224,7 +269,7 @@
   }
 
   /* ==========================================================
-     テーマオーバーレイ（Phase 2 完全版）
+     テーマオーバーレイ
      ========================================================== */
   function _renderThemeOverlay(body) {
     var currentStyle = typeof getThemeStyle === 'function' ? getThemeStyle() : 'minimal';

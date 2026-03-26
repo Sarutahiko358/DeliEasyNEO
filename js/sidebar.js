@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/sidebar.js
-   左サイドバー（操作系メニュー）— スワイプで閉じる対応
+   左サイドバー — 感度改善版
    ========================================================== */
 (function(){
   'use strict';
@@ -9,8 +9,14 @@
   var _touchStartX = 0;
   var _touchStartY = 0;
   var _panelTouchStartX = 0;
+  var _panelTouchStartY = 0;
   var _panelTracking = false;
   var _panelTranslateX = 0;
+
+  /* ---------- 感度設定 ---------- */
+  var EDGE_WIDTH = 30;         /* 端からの検出幅 px */
+  var OPEN_THRESHOLD = 40;     /* 開くのに必要なスワイプ距離 px */
+  var CLOSE_THRESHOLD = 50;    /* 閉じるのに必要なスワイプ距離 px */
 
   /* ---------- Menu definition ---------- */
   var MENU = [
@@ -103,6 +109,7 @@
     panel.addEventListener('touchstart', function(e) {
       if (!_isOpen) return;
       _panelTouchStartX = e.touches[0].clientX;
+      _panelTouchStartY = e.touches[0].clientY;
       _panelTracking = true;
       _panelTranslateX = 0;
       panel.style.transition = 'none';
@@ -111,14 +118,23 @@
     panel.addEventListener('touchmove', function(e) {
       if (!_panelTracking) return;
       var dx = e.touches[0].clientX - _panelTouchStartX;
+      var dy = Math.abs(e.touches[0].clientY - _panelTouchStartY);
+
+      /* 縦スクロールが主なら追跡をやめる */
+      if (dy > Math.abs(dx) * 2 && Math.abs(dx) < 20) {
+        _panelTracking = false;
+        panel.style.transition = '';
+        panel.style.transform = '';
+        return;
+      }
+
       /* 左方向のみ（負の値） */
       if (dx < 0) {
         _panelTranslateX = dx;
         panel.style.transform = 'translateX(' + dx + 'px)';
-        /* オーバーレイの透明度も追従 */
         var overlay = document.getElementById('sidebar-overlay');
         if (overlay) {
-          var progress = Math.min(Math.abs(dx) / 200, 1);
+          var progress = Math.min(Math.abs(dx) / 180, 1);
           overlay.style.opacity = 1 - progress;
         }
       }
@@ -132,11 +148,9 @@
       var overlay = document.getElementById('sidebar-overlay');
       if (overlay) overlay.style.opacity = '';
 
-      if (_panelTranslateX < -80) {
-        /* 十分にスワイプした → 閉じる */
+      if (_panelTranslateX < -CLOSE_THRESHOLD) {
         closeSidebar();
       } else {
-        /* 戻す */
         panel.style.transform = '';
       }
       _panelTranslateX = 0;
@@ -173,20 +187,27 @@
 
   /* ---------- Edge swipe to open ---------- */
   function initSidebarGestures() {
+    var _edgeTracking = false;
+
     document.addEventListener('touchstart', function(e) {
       _touchStartX = e.touches[0].clientX;
       _touchStartY = e.touches[0].clientY;
+      _edgeTracking = (_touchStartX <= EDGE_WIDTH) && !_isOpen;
     }, { passive: true });
 
     document.addEventListener('touchmove', function(e) {
-      if (_isOpen) return;
-      /* Only trigger from left edge (first 25px) */
-      if (_touchStartX > 25) return;
+      if (!_edgeTracking || _isOpen) return;
       var dx = e.touches[0].clientX - _touchStartX;
       var dy = Math.abs(e.touches[0].clientY - _touchStartY);
-      if (dx > 60 && dx > dy * 1.5) {
+      /* 水平方向が優勢で、しきい値を超えたら開く */
+      if (dx > OPEN_THRESHOLD && dx > dy * 1.2) {
+        _edgeTracking = false;
         openSidebar();
       }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function() {
+      _edgeTracking = false;
     }, { passive: true });
   }
 
