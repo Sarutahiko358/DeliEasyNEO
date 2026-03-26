@@ -1,11 +1,12 @@
 /* sw.js — DeliEasy Service Worker v2.2 */
-const CACHE_NAME = 'delieasy-v12';
+const CACHE_NAME = 'delieasy-v13';
 const PRE_CACHE = [
   './',
   './index.html',
   './firebase-config.js',
   './storage.js',
   './earns-db.js',
+  './expenses-db.js',
   './firebase-sync.js',
   './calendar.js',
   './stats.js',

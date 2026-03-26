@@ -3,7 +3,7 @@
   'use strict';
 
   const DB_NAME = 'DeliProDB';
-  const DB_VER = 2;
+  const DB_VER = 3;  // ← 2 → 3 に変更（expenses store 追加対応）
   const STORE = 'earns';
   let _db = null;
   let _earnsCache = [];
@@ -16,6 +16,7 @@
         const req = indexedDB.open(DB_NAME, DB_VER);
         req.onupgradeneeded = e => {
           const db = e.target.result;
+          // earns store
           if (!db.objectStoreNames.contains(STORE)) {
             const store = db.createObjectStore(STORE, { keyPath: 'ts' });
             store.createIndex('by_date', 'd', { unique: false });
@@ -25,6 +26,11 @@
             if (!store.indexNames.contains('by_date')) {
               store.createIndex('by_date', 'd', { unique: false });
             }
+          }
+          // expenses store (v3で追加)
+          if (!db.objectStoreNames.contains('expenses')) {
+            const expStore = db.createObjectStore('expenses', { keyPath: 'ts' });
+            expStore.createIndex('by_date', 'date', { unique: false });
           }
         };
         req.onsuccess = e => {
@@ -82,11 +88,9 @@
   function _idbClearAndPutAll(arr) {
     return new Promise((resolve, reject) => {
       openDB().then(db => {
-        // まずclearトランザクション
         const clearTx = db.transaction(STORE, 'readwrite');
         clearTx.objectStore(STORE).clear();
         clearTx.oncomplete = () => {
-          // バッチごとに書き込み
           const BATCH_SIZE = 500;
           let index = 0;
 
@@ -107,11 +111,9 @@
 
             tx.oncomplete = () => {
               index = end;
-              // 次のバッチは非同期で（メインスレッドに制御を戻す）
               setTimeout(writeBatch, 0);
             };
             tx.onerror = () => {
-              // エラーでも残りのデータはキャッシュに反映
               _earnsCache = arr.slice();
               reject(tx.error);
             };
@@ -124,7 +126,6 @@
     });
   }
 
-  /* IDBに直接Put（キャッシュも更新）— リモート同期用 */
   async function _idbPutDirect(rec) {
     if (!rec || !rec.ts) return;
     const idx = _earnsCache.findIndex(r => r.ts === rec.ts);
@@ -145,15 +146,13 @@
     }
   }
 
-  /* fallback to localStorage */
   let _lsFallbackWarningShown = false;
 
   function lsFallbackSave(){
     try {
       const data = JSON.stringify(_earnsCache);
-      // 保存前にサイズチェック（おおよそ）
-      const sizeBytes = data.length * 2; // UTF-16
-      if (sizeBytes > 4 * 1024 * 1024) { // 4MB警告ライン
+      const sizeBytes = data.length * 2;
+      if (sizeBytes > 4 * 1024 * 1024) {
         if (!_lsFallbackWarningShown) {
           _lsFallbackWarningShown = true;
           if (typeof window.toast === 'function') {
@@ -176,7 +175,6 @@
     } catch(e) { return []; }
   }
 
-  /* migration from localStorage to IDB */
   async function migrateFromLS() {
     const lsData = lsFallbackLoad();
     if (lsData.length > 0 && _idbAvailable) {
@@ -187,7 +185,6 @@
     }
   }
 
-  /* Public API */
   function getE() { return _earnsCache; }
 
   function eByDate(d) {

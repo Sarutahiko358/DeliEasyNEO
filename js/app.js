@@ -183,6 +183,11 @@
 
     if (typeof initEarnsDB === 'function') {
       initEarnsDB().then(function() {
+        // 経費DBの初期化（earnsの後に実行 — DB_VER競合回避）
+        if (typeof initExpensesDB === 'function') {
+          return initExpensesDB();
+        }
+      }).then(function() {
         if (typeof initFirebaseAuth === 'function') initFirebaseAuth();
 
         /* Render home (via home.js) */

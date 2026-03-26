@@ -331,3 +331,22 @@
 **新規ファイル:**
 - js/overlay-customizer.js — オーバーレイセクションの表示/非表示・並び替えカスタマイザー
 - js/custom-overlays.js — ユーザー定義カスタムオーバーレイ（メモ・チェックリスト・リンク集）
+
+---
+
+## Phase 11: 経費IndexedDB移行
+
+| 作業 | 状態 | メモ |
+|------|------|------|
+| expenses-db.js 新規作成 | ✅ | IndexedDB経費管理 + S.g/S.sフック方式 |
+| earns-db.js DB_VER更新 | ✅ | v2 → v3（expenses store追加対応） |
+| app.js 初期化順序追加 | ✅ | initEarnsDB → initExpensesDB → initFirebaseAuth |
+| index.html script追加 | ✅ | expenses-db.js をearns-db.jsの直後に配置 |
+| sw.js 更新 | ✅ | CACHE_NAME → delieasy-v13、PRE_CACHEに追加 |
+
+**設計方針:**
+- firebase-sync.js / storage.js は変更不可を維持
+- S.g('exps') / S.s('exps') をフックし、内部的にIndexedDBを使用
+- firebase-sync.js 互換のため、IDB書き込み時にlocalStorageにも同期書き出し
+- DB_VER を 2→3 に上げ、earns-db.js と expenses-db.js の両方で onupgradeneeded を統一
+- 初期化順序: earns → expenses → firebase（DBバージョン競合を回避）
