@@ -284,8 +284,10 @@
             else lv = 1;
           }
           var isToday = d === today;
+          var dk = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
           html += '<div class="widget-cal-day' + (isToday ? ' widget-cal-today' : '') + '"' +
-            (lv > 0 ? ' data-lv="' + lv + '"' : '') + '>' + d + '</div>';
+            (lv > 0 ? ' data-lv="' + lv + '"' : '') +
+            ' onclick="openCalendarAtDate(\'' + dk + '\')" style="cursor:pointer">' + d + '</div>';
         }
         html += '</div></div>';
         return html;
@@ -439,6 +441,30 @@
   }
 
   /* ========== Expose ========== */
+  function openCalendarAtDate(dk) {
+    if (typeof hp === 'function') hp();
+    /* calendar.js のグローバル変数を設定 */
+    if (typeof window.initCalendar === 'function') window.initCalendar();
+    var parts = dk.split('-');
+    if (typeof window.calSel === 'function') {
+      /* calSel は calSelDate を設定し renderCalendar を呼ぶが、
+         オーバーレイが開いていない状態では #pg1 が無いので何も起きない。
+         先に年月をセットするため、calPrev/calNext 相当の処理が必要 */
+    }
+    /* カレンダーオーバーレイを開いてから日付を選択 */
+    if (typeof openOverlay === 'function') {
+      openOverlay('calendar');
+      /* オーバーレイのレンダリング後に日付を選択 */
+      setTimeout(function() {
+        if (typeof window.calSel === 'function') {
+          window.calSel(dk);
+        }
+      }, 150);
+    }
+  }
+
+  window.openCalendarAtDate = openCalendarAtDate;
+
   window.WIDGET_DEFS = WIDGET_DEFS;
   window.WIDGET_CATEGORIES = WIDGET_CATEGORIES;
   window.renderWidgetWrapper = renderWidgetWrapper;

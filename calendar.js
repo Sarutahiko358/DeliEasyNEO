@@ -570,6 +570,9 @@
   function calSel(dk) {
     hp();
     calSelDate = dk;
+    var parts = dk.split('-');
+    calYear = +parts[0];
+    calMonth = +parts[1] - 1;
     renderCalendar();
   }
 
