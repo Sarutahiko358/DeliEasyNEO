@@ -92,7 +92,7 @@
     if (_showAdvanced) {
       html += '<div class="card mb12"><div class="card-body">';
       html += '<div class="fz-xs fw6 c-secondary mb8">件数（まとめ記録）</div>';
-      html += '<div class="fz-xxs c-danger mb8">⚠️ 統計の単価精度が下がります。1件ずつの記録を推奨します。</div>';
+      html += '<div class="fz-xxs c-muted mb8">複数件をまとめて記録できます。単価の統計はおおよその値になります。</div>';
       html += '<div style="display:flex;align-items:center;gap:8px">';
       html += '<button class="btn btn-secondary btn-sm" onclick="_earnChangeCount(-1)" style="width:40px;font-size:1.2rem">−</button>';
       html += '<span class="fw7 fz-l" id="earn-count-display" style="min-width:40px;text-align:center;font-variant-numeric:tabular-nums">' + _count + '</span>';
@@ -325,7 +325,6 @@
     _count = 1;
     _showAdvanced = false;
 
-    if (typeof refreshHome === 'function') refreshHome();
     _render();
   };
 
