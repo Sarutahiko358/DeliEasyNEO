@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/overlay.js
-   オーバーレイシステム — インタラクティブ下スワイプ対応（pull-to-refresh競合修正）
+   オーバーレイシステム — 編集モード＋基本操作対応
    ========================================================== */
 (function(){
   'use strict';
@@ -397,11 +397,100 @@
     if (body) _renderThemeOverlay(body);
   };
 
+  /* ===== Overlay Manager (Widget-style editing) ===== */
+  function openOverlayManager() {
+    var div = document.createElement('div');
+    div.className = 'confirm-overlay';
+    div.id = 'overlay-manager-dialog';
+    div.style.zIndex = '9500';
+
+    var customOverlays = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
+
+    var h = '<div class="confirm-box" style="max-width:380px;max-height:85vh;overflow-y:auto;text-align:left">';
+    h += '<h3 class="fz-s fw6 mb4 text-c">📐 オーバーレイ管理</h3>';
+    h += '<div class="fz-xs c-muted mb12 text-c">ホーム画面のウィジェット編集のように、オーバーレイを管理できます</div>';
+
+    /* Built-in overlays — open/customize */
+    h += '<div class="fz-xs fw6 c-secondary mb8">組み込みオーバーレイ</div>';
+    var builtinIds = ['calendar', 'stats', 'tax', 'expenseManage', 'pfManage'];
+    var customizableIds = ['calendar', 'stats', 'tax', 'expenseManage'];
+    builtinIds.forEach(function(oid) {
+      var def = OVERLAYS[oid];
+      if (!def) return;
+      var canCustomize = customizableIds.indexOf(oid) >= 0;
+      h += '<div class="overlay-mgr-item">';
+      h += '<span class="fz-s" style="flex:1">' + escHtml(def.title) + '</span>';
+      h += '<button class="btn btn-primary btn-xs" onclick="document.getElementById(\'overlay-manager-dialog\').remove();openOverlay(\'' + oid + '\')">開く</button>';
+      if (canCustomize) {
+        h += '<button class="btn btn-secondary btn-xs" onclick="document.getElementById(\'overlay-manager-dialog\').remove();openOverlay(\'' + oid + '\');setTimeout(function(){openOverlayCustomizer(\'' + oid + '\',function(){var b=document.getElementById(\'overlay-body-' + oid + '\');if(b&&typeof window[\'renderOverlay_' + oid + '\']===\'function\')window[\'renderOverlay_' + oid + '\'](b);})},400)">⚙️ カスタマイズ</button>';
+      }
+      h += '</div>';
+    });
+
+    /* Custom overlays — reorder, edit, delete */
+    h += '<div class="fz-xs fw6 c-secondary mb8 mt12">カスタムオーバーレイ</div>';
+    if (customOverlays.length === 0) {
+      h += '<div class="fz-xs c-muted mb8" style="padding:8px">カスタムオーバーレイはまだありません</div>';
+    } else {
+      h += '<div id="overlay-mgr-custom-list">';
+      customOverlays.forEach(function(co, idx) {
+        h += '<div class="overlay-mgr-item overlay-mgr-wobble" data-co-idx="' + idx + '">';
+        h += '<span style="font-size:1rem;flex-shrink:0">' + escHtml(co.icon) + '</span>';
+        h += '<span class="fz-s" style="flex:1">' + escHtml(co.title) + '</span>';
+        /* Move buttons */
+        if (idx > 0) h += '<button class="btn btn-ghost btn-xs" onclick="_ovmMoveCustom(' + idx + ',-1)" style="padding:2px 6px">▲</button>';
+        if (idx < customOverlays.length - 1) h += '<button class="btn btn-ghost btn-xs" onclick="_ovmMoveCustom(' + idx + ',1)" style="padding:2px 6px">▼</button>';
+        h += '<button class="btn btn-primary btn-xs" onclick="document.getElementById(\'overlay-manager-dialog\').remove();openCustomOverlay(\'' + escJs(co.id) + '\')">開く</button>';
+        h += '<button class="btn btn-secondary btn-xs" onclick="document.getElementById(\'overlay-manager-dialog\').remove();_editCustomOverlaySettings(\'' + escJs(co.id) + '\')">⚙️</button>';
+        h += '<button class="btn btn-danger btn-xs" onclick="_ovmDeleteCustom(\'' + escJs(co.id) + '\')">✕</button>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+
+    /* Add new */
+    h += '<button class="btn btn-primary btn-sm btn-block mt8" onclick="document.getElementById(\'overlay-manager-dialog\').remove();openCreateCustomOverlayDialog()">＋ 新しいオーバーレイを追加</button>';
+
+    h += '<button class="btn btn-ghost btn-block mt12" onclick="this.closest(\'.confirm-overlay\').remove()">閉じる</button>';
+    h += '</div>';
+
+    div.innerHTML = h;
+    document.body.appendChild(div);
+  }
+
+  /* Manager helpers */
+  window._ovmMoveCustom = function(idx, dir) {
+    hp();
+    var list = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
+    var newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= list.length) return;
+    var tmp = list[newIdx];
+    list[newIdx] = list[idx];
+    list[idx] = tmp;
+    if (typeof saveCustomOverlays === 'function') saveCustomOverlays(list);
+    /* Refresh dialog */
+    var existing = document.getElementById('overlay-manager-dialog');
+    if (existing) existing.remove();
+    openOverlayManager();
+  };
+
+  window._ovmDeleteCustom = function(coId) {
+    customConfirm('このカスタムオーバーレイを削除しますか？', function() {
+      if (typeof deleteCustomOverlay === 'function') deleteCustomOverlay(coId);
+      toast('🗑 削除しました');
+      var existing = document.getElementById('overlay-manager-dialog');
+      if (existing) existing.remove();
+      openOverlayManager();
+    });
+  };
+
   /* ---------- Expose ---------- */
+  window.OVERLAYS = OVERLAYS;
   window.openOverlay = openOverlay;
   window.closeOverlay = closeOverlay;
   window.closeAllOverlays = closeAllOverlays;
   window.isOverlayOpen = isOverlayOpen;
   window.getTopOverlayId = getTopOverlayId;
+  window.openOverlayManager = openOverlayManager;
 
 })();

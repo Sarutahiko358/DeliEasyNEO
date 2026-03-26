@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/fab.js
-   Floating Action Button + ミニメニュー（カスタマイズ対応）
+   FAB + ミニメニュー — 長押し自由配置対応
    ========================================================== */
 (function(){
   'use strict';
@@ -8,7 +8,7 @@
   var _isOpen = false;
   var _isHidden = false;
 
-  /* ---------- FABアクション定義（選択可能な全アクション） ---------- */
+  /* ---------- FABアクション定義 ---------- */
   var ALL_FAB_ACTIONS = [
     { id: 'earnInput',     icon: '✏️', label: '売上入力',    overlay: 'earnInput' },
     { id: 'expenseInput',  icon: '💸', label: '経費入力',    overlay: 'expenseInput' },
@@ -23,7 +23,9 @@
 
   var DEFAULT_FAB_CFG = {
     show: true,
-    position: 'right',
+    position: 'right',       /* legacy: 'right'|'left' */
+    posX: null,               /* px from left edge — null = use position */
+    posY: null,               /* px from top edge — null = use default bottom */
     items: ['earnInput', 'expenseInput']
   };
 
@@ -54,6 +56,34 @@
       });
     });
     return actions;
+  }
+
+  /* ---------- Position helper ---------- */
+  function _applyPosition(container) {
+    var cfg = getFabConfig();
+    if (cfg.posX !== null && cfg.posX !== undefined &&
+        cfg.posY !== null && cfg.posY !== undefined) {
+      /* Free position mode */
+      container.style.left = cfg.posX + 'px';
+      container.style.top = cfg.posY + 'px';
+      container.style.right = 'auto';
+      container.style.bottom = 'auto';
+    } else {
+      /* Legacy right/left mode */
+      container.style.top = '';
+      container.style.left = '';
+      container.style.right = '';
+      container.style.bottom = '';
+      if (cfg.position === 'left') {
+        container.style.left = '20px';
+        container.style.right = 'auto';
+        container.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + 24px)';
+      } else {
+        container.style.right = '20px';
+        container.style.left = 'auto';
+        container.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + 24px)';
+      }
+    }
   }
 
   /* ---------- Render ---------- */
@@ -89,7 +119,9 @@
     html += '<button class="fab-main" id="fab-main" aria-label="メニューを開く">＋</button>';
 
     container.innerHTML = html;
-    container.className = 'fab-container ' + (cfg.position || 'right');
+    container.className = 'fab-container';
+
+    _applyPosition(container);
 
     document.getElementById('fab-main').addEventListener('click', toggleFabMenu);
 
@@ -110,6 +142,114 @@
         }
       });
     });
+
+    /* Init long-press drag */
+    _initFabDrag(container);
+  }
+
+  /* ---------- Long-press drag ---------- */
+  function _initFabDrag(container) {
+    var fabMain = container.querySelector('.fab-main');
+    if (!fabMain) return;
+
+    var LONG_PRESS_MS = 500;
+    var longPressTimer = null;
+    var isDragging = false;
+    var startTouchX = 0, startTouchY = 0;
+    var startElemX = 0, startElemY = 0;
+    var hint = null;
+
+    function getContainerPos() {
+      var rect = container.getBoundingClientRect();
+      return { x: rect.left, y: rect.top };
+    }
+
+    function showHint() {
+      hint = document.createElement('div');
+      hint.className = 'fab-drag-hint';
+      hint.textContent = 'ドラッグで移動 — 離すと配置';
+      document.body.appendChild(hint);
+    }
+
+    function removeHint() {
+      if (hint) { hint.remove(); hint = null; }
+    }
+
+    fabMain.addEventListener('touchstart', function(e) {
+      if (_isOpen) return; /* mini menu open — don't start drag */
+      var touch = e.touches[0];
+      startTouchX = touch.clientX;
+      startTouchY = touch.clientY;
+      var pos = getContainerPos();
+      startElemX = pos.x;
+      startElemY = pos.y;
+
+      longPressTimer = setTimeout(function() {
+        isDragging = true;
+        hp();
+        container.classList.add('fab-dragging');
+        showHint();
+        /* haptic feedback if available */
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }, { passive: true });
+
+    fabMain.addEventListener('touchmove', function(e) {
+      var dx = e.touches[0].clientX - startTouchX;
+      var dy = e.touches[0].clientY - startTouchY;
+
+      /* Cancel long press if moved before threshold */
+      if (!isDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        clearTimeout(longPressTimer);
+        return;
+      }
+
+      if (!isDragging) return;
+
+      e.preventDefault();
+
+      var newX = startElemX + dx;
+      var newY = startElemY + dy;
+
+      /* Clamp to viewport */
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+      newX = Math.max(0, Math.min(newX, vw - 56));
+      newY = Math.max(0, Math.min(newY, vh - 56));
+
+      container.style.left = newX + 'px';
+      container.style.top = newY + 'px';
+      container.style.right = 'auto';
+      container.style.bottom = 'auto';
+    }, { passive: false });
+
+    fabMain.addEventListener('touchend', function() {
+      clearTimeout(longPressTimer);
+
+      if (isDragging) {
+        isDragging = false;
+        container.classList.remove('fab-dragging');
+        removeHint();
+
+        /* Save position */
+        var rect = container.getBoundingClientRect();
+        var cfg = getFabConfig();
+        cfg.posX = Math.round(rect.left);
+        cfg.posY = Math.round(rect.top);
+        saveFabConfig(cfg);
+
+        if (typeof toast === 'function') toast('📌 FABの位置を保存しました');
+      }
+    }, { passive: true });
+
+    fabMain.addEventListener('touchcancel', function() {
+      clearTimeout(longPressTimer);
+      if (isDragging) {
+        isDragging = false;
+        container.classList.remove('fab-dragging');
+        removeHint();
+      }
+    }, { passive: true });
   }
 
   /* ---------- FAB設定UI ---------- */
@@ -131,12 +271,19 @@
     html += '</div>';
 
     if (cfg.show !== false) {
+      /* Position reset button */
       html += '<div class="flex flex-between items-center mb12">';
       html += '<span class="fz-s">位置</span>';
       html += '<div class="flex gap4">';
-      html += '<button class="pill' + (cfg.position !== 'left' ? ' active' : '') + '" onclick="_fabSetPosition(\'right\')">右</button>';
-      html += '<button class="pill' + (cfg.position === 'left' ? ' active' : '') + '" onclick="_fabSetPosition(\'left\')">左</button>';
+      html += '<button class="pill' + (!cfg.posX && cfg.position !== 'left' ? ' active' : '') + '" onclick="_fabSetPosition(\'right\')">右下</button>';
+      html += '<button class="pill' + (!cfg.posX && cfg.position === 'left' ? ' active' : '') + '" onclick="_fabSetPosition(\'left\')">左下</button>';
       html += '</div></div>';
+
+      if (cfg.posX !== null && cfg.posX !== undefined) {
+        html += '<div class="fz-xs c-muted mb8">📌 カスタム位置に配置中 — <a href="#" style="color:var(--c-primary)" onclick="event.preventDefault();_fabResetPosition()">デフォルトに戻す</a></div>';
+      } else {
+        html += '<div class="fz-xs c-muted mb8">💡 FABボタンを長押しすると自由に移動できます</div>';
+      }
 
       html += '<div class="fz-xs fw6 c-secondary mb8">表示するアクション（タップで切替）</div>';
       allActions.forEach(function(action) {
@@ -165,9 +312,22 @@
     hp();
     var cfg = getFabConfig();
     cfg.position = pos;
+    cfg.posX = null;
+    cfg.posY = null;
     saveFabConfig(cfg);
     renderFab();
     _refreshFabSettingsUI();
+  };
+
+  window._fabResetPosition = function() {
+    hp();
+    var cfg = getFabConfig();
+    cfg.posX = null;
+    cfg.posY = null;
+    saveFabConfig(cfg);
+    renderFab();
+    _refreshFabSettingsUI();
+    toast('FABをデフォルト位置に戻しました');
   };
 
   window._fabToggleAction = function(actionId) {
@@ -219,7 +379,7 @@
     if (backdrop) backdrop.classList.remove('open');
   }
 
-  /* ---------- Show / Hide FAB ---------- */
+  /* ---------- Show / Hide ---------- */
   function showFab() {
     _isHidden = false;
     var container = document.getElementById('fab-container');

@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — fab.css
-   Floating Action Button + ミニメニュー
+   Floating Action Button + ミニメニュー（自由配置対応）
    ========================================================== */
 
 /* ---------- FAB Container ---------- */
@@ -12,18 +12,24 @@
   align-items: center;
   gap: 12px;
   transition: opacity .2s;
-}
-.fab-container.right {
+  /* Default position — overridden by JS inline styles */
   right: 20px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
-}
-.fab-container.left {
-  left: 20px;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
 }
 .fab-container.hidden {
   opacity: 0;
   pointer-events: none;
+}
+/* Remove old .right/.left positioning — now using inline styles */
+
+/* ---------- FAB dragging state ---------- */
+.fab-container.fab-dragging {
+  transition: none !important;
+}
+.fab-container.fab-dragging .fab-main {
+  transform: scale(1.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,.28);
+  opacity: .85;
 }
 
 /* ---------- Mini buttons (above FAB) ---------- */
@@ -87,7 +93,7 @@
 }
 .fab-main.open:active { transform: rotate(45deg) scale(.9); }
 
-/* ---------- FAB Backdrop (when mini menu open) ---------- */
+/* ---------- FAB Backdrop ---------- */
 .fab-backdrop {
   position: fixed;
   inset: 0;
@@ -97,4 +103,21 @@
 }
 .fab-backdrop.open {
   display: block;
+}
+
+/* ---------- FAB position hint during drag ---------- */
+.fab-drag-hint {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--c-card);
+  color: var(--c-tx-muted);
+  font-size: .6875rem;
+  padding: 6px 16px;
+  border-radius: var(--ds-radius-pill);
+  box-shadow: 0 4px 16px var(--c-shadow-color);
+  z-index: 4001;
+  animation: v2-fade-in .2s ease;
+  pointer-events: none;
 }

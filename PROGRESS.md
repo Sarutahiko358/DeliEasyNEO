@@ -19,6 +19,7 @@
 | 7 | 統合・仕上げ | 5+ | ✅ 完了 | 03-25 | 03-26 |
 | 8 | 旧CSS完全排除 | 6 | ✅ 完了 | 03-26 | 03-26 |
 | 9 | v2.1 機能拡張 | 8 | ✅ 完了 | - | - |
+| 10 | v2.2 Phase 10 | 8 | ✅ 完了 | 03-26 | 03-26 |
 
 ---
 
@@ -265,6 +266,15 @@
 | --pd | --c-primary-dark |
 | --pbg | --c-primary |
 | --card / --c | --c-card |
+
+---
+
+## Phase 10: v2.2 (2026-03-26)
+
+- **Circular loading screen**: Replaced 3-dot splash with clean circular spinner, no icon/text
+- **FAB free-position**: Long-press FAB to drag and place anywhere on screen; position saved per-preset
+- **Overlay Manager**: Widget-editing-style management dialog for overlays (add/edit/move/delete custom overlays, open/customize built-in overlays)
+- **Overlay section drag reorder**: Long-press drag to reorder sections in overlay customizer (replaces ▲/▼ buttons)
 | --bg | --c-bg |
 | --tx | --c-tx |
 | --sub | --c-tx-secondary |

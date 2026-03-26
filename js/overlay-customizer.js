@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/overlay-customizer.js
-   オーバーレイ内セクションのカスタマイズ機能
+   オーバーレイ内セクション — 表示/非表示 + 長押しドラッグ並び替え
    ========================================================== */
 (function(){
   'use strict';
@@ -43,12 +43,18 @@
     return order;
   }
 
+  /* ========== Customizer Dialog ========== */
   function openOverlayCustomizer(overlayId, onSave) {
     var defs = _overlayCustomDefs[overlayId];
     if (!defs || defs.length === 0) {
       toast('カスタマイズ可能なセクションがありません');
       return;
     }
+
+    /* Close existing dialog if any */
+    document.querySelectorAll('.confirm-overlay').forEach(function(el) {
+      if (el.querySelector('#ovc-drag-list')) el.remove();
+    });
 
     var cfg = getOverlayCustomConfig(overlayId);
     var order = getOverlaySectionOrder(overlayId);
@@ -59,21 +65,18 @@
 
     var h = '<div class="confirm-box" style="max-width:360px;max-height:80vh;overflow-y:auto;text-align:left">';
     h += '<h3 class="fz-s fw6 mb12 text-c">📐 表示カスタマイズ</h3>';
-    h += '<div class="fz-xs c-muted mb12">表示/非表示の切替と、上下ボタンで並び替えができます。</div>';
+    h += '<div class="fz-xs c-muted mb12">表示/非表示の切替。長押しでドラッグして並び替えできます。</div>';
 
-    h += '<div id="overlay-custom-list">';
-    order.forEach(function(secId, idx) {
+    h += '<div id="ovc-drag-list" data-overlay-id="' + escHtml(overlayId) + '">';
+    order.forEach(function(secId) {
       var secDef = null;
       for (var i = 0; i < defs.length; i++) {
         if (defs[i].id === secId) { secDef = defs[i]; break; }
       }
       if (!secDef) return;
       var isVisible = cfg.visible[secId] !== false;
-      h += '<div class="flex items-center mb8" style="padding:8px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm);gap:8px" data-sec-id="' + escHtml(secId) + '">';
-      h += '<div style="display:flex;flex-direction:column;gap:2px">';
-      if (idx > 0) h += '<button class="btn btn-ghost btn-xs" onclick="_ovcMove(\'' + escJs(overlayId) + '\',\'' + escJs(secId) + '\',-1)" style="padding:2px 6px;font-size:.6rem">▲</button>';
-      if (idx < order.length - 1) h += '<button class="btn btn-ghost btn-xs" onclick="_ovcMove(\'' + escJs(overlayId) + '\',\'' + escJs(secId) + '\',1)" style="padding:2px 6px;font-size:.6rem">▼</button>';
-      h += '</div>';
+      h += '<div class="ovc-drag-item" data-sec-id="' + escHtml(secId) + '">';
+      h += '<span class="ovc-drag-handle">☰</span>';
       h += '<label class="topbar-toggle" style="flex-shrink:0">';
       h += '<input type="checkbox" ' + (isVisible ? 'checked' : '') + ' onchange="_ovcToggle(\'' + escJs(overlayId) + '\',\'' + escJs(secId) + '\',this.checked)">';
       h += '<span class="topbar-toggle-slider"></span>';
@@ -92,6 +95,9 @@
     div.innerHTML = h;
     document.body.appendChild(div);
 
+    /* Init drag-and-drop for the list */
+    _initOvcDrag(overlayId, onSave);
+
     document.getElementById('ovc-done').onclick = function() {
       div.remove();
       if (typeof onSave === 'function') onSave();
@@ -106,31 +112,147 @@
     };
   }
 
+  /* ========== Long-press drag logic ========== */
+  function _initOvcDrag(overlayId, onSave) {
+    var list = document.getElementById('ovc-drag-list');
+    if (!list) return;
+
+    var LONG_PRESS_MS = 400;
+    var longPressTimer = null;
+    var dragItem = null;
+    var placeholder = null;
+    var startY = 0;
+    var offsetY = 0;
+    var items = [];
+
+    function getItems() {
+      return Array.from(list.querySelectorAll('.ovc-drag-item'));
+    }
+
+    function onTouchStart(e) {
+      var target = e.target.closest('.ovc-drag-item');
+      if (!target) return;
+
+      /* Only start from handle or the item itself */
+      var touch = e.touches[0];
+      startY = touch.clientY;
+
+      longPressTimer = setTimeout(function() {
+        dragItem = target;
+        items = getItems();
+        var rect = dragItem.getBoundingClientRect();
+        offsetY = startY - rect.top;
+
+        /* Create placeholder */
+        placeholder = document.createElement('div');
+        placeholder.className = 'ovc-drag-placeholder';
+        placeholder.style.height = rect.height + 'px';
+        dragItem.parentNode.insertBefore(placeholder, dragItem);
+
+        /* Float the item */
+        dragItem.classList.add('ovc-dragging');
+        dragItem.style.position = 'fixed';
+        dragItem.style.left = rect.left + 'px';
+        dragItem.style.top = rect.top + 'px';
+        dragItem.style.width = rect.width + 'px';
+        dragItem.style.zIndex = '10000';
+
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function onTouchMove(e) {
+      /* Cancel long press if moved too early */
+      if (!dragItem && longPressTimer) {
+        var dy = Math.abs(e.touches[0].clientY - startY);
+        if (dy > 8) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        return;
+      }
+
+      if (!dragItem) return;
+      e.preventDefault();
+
+      var touch = e.touches[0];
+      var newTop = touch.clientY - offsetY;
+      dragItem.style.top = newTop + 'px';
+
+      /* Determine insertion point */
+      var currentItems = getItems().filter(function(el) { return el !== dragItem; });
+      var inserted = false;
+      for (var i = 0; i < currentItems.length; i++) {
+        var r = currentItems[i].getBoundingClientRect();
+        var midY = r.top + r.height / 2;
+        if (touch.clientY < midY) {
+          list.insertBefore(placeholder, currentItems[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) {
+        list.appendChild(placeholder);
+      }
+    }
+
+    function onTouchEnd() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+
+      if (!dragItem) return;
+
+      /* Place item at placeholder position */
+      dragItem.classList.remove('ovc-dragging');
+      dragItem.style.position = '';
+      dragItem.style.left = '';
+      dragItem.style.top = '';
+      dragItem.style.width = '';
+      dragItem.style.zIndex = '';
+
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragItem, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+      dragItem = null;
+
+      /* Save new order */
+      var newOrder = [];
+      getItems().forEach(function(el) {
+        var secId = el.getAttribute('data-sec-id');
+        if (secId) newOrder.push(secId);
+      });
+      var cfg = getOverlayCustomConfig(overlayId);
+      cfg.order = newOrder;
+      saveOverlayCustomConfig(overlayId, cfg);
+    }
+
+    list.addEventListener('touchstart', onTouchStart, { passive: true });
+    list.addEventListener('touchmove', onTouchMove, { passive: false });
+    list.addEventListener('touchend', onTouchEnd, { passive: true });
+    list.addEventListener('touchcancel', function() {
+      clearTimeout(longPressTimer);
+      if (dragItem) {
+        dragItem.classList.remove('ovc-dragging');
+        dragItem.style.position = '';
+        dragItem.style.left = '';
+        dragItem.style.top = '';
+        dragItem.style.width = '';
+        dragItem.style.zIndex = '';
+        if (placeholder) placeholder.remove();
+        dragItem = null;
+        placeholder = null;
+      }
+    }, { passive: true });
+  }
+
+  /* Toggle visibility */
   window._ovcToggle = function(overlayId, secId, visible) {
     hp();
     var cfg = getOverlayCustomConfig(overlayId);
     cfg.visible[secId] = visible;
     saveOverlayCustomConfig(overlayId, cfg);
-  };
-
-  window._ovcMove = function(overlayId, secId, dir) {
-    hp();
-    var cfg = getOverlayCustomConfig(overlayId);
-    var order = getOverlaySectionOrder(overlayId);
-    var idx = order.indexOf(secId);
-    if (idx < 0) return;
-    var newIdx = idx + dir;
-    if (newIdx < 0 || newIdx >= order.length) return;
-    var tmp = order[newIdx];
-    order[newIdx] = order[idx];
-    order[idx] = tmp;
-    cfg.order = order;
-    saveOverlayCustomConfig(overlayId, cfg);
-    /* ダイアログ再描画 */
-    document.querySelectorAll('.confirm-overlay').forEach(function(el) {
-      if (el.querySelector('#overlay-custom-list')) el.remove();
-    });
-    openOverlayCustomizer(overlayId);
   };
 
   /* Expose */

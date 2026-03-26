@@ -103,6 +103,57 @@
   justify-content: flex-end;
 }
 
+/* ---------- Overlay Manager Items ---------- */
+.overlay-mgr-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--c-fill-quaternary);
+  border-radius: var(--ds-radius-sm);
+  margin-bottom: 6px;
+}
+.overlay-mgr-wobble {
+  animation: widget-wobble 0.3s ease-in-out infinite alternate;
+}
+.overlay-mgr-wobble:nth-child(even) {
+  animation-delay: 0.15s;
+}
+
+/* ---------- Overlay Customizer Drag ---------- */
+.ovc-drag-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px;
+  background: var(--c-fill-quaternary);
+  border-radius: var(--ds-radius-sm);
+  margin-bottom: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background .15s, box-shadow .15s;
+}
+.ovc-drag-handle {
+  font-size: .9rem;
+  color: var(--c-tx-muted);
+  cursor: grab;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+.ovc-drag-item.ovc-dragging {
+  background: var(--c-card);
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  opacity: .9;
+  border-radius: var(--ds-radius-sm);
+  z-index: 10000;
+}
+.ovc-drag-placeholder {
+  background: var(--c-primary-light);
+  border: 2px dashed var(--c-primary);
+  border-radius: var(--ds-radius-sm);
+  margin-bottom: 6px;
+}
+
 /* ---------- Body ---------- */
 .overlay-body {
   flex: 1;

@@ -331,6 +331,7 @@
   /* Expose */
   window.CUSTOM_OVERLAY_TYPES = CUSTOM_OVERLAY_TYPES;
   window.getCustomOverlays = getCustomOverlays;
+  window.saveCustomOverlays = saveCustomOverlays;
   window.createCustomOverlay = createCustomOverlay;
   window.deleteCustomOverlay = deleteCustomOverlay;
   window.openCustomOverlay = openCustomOverlay;

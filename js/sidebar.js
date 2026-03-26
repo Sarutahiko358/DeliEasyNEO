@@ -58,6 +58,7 @@
     { type: 'divider' },
     { id: 'pf-manage',     icon: '📦', label: 'PF・カテゴリ', overlay: 'pfManage' },
     { id: 'theme',         icon: '🎨', label: 'テーマ',       overlay: 'theme' },
+    { id: 'overlay-mgr',   icon: '📐', label: 'オーバーレイ管理', action: 'openOverlayManager' },
     { id: 'home-edit',     icon: '🏠', label: 'ホーム編集',   action: 'enterEditMode' },
     { id: 'settings',      icon: '⚙️', label: '設定',         overlay: 'settings' },
     { id: 'help',          icon: '❓', label: 'ヘルプ',       overlay: 'help' }
@@ -118,7 +119,7 @@
     html += '</button>';
 
     /* Footer */
-    html += '<div class="sidebar-footer">DeliEasy v2.1</div>';
+    html += '<div class="sidebar-footer">DeliEasy v2.2</div>';
 
     panel.innerHTML = html;
 
@@ -132,6 +133,10 @@
         if (overlayId && typeof window.openOverlay === 'function') {
           setTimeout(function() {
             window.openOverlay(overlayId);
+          }, 150);
+        } else if (actionId === 'openOverlayManager') {
+          setTimeout(function() {
+            if (typeof window.openOverlayManager === 'function') window.openOverlayManager();
           }, 150);
         } else if (actionId === 'enterEditMode') {
           setTimeout(function() {
