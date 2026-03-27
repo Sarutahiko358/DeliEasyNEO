@@ -186,7 +186,6 @@
     var list = document.getElementById('home-edit-list');
     if (!list) return;
 
-    /* スクロールコンテナ（オーバーレイ内ならoverlay-body、ホームならmain-content） */
     var scrollContainer = list.closest('.overlay-body') || document.getElementById('main-content');
 
     var LONG_PRESS_MS = 350;
@@ -203,9 +202,7 @@
     }
 
     function onTouchStart(e) {
-      /* ボタンからのタッチは無視 */
       if (e.target.closest('.home-edit-btn')) return;
-
       var row = e.target.closest('.home-edit-row');
       if (!row) return;
 
@@ -217,7 +214,9 @@
         isDragging = true;
         dragRow = row;
 
-        /* スクロールを一時停止 */
+        /* グローバルフラグ */
+        window.__widgetDragActive = true;
+
         if (scrollContainer) {
           scrollContainer.style.overflowY = 'hidden';
         }
@@ -225,13 +224,11 @@
         var rect = dragRow.getBoundingClientRect();
         offsetY = startY - rect.top;
 
-        /* プレースホルダー作成 */
         placeholder = document.createElement('div');
         placeholder.className = 'home-edit-placeholder';
         placeholder.style.height = rect.height + 'px';
         dragRow.parentNode.insertBefore(placeholder, dragRow);
 
-        /* ドラッグアイテムをフロート */
         dragRow.classList.add('home-edit-dragging');
         dragRow.style.position = 'fixed';
         dragRow.style.left = rect.left + 'px';
@@ -258,31 +255,25 @@
 
       if (!isDragging || !dragRow) return;
       e.preventDefault();
+      e.stopPropagation();
 
       var touch = e.touches[0];
-      var newTop = touch.clientY - offsetY;
-      dragRow.style.top = newTop + 'px';
+      dragRow.style.top = (touch.clientY - offsetY) + 'px';
 
-      /* 挿入位置を決定 */
       var rows = getRows().filter(function(r) { return r !== dragRow; });
       var inserted = false;
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i].getBoundingClientRect();
-        var midY = r.top + r.height / 2;
-        if (touch.clientY < midY) {
+        if (touch.clientY < r.top + r.height / 2) {
           list.insertBefore(placeholder, rows[i]);
           inserted = true;
           break;
         }
       }
       if (!inserted) {
-        /* 追加ボタンの前に挿入 */
         var addBtn = list.querySelector('.home-edit-add');
-        if (addBtn) {
-          list.insertBefore(placeholder, addBtn);
-        } else {
-          list.appendChild(placeholder);
-        }
+        if (addBtn) list.insertBefore(placeholder, addBtn);
+        else list.appendChild(placeholder);
       }
     }
 
@@ -290,9 +281,11 @@
       clearTimeout(longPressTimer);
       longPressTimer = null;
 
-      if (!isDragging || !dragRow) return;
+      if (!isDragging || !dragRow) {
+        window.__widgetDragActive = false;
+        return;
+      }
 
-      /* ドラッグアイテムをプレースホルダーの位置に挿入 */
       dragRow.classList.remove('home-edit-dragging');
       dragRow.style.position = '';
       dragRow.style.left = '';
@@ -307,18 +300,16 @@
       }
       placeholder = null;
 
-      /* スクロールを復帰 */
       if (scrollContainer) {
         scrollContainer.style.overflowY = '';
       }
 
-      /* DOMの順序からウィジェット配列を再構築 */
       _rebuildWidgetOrderFromDOM();
 
       dragRow = null;
       isDragging = false;
+      window.__widgetDragActive = false;
 
-      /* 再描画 */
       renderHome();
     }
 
@@ -339,8 +330,8 @@
         dragRow = null;
       }
       isDragging = false;
+      window.__widgetDragActive = false;
 
-      /* スクロールを復帰 */
       if (scrollContainer) {
         scrollContainer.style.overflowY = '';
       }

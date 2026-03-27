@@ -145,7 +145,22 @@
     }
 
     function onTouchStart(e) {
+      /* ウィジェット編集ドラッグ中はスワイプクローズを完全に無効化 */
+      if (window.__widgetDragActive) { canDrag = false; return; }
+
       var target = e.touches[0].target || e.target;
+
+      /* 編集モードのリスト内からのタッチはスワイプクローズを無効化 */
+      if (target.closest && (
+          target.closest('.home-edit-list') ||
+          target.closest('.home-edit-row') ||
+          target.closest('.home-edit-item') ||
+          target.closest('.edit-mode-header')
+      )) {
+        canDrag = false;
+        return;
+      }
+
       /* ハンドル/ヘッダーからは常にドラッグ可能 */
       if (isOnHandleOrHeader(target)) {
         canDrag = true;
@@ -162,6 +177,9 @@
     }
 
     function onTouchMove(e) {
+      /* ウィジェット編集ドラッグ中は何もしない */
+      if (window.__widgetDragActive) { canDrag = false; isDragging = false; return; }
+
       if (!canDrag) return;
       currentY = e.touches[0].clientY;
       var dy = currentY - startY;
@@ -185,6 +203,17 @@
           canDrag = false;
           return;
         }
+
+        /* ドラッグ開始時点でも編集リスト内なら無効 */
+        var moveTarget = e.touches[0].target || e.target;
+        if (moveTarget.closest && (
+            moveTarget.closest('.home-edit-list') ||
+            moveTarget.closest('.home-edit-row')
+        )) {
+          canDrag = false;
+          return;
+        }
+
         isDragging = true;
         sheet.style.transition = 'none';
       }
