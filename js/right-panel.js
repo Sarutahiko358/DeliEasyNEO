@@ -36,7 +36,6 @@
     { id: 'monthSummary',   name: '今月のまとめ',     icon: '📆', render: _renderMonthSummary },
     { id: 'goalProgress',   name: '目標進捗',         icon: '🎯', render: _renderGoalProgress },
     { id: 'pfBreakdown',    name: 'PF別（今日）',     icon: '📦', render: _renderPfBreakdown },
-    { id: 'streak',         name: '連続稼働日数',     icon: '🔥', render: _renderStreak },
     { id: 'todayExpenses',  name: '今日の経費',       icon: '💸', render: _renderTodayExpenses },
     { id: 'quickStats',     name: 'クイック統計',     icon: '📈', render: _renderQuickStats }
   ];
@@ -261,17 +260,6 @@
       html += '</div>';
     });
     return html;
-  }
-
-  function _renderStreak() {
-    var all = typeof getE === 'function' ? getE() : [];
-    var daysSet = {};
-    all.forEach(function(r) { daysSet[r.d] = true; });
-    var streak = 0;
-    var d = new Date();
-    if (!daysSet[dateKey(d)]) d.setDate(d.getDate() - 1);
-    while (daysSet[dateKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
-    return '<div class="rp-streak">🔥 <span class="rp-streak-num">' + streak + '</span>日連続稼働</div>';
   }
 
   function _renderTodayExpenses() {

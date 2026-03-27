@@ -25,9 +25,7 @@
       widgets: [
         { id: 'todaySummary', size: 'full' },
         { id: 'todayPfBreakdown', size: 'full' },
-        { id: 'recentRecords', size: 'full' },
-        { id: 'hourlyRate', size: 'half' },
-        { id: 'streakCounter', size: 'half' }
+        { id: 'recentRecords', size: 'full' }
       ]
     },
     {
@@ -56,8 +54,7 @@
       widgets: [
         { id: 'todaySales', size: 'half' },
         { id: 'todayCount', size: 'half' },
-        { id: 'todayProfit', size: 'half' },
-        { id: 'streakCounter', size: 'half' }
+        { id: 'todayProfit', size: 'half' }
       ]
     }
   ];

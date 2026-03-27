@@ -593,9 +593,7 @@ const TOPBAR_SLOTS = {
       'goalBar',         // [████████░░] 65%
       'date',            // "3/25(火)"
       'dateTime',        // "3/25(火) 15:32"
-      'streak',          // "🔥 12日連続"
       'monthSales',      // "今月 ¥285,000"
-      'hourlyRate',      // "¥1,250/h"
       'none'             // 非表示
     ]
   },
@@ -776,7 +774,6 @@ const RIGHT_SIDEBAR_SECTIONS = [
   { id: 'monthSummary',   name: '今月のまとめ',     icon: '📆' },
   { id: 'goalProgress',   name: '目標進捗',         icon: '🎯' },
   { id: 'pfBreakdown',    name: 'PF別（今日）',     icon: '📦' },
-  { id: 'streak',         name: '連続稼働日数',     icon: '🔥' },
   { id: 'todayExpenses',  name: '今日の経費',       icon: '💸' },
   { id: 'quickStats',     name: 'クイック統計',     icon: '📈' }
 ];
@@ -994,20 +991,10 @@ const WIDGET_DEFS = {
     size: 'full', sizeOptions: ['full', 'half'],
     category: 'special', desc: '目標金額に対する達成率'
   },
-  streakCounter: {
-    id: 'streakCounter', name: '連続稼働', icon: '🔥',
-    size: 'half', sizeOptions: ['half', 'compact'],
-    category: 'special', desc: '連続配達日数'
-  },
   topDays: {
     id: 'topDays', name: 'ベスト/ワースト', icon: '🏆',
     size: 'full', sizeOptions: ['full'],
     category: 'special', desc: '今月の売上TOP3/WORST3'
-  },
-  hourlyRate: {
-    id: 'hourlyRate', name: '時給換算', icon: '⏱',
-    size: 'half', sizeOptions: ['half', 'full'],
-    category: 'special', desc: '売上÷稼働時間'
   },
   recentRecords: {
     id: 'recentRecords', name: '直近の記録', icon: '📋',
@@ -1064,7 +1051,6 @@ const WIDGET_CATEGORIES = [
     { id: 'todaySales', size: 'half' },
     { id: 'todayCount', size: 'half' },
     { id: 'todayProfit', size: 'half' },
-    { id: 'streakCounter', size: 'half' },
     { id: 'todayPfBreakdown', size: 'full' }
   ],
   topBar: {
@@ -1124,9 +1110,7 @@ const PRESET_TEMPLATES = [
     widgets: [
       { id: 'todaySummary', size: 'full' },
       { id: 'todayPfBreakdown', size: 'full' },
-      { id: 'recentRecords', size: 'full' },
-      { id: 'hourlyRate', size: 'half' },
-      { id: 'streakCounter', size: 'half' }
+      { id: 'recentRecords', size: 'full' }
     ],
     topBar: { show: true, leftCustom: 'todaySalesCount', center: 'none', rightCustom: 'none' },
     bottomBar: { show: false, items: [] },

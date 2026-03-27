@@ -295,27 +295,6 @@
       }
     },
 
-    hourlyRate: {
-      id: 'hourlyRate', name: '時給換算', icon: '⏱', category: 'other',
-      size: 'half', sizeOptions: ['half','full'],
-      desc: '今日の稼働時間と時給',
-      render: function(w) {
-        var tot = typeof tdTot === 'function' ? tdTot() : 0;
-        var hours = S.g('todayHours', 0);
-        var rate = hours > 0 ? Math.round(tot / hours) : 0;
-        var label = hours > 0 ? '¥' + fmt(rate) + '/h' : '稼働時間未設定';
-        return _statBox('時給換算', label, null, w);
-      }
-    },
-    streakCounter: {
-      id: 'streakCounter', name: '連続稼働', icon: '🔥', category: 'other',
-      size: 'half', sizeOptions: ['half','full'],
-      desc: '連続稼働日数',
-      render: function(w) {
-        var streak = _calcStreak();
-        return _statBox('連続稼働', streak + '日', 'accent-warning', w);
-      }
-    },
     themeInfo: {
       id: 'themeInfo', name: 'テーマ情報', icon: '🎨', category: 'other',
       size: 'half', sizeOptions: ['half','full'],
@@ -354,21 +333,6 @@
       '<div class="fz-xs c-muted">' + label + '</div>' +
       '<div class="fw7 fz-s' + (cls ? ' ' + cls : '') + '" style="font-variant-numeric:tabular-nums">' + value + '</div>' +
     '</div>';
-  }
-
-  /* ---------- 連続稼働日数 ---------- */
-  function _calcStreak() {
-    var all = typeof getE === 'function' ? getE() : [];
-    var daysSet = {};
-    all.forEach(function(r) { daysSet[r.d] = true; });
-    var streak = 0;
-    var d = new Date();
-    if (!daysSet[dateKey(d)]) d.setDate(d.getDate() - 1);
-    while (daysSet[dateKey(d)]) {
-      streak++;
-      d.setDate(d.getDate() - 1);
-    }
-    return streak;
   }
 
   /* ========== ウィジェットラッパー描画 ========== */

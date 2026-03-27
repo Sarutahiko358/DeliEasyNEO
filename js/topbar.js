@@ -16,9 +16,7 @@
       { id: 'goalBar',         label: '目標バー',     render: _renderGoalBar },
       { id: 'date',            label: '日付',         render: _renderDate },
       { id: 'dateTime',        label: '日時',         render: _renderDateTime },
-      { id: 'streak',          label: '連続稼働',     render: _renderStreak },
       { id: 'monthSales',      label: '今月の売上',   render: _renderMonthSales },
-      { id: 'hourlyRate',      label: '時給換算',     render: _renderHourlyRate },
       { id: 'none',            label: '非表示',       render: function(){ return ''; } }
     ],
     center: [
@@ -187,22 +185,9 @@
     return '<span class="topbar-data">' + (now.getMonth()+1) + '/' + now.getDate() + '(' + dayNames[now.getDay()] + ') ' + h + ':' + m + '</span>';
   }
 
-  function _renderStreak() {
-    var streak = _calcTopbarStreak();
-    return '<span class="topbar-data topbar-data-warning">🔥 ' + streak + '日連続</span>';
-  }
-
   function _renderMonthSales() {
     var tot = typeof moTot === 'function' ? moTot() : 0;
     return '<span class="topbar-data">今月 ¥' + fmt(tot) + '</span>';
-  }
-
-  function _renderHourlyRate() {
-    var tot = typeof tdTot === 'function' ? tdTot() : 0;
-    var hours = S.g('todayHours', 0);
-    if (!hours || hours <= 0) return '<span class="topbar-data c-muted">時給 —</span>';
-    var rate = Math.round(tot / hours);
-    return '<span class="topbar-data">¥' + fmt(rate) + '/h</span>';
   }
 
   function _renderPresetName() {
@@ -231,21 +216,6 @@
   function _renderTodayCountCompact() {
     var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
     return '<span class="topbar-data-compact">' + cnt + '件</span>';
-  }
-
-  /* ---------- 連続稼働日数（トップバー用軽量版） ---------- */
-  function _calcTopbarStreak() {
-    var all = typeof getE === 'function' ? getE() : [];
-    var daysSet = {};
-    all.forEach(function(r) { daysSet[r.d] = true; });
-    var streak = 0;
-    var d = new Date();
-    if (!daysSet[dateKey(d)]) d.setDate(d.getDate() - 1);
-    while (daysSet[dateKey(d)]) {
-      streak++;
-      d.setDate(d.getDate() - 1);
-    }
-    return streak;
   }
 
   /* ---------- フローティングハンバーガー ---------- */
