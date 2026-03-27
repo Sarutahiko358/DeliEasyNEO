@@ -96,7 +96,11 @@
     var html = '';
     html += '<div class="right-panel-header">';
     html += '<span class="fz-s fw6">📊 情報パネル</span>';
-    html += '<button class="btn btn-icon" onclick="closeRightPanel()" aria-label="閉じる">✕</button>';
+    if (_isDesktopRightPanelVisible()) {
+      html += '<button class="btn btn-icon" onclick="openOverlay(\'settings\')" aria-label="設定" style="font-size:.8rem">⚙️</button>';
+    } else {
+      html += '<button class="btn btn-icon" onclick="closeRightPanel()" aria-label="閉じる">✕</button>';
+    }
     html += '</div>';
 
     html += '<div class="right-panel-body">';
