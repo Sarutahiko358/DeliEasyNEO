@@ -220,6 +220,11 @@
   .widget-full { grid-column: 1 / -1; }
   .widget-half { grid-column: span 1; }
 
+  /* wideウィジェット: 2列スパン */
+  .widget-wide {
+    grid-column: span 2;
+  }
+
   /* fullウィジェット内部 — 広がりすぎ防止 */
   .widget-full .widget-inner,
   .widget-full .widget-clock,
@@ -280,4 +285,5 @@
   .widget-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+  /* wide は 4列中2列を使う */
 }

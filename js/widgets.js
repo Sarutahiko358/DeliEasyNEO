@@ -19,7 +19,7 @@
   var WIDGET_DEFS = {
     clock: {
       id: 'clock', name: '時計', icon: '🕐', category: 'time',
-      size: 'full', sizeOptions: ['full','half'],
+      size: 'full', sizeOptions: ['full','wide','half'],
       desc: '現在時刻と日付',
       render: function(w) {
         var now = new Date();
@@ -41,7 +41,7 @@
 
     todaySales: {
       id: 'todaySales', name: '今日の売上', icon: '💰', category: 'today',
-      size: 'half', sizeOptions: ['half','full'],
+      size: 'half', sizeOptions: ['half','wide','full'],
       desc: '今日の合計売上',
       tappable: true, tapAction: 'earn',
       render: function(w) {
@@ -51,7 +51,7 @@
     },
     todayCount: {
       id: 'todayCount', name: '今日の件数', icon: '📦', category: 'today',
-      size: 'half', sizeOptions: ['half','full'],
+      size: 'half', sizeOptions: ['half','wide','full'],
       desc: '今日の配達件数',
       tappable: true, tapAction: 'earn',
       render: function(w) {
@@ -61,7 +61,7 @@
     },
     todayUnit: {
       id: 'todayUnit', name: '今日の単価', icon: '📈', category: 'today',
-      size: 'half', sizeOptions: ['half','full'],
+      size: 'half', sizeOptions: ['half','wide','full'],
       desc: '今日の平均単価',
       render: function(w) {
         var tot = typeof tdTot === 'function' ? tdTot() : 0;
@@ -72,7 +72,7 @@
     },
     todayProfit: {
       id: 'todayProfit', name: '今日の利益', icon: '✨', category: 'today',
-      size: 'half', sizeOptions: ['half','full'],
+      size: 'half', sizeOptions: ['half','wide','full'],
       desc: '売上 − 経費の概算',
       render: function(w) {
         var tot = typeof tdTot === 'function' ? tdTot() : 0;
@@ -87,7 +87,7 @@
 
     todaySummary: {
       id: 'todaySummary', name: '今日のまとめ', icon: '📋', category: 'summary',
-      size: 'full', sizeOptions: ['full'],
+      size: 'full', sizeOptions: ['full','wide'],
       desc: '売上・件数・単価・利益を一覧',
       tappable: true, tapAction: 'earn',
       render: function() {
@@ -109,7 +109,7 @@
     },
     weekSummary: {
       id: 'weekSummary', name: '今週のまとめ', icon: '📆', category: 'summary',
-      size: 'full', sizeOptions: ['full'],
+      size: 'full', sizeOptions: ['full','wide'],
       desc: '今週（月〜日）の合計',
       render: function() {
         var data = typeof wkData === 'function' ? wkData() : { tot: 0, cnt: 0, days: 0 };
@@ -125,7 +125,7 @@
     },
     monthSummary: {
       id: 'monthSummary', name: '今月のまとめ', icon: '📊', category: 'summary',
-      size: 'full', sizeOptions: ['full'],
+      size: 'full', sizeOptions: ['full','wide'],
       desc: '今月の合計',
       render: function() {
         var tot = typeof moTot === 'function' ? moTot() : 0;
@@ -143,7 +143,7 @@
     },
     todayPfBreakdown: {
       id: 'todayPfBreakdown', name: 'PF別内訳', icon: '🍕', category: 'detail',
-      size: 'full', sizeOptions: ['full'],
+      size: 'full', sizeOptions: ['full','wide'],
       desc: '今日のプラットフォーム別内訳',
       tappable: true, tapAction: 'earn',
       render: function() {
@@ -178,7 +178,7 @@
 
     goalProgress: {
       id: 'goalProgress', name: '月間目標', icon: '🎯', category: 'goal',
-      size: 'full', sizeOptions: ['full','half'],
+      size: 'full', sizeOptions: ['full','wide','half'],
       desc: '月間売上目標に対する進捗',
       render: function(w) {
         var goal = S.g('monthlyGoal', 0);
@@ -197,7 +197,7 @@
     },
     monthPace: {
       id: 'monthPace', name: '月間ペース', icon: '📐', category: 'goal',
-      size: 'full', sizeOptions: ['full'],
+      size: 'full', sizeOptions: ['full','wide'],
       desc: '月末着地予測',
       render: function() {
         var now = new Date();
@@ -219,7 +219,7 @@
 
     recentRecords: {
       id: 'recentRecords', name: '最近の記録', icon: '📝', category: 'detail',
-      size: 'full', sizeOptions: ['full'],
+      size: 'full', sizeOptions: ['full','wide'],
       desc: '直近5件の売上記録',
       tappable: true, tapAction: 'earn',
       render: function() {
@@ -244,7 +244,7 @@
     },
     miniCalendar: {
       id: 'miniCalendar', name: 'ミニカレンダー', icon: '📅', category: 'detail',
-      size: 'full', sizeOptions: ['full'],
+      size: 'full', sizeOptions: ['full','wide'],
       desc: '月間売上ヒートマップ（スワイプで月移動）',
       render: function(w) {
         if (!window._miniCalState) window._miniCalState = {};
@@ -337,7 +337,7 @@
 
     themeInfo: {
       id: 'themeInfo', name: 'テーマ情報', icon: '🎨', category: 'other',
-      size: 'half', sizeOptions: ['half','full'],
+      size: 'half', sizeOptions: ['half','wide','full'],
       desc: '現在のテーマ設定',
       render: function(w) {
         var style = typeof getThemeStyle === 'function' ? getThemeStyle() : '?';
@@ -347,7 +347,7 @@
     },
     quickMemo: {
       id: 'quickMemo', name: 'メモ', icon: '📝', category: 'other',
-      size: 'full', sizeOptions: ['full','half'],
+      size: 'full', sizeOptions: ['full','wide','half'],
       desc: 'ちょっとしたメモ',
       render: function() {
         var memo = S.g('quickMemo', '');

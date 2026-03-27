@@ -105,8 +105,8 @@
   }
 
   function _renderEditItem(w, def, index, size) {
-    var sizeLabel = size === 'full' ? 'FULL' : (size === 'compact' ? 'SM' : 'HALF');
-    var sizeColor = size === 'full' ? 'var(--c-primary)' : 'var(--c-info)';
+    var sizeLabel = size === 'full' ? 'FULL' : (size === 'wide' ? 'WIDE' : (size === 'compact' ? 'SM' : 'HALF'));
+    var sizeColor = size === 'full' ? 'var(--c-primary)' : (size === 'wide' ? 'var(--c-warning, #ff9500)' : 'var(--c-info)');
 
     var html = '<div class="home-edit-item" data-widget-idx="' + index + '">';
     html += '<span class="home-edit-handle">☰</span>';

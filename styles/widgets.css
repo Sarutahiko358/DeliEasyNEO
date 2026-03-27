@@ -30,6 +30,11 @@
 .widget-compact { grid-column: span 1; }
 .widget-compact .widget-inner { padding: 10px 12px; }
 
+/* 2列スパン（デスクトップ用、モバイルではfullと同じ） */
+.widget-wide {
+  grid-column: 1 / -1;  /* モバイルでは全幅 */
+}
+
 .widget-tappable { cursor: pointer; }
 .widget-tappable:active { transform: scale(var(--ds-active-scale, .97)); opacity: .8; }
 

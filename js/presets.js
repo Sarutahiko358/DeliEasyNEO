@@ -12,7 +12,7 @@
       desc: '配達中にサッと確認',
       widgets: [
         { id: 'clock', size: 'full' },
-        { id: 'todaySales', size: 'half' },
+        { id: 'todaySales', size: 'wide' },
         { id: 'todayCount', size: 'half' },
         { id: 'todayUnit', size: 'half' },
         { id: 'todayProfit', size: 'half' },
