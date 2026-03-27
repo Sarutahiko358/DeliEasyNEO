@@ -210,20 +210,15 @@
   }
 
   /* ==========================================================
-     ウィジェットグリッド — 3カラム
+     ウィジェットグリッド — 4カラム固定
      ========================================================== */
   .widget-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    /* auto-fill を削除、max-width も不要 */
   }
-  .widget-full { grid-column: 1 / -1; }
-  .widget-half { grid-column: span 1; }
-
-  /* wideウィジェット: 2列スパン */
-  .widget-wide {
-    grid-column: span 2;
-  }
+  .widget-full { grid-column: 1 / -1; }  /* 4列全幅 */
+  .widget-wide { grid-column: span 2; }   /* 2列 */
+  .widget-half { grid-column: span 1; }   /* 1列 */
 
   /* fullウィジェット内部 — 広がりすぎ防止 */
   .widget-full .widget-inner,
@@ -267,7 +262,7 @@
 
   /* --- オーバーレイ内コンテンツ幅制限 --- */
   .overlay-body {
-    max-width: 600px;
+    max-width: 680px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -276,14 +271,51 @@
   .sync-popup {
     right: 24px;
   }
-}
 
-/* ==========================================================
-   ワイドデスクトップ (1440px以上) — 4カラムウィジェット
-   ========================================================== */
-@media (min-width: 1440px) {
-  .widget-grid {
-    grid-template-columns: repeat(4, 1fr);
+  /* ==========================================================
+     ホーム編集オーバーレイ — デスクトップ用グリッドプレビュー
+     ========================================================== */
+
+  /* 編集リストを2列にする */
+  .home-edit-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
-  /* wide は 4列中2列を使う */
+
+  /* fullとwideの行は2列スパン */
+  .home-edit-row-full,
+  .home-edit-row-pair {
+    grid-column: 1 / -1;
+  }
+
+  /* wide行は2列中1列分（pairと同じ幅だが1アイテム） */
+  .home-edit-row-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* single-halfは1列 */
+  .home-edit-row-single-half {
+    grid-column: span 1;
+  }
+
+  /* 追加ボタンも全幅 */
+  .home-edit-add {
+    grid-column: 1 / -1;
+  }
+
+  /* アイテムをよりコンパクトに */
+  .home-edit-item {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  /* サイズラベルをバッジ風に */
+  .home-edit-size {
+    font-size: 0.625rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--c-fill-quaternary);
+    font-weight: 700;
+  }
 }

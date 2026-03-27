@@ -211,6 +211,11 @@
             html += '</div>';
             i += 1;
           }
+        } else if (size === 'wide') {
+          html += '<div class="home-edit-row home-edit-row-wide" data-row-start="' + i + '" data-row-count="1">';
+          html += _renderDashEditItem(overlay.id, w, def, i, size);
+          html += '</div>';
+          i += 1;
         } else {
           html += '<div class="home-edit-row home-edit-row-full" data-row-start="' + i + '" data-row-count="1">';
           html += _renderDashEditItem(overlay.id, w, def, i, size);

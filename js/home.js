@@ -86,6 +86,12 @@
           html += '</div>';
           i += 1;
         }
+      } else if (size === 'wide') {
+        /* wide → 専用行クラス */
+        html += '<div class="home-edit-row home-edit-row-wide" data-row-start="' + i + '" data-row-count="1">';
+        html += _renderEditItem(w, def, i, size);
+        html += '</div>';
+        i += 1;
       } else {
         /* full → 1行 */
         html += '<div class="home-edit-row home-edit-row-full" data-row-start="' + i + '" data-row-count="1">';
@@ -665,6 +671,28 @@
     if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
     if (typeof renderFabSettings === 'function') html += renderFabSettings();
     html += '</div></div>';
+
+    /* デスクトップ用: ライブプレビュー */
+    if (window.innerWidth >= 1024) {
+      html += '<div class="card mb12">';
+      html += '<div class="card-header" onclick="this.classList.toggle(\'open\');var b=document.getElementById(\'edit-preview-body\');b.style.display=b.style.display===\'none\'?\'\':\'none\'">';
+      html += '<span>👁 レイアウトプレビュー</span><span class="card-arrow">▼</span>';
+      html += '</div>';
+      html += '<div class="card-body" id="edit-preview-body" style="display:none">';
+      html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
+      preset.widgets.forEach(function(w) {
+        var def = WIDGET_DEFS[w.id];
+        if (!def) return;
+        var sz = w.size || def.size || 'full';
+        var span = sz === 'full' ? 4 : (sz === 'wide' ? 2 : 1);
+        html += '<div style="grid-column:span ' + span + ';padding:12px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm);text-align:center;font-size:.7rem;color:var(--c-tx-muted)">';
+        html += def.icon + ' ' + escHtml(def.name);
+        html += '<div style="font-size:.55rem;margin-top:2px;color:var(--c-primary);font-weight:700">' + sz.toUpperCase() + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '</div></div>';
+    }
 
     body.innerHTML = html;
     _initEditDrag();

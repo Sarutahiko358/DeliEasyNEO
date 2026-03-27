@@ -11,12 +11,12 @@
       name: '🚴 稼働中',
       desc: '配達中にサッと確認',
       widgets: [
-        { id: 'clock', size: 'full' },
-        { id: 'todaySales', size: 'wide' },
+        { id: 'clock', size: 'wide' },
+        { id: 'todaySales', size: 'half' },
         { id: 'todayCount', size: 'half' },
         { id: 'todayUnit', size: 'half' },
         { id: 'todayProfit', size: 'half' },
-        { id: 'todayPfBreakdown', size: 'full' }
+        { id: 'todayPfBreakdown', size: 'wide' }
       ]
     },
     {
