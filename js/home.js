@@ -18,7 +18,7 @@
     var html = '';
 
     /* === プリセットバー === */
-    if (presets.length > 1 || _editMode) {
+    if (presets.length > 1) {
       html += '<div class="preset-bar">';
       html += '<div class="preset-bar-scroll">';
       presets.forEach(function(p) {
@@ -30,45 +30,15 @@
       html += '</div>';
     }
 
-    /* === 編集モードヘッダー === */
-    if (_editMode) {
-      var topbarCfg = typeof getTopbarConfig === 'function' ? getTopbarConfig() : { show: true };
-      var noTopbarClass = topbarCfg.show === false ? ' no-topbar' : '';
-      html += '<div class="edit-mode-header' + noTopbarClass + '">';
-      html += '<button class="btn btn-ghost btn-sm" onclick="exitEditMode()">キャンセル</button>';
-      html += '<span class="fw6 fz-s">ホーム編集</span>';
-      html += '<button class="btn btn-primary btn-sm" onclick="exitEditMode()">完了</button>';
-      html += '</div>';
-    }
-
-    if (_editMode) {
-      /* === 編集モード: リッチリスト表示 === */
-      html += _renderEditList(preset);
-    } else {
-      /* === 通常モード: ウィジェットグリッド === */
-      html += '<div class="widget-grid" id="widget-grid">';
-      preset.widgets.forEach(function(w) {
-        html += renderWidgetWrapper(w, false);
-      });
-      html += '</div>';
-    }
-
-    /* === 編集モード: 詳細設定 === */
-    if (_editMode) {
-      html += '<div class="card mb12">';
-      html += '<div class="card-header" onclick="this.classList.toggle(\'open\');var b=document.getElementById(\'edit-advanced-body\');b.style.display=b.style.display===\'none\'?\'\':\'none\'">';
-      html += '<span>⚙️ 詳細設定</span><span class="card-arrow">▼</span>';
-      html += '</div>';
-      html += '<div class="card-body" id="edit-advanced-body" style="display:none">';
-      if (typeof renderTopbarSettings === 'function') html += renderTopbarSettings();
-      if (typeof renderBottombarSettings === 'function') html += renderBottombarSettings();
-      if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
-      if (typeof renderFabSettings === 'function') html += renderFabSettings();
-      html += '</div></div>';
-    }
+    /* === 通常モード: ウィジェットグリッド === */
+    html += '<div class="widget-grid" id="widget-grid">';
+    preset.widgets.forEach(function(w) {
+      html += renderWidgetWrapper(w, false);
+    });
+    html += '</div>';
 
     /* === ヒント === */
-    if (!_editMode && presets.length <= 1) {
+    if (presets.length <= 1) {
       html += '<div class="text-c fz-xs c-muted mt16 mb8" style="opacity:.5">';
       html += 'ウィジェットを長押しでカスタマイズ';
       html += '</div>';
@@ -80,8 +50,7 @@
       startWidgetClock();
     }
 
-    if (_editMode) _initEditDrag();
-    if (!_editMode) _initLongPress();
+    _initLongPress();
   }
 
   /* ========== 編集モード: リッチリスト描画 ========== */
@@ -169,7 +138,9 @@
     var nextIdx = (curIdx + 1) % def.sizeOptions.length;
     preset.widgets[idx].size = def.sizeOptions[nextIdx];
     savePreset(preset);
-    renderHome();
+    var body = document.getElementById('overlay-body-homeEdit');
+    if (body) renderOverlay_homeEdit(body);
+    else renderHome();
   };
 
   window._homeEditRemove = function(idx) {
@@ -178,7 +149,9 @@
     if (!preset || !preset.widgets[idx]) return;
     preset.widgets.splice(idx, 1);
     savePreset(preset);
-    renderHome();
+    var body = document.getElementById('overlay-body-homeEdit');
+    if (body) renderOverlay_homeEdit(body);
+    else renderHome();
   };
 
   /* ========== ドラッグ並び替え（行ベース） ========== */
@@ -325,7 +298,9 @@
       isDragging = false;
       window.__widgetDragActive = false;
 
-      renderHome();
+      var body = document.getElementById('overlay-body-homeEdit');
+      if (body) renderOverlay_homeEdit(body);
+      else renderHome();
     }
 
     function onPointerCancel() {
@@ -497,22 +472,24 @@
 
   /* ========== 編集モード ========== */
   function enterEditMode() {
-    _editMode = true;
-    if (typeof hideFab === 'function') hideFab();
-    if (typeof hideBottombar === 'function') hideBottombar();
-    renderHome();
+    if (typeof openOverlay === 'function') {
+      openOverlay('homeEdit');
+    }
   }
 
   function exitEditMode() {
-    _editMode = false;
-    if (typeof showFab === 'function') showFab();
-    if (typeof showBottombar === 'function') showBottombar();
+    if (typeof closeOverlay === 'function') {
+      closeOverlay();
+    }
+    /* ホーム画面を更新（変更を反映） */
     renderHome();
     if (typeof renderTopbar === 'function') renderTopbar();
     if (typeof renderBottombar === 'function') renderBottombar();
   }
 
-  function isEditMode() { return _editMode; }
+  function isEditMode() {
+    return typeof getTopOverlayId === 'function' && getTopOverlayId() === 'homeEdit';
+  }
 
   /* 旧API互換 */
   window.removeWidget = function(widgetId) {
@@ -600,6 +577,10 @@
   window._widgetPickerClose = function() {
     var dialog = document.getElementById('widget-picker-dialog');
     if (dialog) dialog.remove();
+    /* オーバーレイ内を再描画 */
+    var body = document.getElementById('overlay-body-homeEdit');
+    if (body) renderOverlay_homeEdit(body);
+    /* ホーム画面も裏で更新 */
     renderHome();
   };
 
@@ -644,6 +625,59 @@
     });
     grid.addEventListener('mouseleave', function() { clearTimeout(timer); });
   }
+
+  /* ========== ホーム編集オーバーレイ ========== */
+  function renderOverlay_homeEdit(body) {
+    if (!body) return;
+    var preset = getActivePreset();
+    if (!preset) { body.innerHTML = '<div class="text-c c-muted fz-s" style="padding:60px">プリセットがありません</div>'; return; }
+    var presets = getPresets();
+    var html = '';
+
+    /* プリセットバー */
+    if (presets.length > 1) {
+      html += '<div class="preset-bar">';
+      html += '<div class="preset-bar-scroll">';
+      presets.forEach(function(p) {
+        var isActive = preset.id === p.id;
+        html += '<button class="preset-tab' + (isActive ? ' active' : '') + '" onclick="_homeEditSwitchPreset(\'' + escJs(p.id) + '\')">' + escHtml(p.name) + '</button>';
+      });
+      html += '<button class="preset-tab preset-tab-add" onclick="openPresetMenu()">+</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+
+    /* ウィジェット編集リスト */
+    html += _renderEditList(preset);
+
+    /* 詳細設定（折りたたみ） */
+    html += '<div class="card mb12">';
+    html += '<div class="card-header" onclick="this.classList.toggle(\'open\');var b=document.getElementById(\'edit-advanced-body\');b.style.display=b.style.display===\'none\'?\'\':\'none\'">';
+    html += '<span>⚙️ 詳細設定</span><span class="card-arrow">▼</span>';
+    html += '</div>';
+    html += '<div class="card-body" id="edit-advanced-body" style="display:none">';
+    if (typeof renderTopbarSettings === 'function') html += renderTopbarSettings();
+    if (typeof renderBottombarSettings === 'function') html += renderBottombarSettings();
+    if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
+    if (typeof renderFabSettings === 'function') html += renderFabSettings();
+    html += '</div></div>';
+
+    body.innerHTML = html;
+    _initEditDrag();
+  }
+  window.renderOverlay_homeEdit = renderOverlay_homeEdit;
+
+  window._homeEditSwitchPreset = function(id) {
+    hp();
+    setActivePreset(id);
+    /* オーバーレイ内を再描画 */
+    var body = document.getElementById('overlay-body-homeEdit');
+    if (body) renderOverlay_homeEdit(body);
+    /* ホーム画面も裏で更新 */
+    renderHome();
+    if (typeof renderTopbar === 'function') renderTopbar();
+    if (typeof renderBottombar === 'function') renderBottombar();
+  };
 
   /* ========== Expose ========== */
   window.renderHome = renderHome;

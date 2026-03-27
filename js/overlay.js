@@ -14,6 +14,7 @@
     tax:           { title: '🧾 税金' },
     expenseManage: { title: '💰 経費管理' },
     pfManage:      { title: '📦 PF・カテゴリ管理' },
+    homeEdit:      { title: '🏠 ホーム編集' },
     theme:         { title: '🎨 テーマ' },
     settings:      { title: '⚙️ 設定' },
     help:          { title: '❓ ヘルプ' },
@@ -107,6 +108,7 @@
       if (container) container.classList.remove('has-overlay');
       if (backdrop) { backdrop.classList.remove('visible'); backdrop.style.opacity = ''; }
       if (typeof window.showFab === 'function') window.showFab();
+      if (typeof window.refreshHome === 'function') window.refreshHome();
       /* pull-to-refresh を復活 */
       _enablePullToRefresh();
     }

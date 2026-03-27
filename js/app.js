@@ -273,12 +273,6 @@
           return;
         }
 
-        /* 1.5. Edit mode */
-        if (typeof isEditMode === 'function' && isEditMode()) {
-          if (typeof exitEditMode === 'function') exitEditMode();
-          return;
-        }
-
         /* 2. FAB menu */
         if (typeof isFabOpen === 'function' && isFabOpen()) {
           closeFabMenu();
@@ -331,7 +325,6 @@
     window.addEventListener('popstate', function() {
       if (_exitGuardActive) {
         history.pushState(null, '', location.href);
-        if (typeof isEditMode === 'function' && isEditMode()) { exitEditMode(); return; }
         if (typeof isOverlayOpen === 'function' && isOverlayOpen()) { closeOverlay(); return; }
         if (typeof isSidebarOpen === 'function' && isSidebarOpen()) { closeSidebar(); return; }
         if (typeof isRightPanelOpen === 'function' && isRightPanelOpen()) { closeRightPanel(); return; }
