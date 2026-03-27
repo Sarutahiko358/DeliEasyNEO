@@ -285,13 +285,18 @@
     var list = document.getElementById('dash-edit-list-' + coId);
     if (!list) return;
 
-    var LONG_PRESS_MS = 300;
+    /* オーバーレイのスクロールコンテナを取得 */
+    var scrollContainer = list.closest('.overlay-body');
+
+    var LONG_PRESS_MS = 350;
     var longPressTimer = null;
     var dragRow = null;
     var placeholder = null;
     var startY = 0;
+    var startX = 0;
     var offsetY = 0;
     var isDragging = false;
+    var scrollBeforeDrag = 0;
 
     function getRows() {
       return Array.from(list.querySelectorAll('.home-edit-row'));
@@ -302,24 +307,39 @@
       var row = e.target.closest('.home-edit-row');
       if (!row) return;
 
-      startY = e.touches[0].clientY;
+      var touch = e.touches[0];
+      startY = touch.clientY;
+      startX = touch.clientX;
+
       longPressTimer = setTimeout(function() {
         isDragging = true;
         dragRow = row;
+
+        /* ドラッグ開始時のスクロール位置を記録 */
+        scrollBeforeDrag = scrollContainer ? scrollContainer.scrollTop : 0;
+
+        /* スクロールを一時停止 */
+        if (scrollContainer) {
+          scrollContainer.style.overflowY = 'hidden';
+        }
+
         var rect = dragRow.getBoundingClientRect();
         offsetY = startY - rect.top;
 
+        /* プレースホルダー作成 */
         placeholder = document.createElement('div');
         placeholder.className = 'home-edit-placeholder';
         placeholder.style.height = rect.height + 'px';
         dragRow.parentNode.insertBefore(placeholder, dragRow);
 
+        /* ドラッグアイテムをフロート */
         dragRow.classList.add('home-edit-dragging');
         dragRow.style.position = 'fixed';
         dragRow.style.left = rect.left + 'px';
         dragRow.style.top = rect.top + 'px';
         dragRow.style.width = rect.width + 'px';
         dragRow.style.zIndex = '10000';
+        dragRow.style.pointerEvents = 'none';
 
         if (navigator.vibrate) navigator.vibrate(30);
       }, LONG_PRESS_MS);
@@ -327,23 +347,31 @@
 
     function onTouchMove(e) {
       if (!isDragging && longPressTimer) {
-        if (Math.abs(e.touches[0].clientY - startY) > 8) {
+        var touch = e.touches[0];
+        var dy = Math.abs(touch.clientY - startY);
+        var dx = Math.abs(touch.clientX - startX);
+        /* 少しでも動いたら長押しキャンセル（スクロール優先） */
+        if (dy > 8 || dx > 8) {
           clearTimeout(longPressTimer);
           longPressTimer = null;
         }
         return;
       }
+
       if (!isDragging || !dragRow) return;
       e.preventDefault();
 
       var touch = e.touches[0];
-      dragRow.style.top = (touch.clientY - offsetY) + 'px';
+      var newTop = touch.clientY - offsetY;
+      dragRow.style.top = newTop + 'px';
 
+      /* 挿入位置を決定 */
       var rows = getRows().filter(function(r) { return r !== dragRow; });
       var inserted = false;
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i].getBoundingClientRect();
-        if (touch.clientY < r.top + r.height / 2) {
+        var midY = r.top + r.height / 2;
+        if (touch.clientY < midY) {
           list.insertBefore(placeholder, rows[i]);
           inserted = true;
           break;
@@ -359,35 +387,48 @@
     function onTouchEnd() {
       clearTimeout(longPressTimer);
       longPressTimer = null;
+
       if (!isDragging || !dragRow) return;
 
+      /* スタイルをリセット */
       dragRow.classList.remove('home-edit-dragging');
       dragRow.style.position = '';
       dragRow.style.left = '';
       dragRow.style.top = '';
       dragRow.style.width = '';
       dragRow.style.zIndex = '';
+      dragRow.style.pointerEvents = '';
 
+      /* プレースホルダーの位置に挿入 */
       if (placeholder && placeholder.parentNode) {
         placeholder.parentNode.insertBefore(dragRow, placeholder);
         placeholder.remove();
       }
       placeholder = null;
 
-      /* DOMからウィジェット順序を再構築 */
+      /* スクロールを復帰 */
+      if (scrollContainer) {
+        scrollContainer.style.overflowY = '';
+      }
+
+      /* DOMの順序からウィジェット配列を再構築 */
       var overlayList = getCustomOverlays();
       for (var oi = 0; oi < overlayList.length; oi++) {
         if (overlayList[oi].id === coId) {
           var oldWidgets = overlayList[oi].data.widgets.slice();
           var newWidgets = [];
-          var rows = list.querySelectorAll('.home-edit-row');
-          rows.forEach(function(row) {
+          var currentRows = list.querySelectorAll('.home-edit-row');
+          currentRows.forEach(function(row) {
             var items = row.querySelectorAll('.home-edit-item');
             items.forEach(function(item) {
               var idx = parseInt(item.getAttribute('data-widget-idx'), 10);
-              if (!isNaN(idx) && oldWidgets[idx]) newWidgets.push(oldWidgets[idx]);
+              if (!isNaN(idx) && idx >= 0 && idx < oldWidgets.length) {
+                newWidgets.push(oldWidgets[idx]);
+              }
             });
           });
+
+          /* 重複チェック＋全数チェック */
           if (newWidgets.length === oldWidgets.length) {
             overlayList[oi].data.widgets = newWidgets;
             saveCustomOverlays(overlayList);
@@ -396,13 +437,18 @@
         }
       }
 
+      var finishedCoId = coId;
       dragRow = null;
       isDragging = false;
-      _refreshDashboard(coId);
+
+      /* 再描画（新しい順序を反映） */
+      _refreshDashboard(finishedCoId);
     }
 
     function onTouchCancel() {
       clearTimeout(longPressTimer);
+      longPressTimer = null;
+
       if (isDragging && dragRow) {
         dragRow.classList.remove('home-edit-dragging');
         dragRow.style.position = '';
@@ -410,11 +456,17 @@
         dragRow.style.top = '';
         dragRow.style.width = '';
         dragRow.style.zIndex = '';
+        dragRow.style.pointerEvents = '';
         if (placeholder) placeholder.remove();
-        dragRow = null;
         placeholder = null;
+        dragRow = null;
       }
       isDragging = false;
+
+      /* スクロールを復帰 */
+      if (scrollContainer) {
+        scrollContainer.style.overflowY = '';
+      }
     }
 
     list.addEventListener('touchstart', onTouchStart, { passive: true });
