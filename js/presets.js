@@ -59,6 +59,11 @@
     }
   ];
 
+  /* ========== デバイス判定 ========== */
+  function _isDesktop() {
+    return window.innerWidth >= 1024;
+  }
+
   /* ========== プリセット操作 ========== */
   function getPresets() {
     var saved = S.g('presets', null);
@@ -72,7 +77,12 @@
 
   function getActivePreset() {
     var presets = getPresets();
-    var activeId = S.g('activePreset', null);
+    var key = _isDesktop() ? 'activePresetDesktop' : 'activePreset';
+    var activeId = S.g(key, null);
+    // フォールバック: デスクトップキーが未設定ならモバイルのを使う
+    if (!activeId && _isDesktop()) {
+      activeId = S.g('activePreset', null);
+    }
     if (activeId) {
       for (var i = 0; i < presets.length; i++) {
         if (presets[i].id === activeId) return presets[i];
@@ -82,7 +92,8 @@
   }
 
   function setActivePreset(id) {
-    S.si('activePreset', id);
+    var key = _isDesktop() ? 'activePresetDesktop' : 'activePreset';
+    S.si(key, id);
   }
 
   function savePreset(preset) {

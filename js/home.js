@@ -634,6 +634,10 @@
     var presets = getPresets();
     var html = '';
 
+    /* デバイスモードラベル */
+    var deviceLabel = (window.innerWidth >= 1024) ? '🖥️ デスクトップ用' : '📱 モバイル用';
+    html += '<div class="text-c fz-xs c-muted mb8" style="padding:4px 8px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm);display:inline-block">' + deviceLabel + ' レイアウトを編集中</div>';
+
     /* プリセットバー */
     if (presets.length > 1) {
       html += '<div class="preset-bar">';

@@ -355,6 +355,19 @@
   window.isDarkPalette = isDarkPalette;
   window.updateSyncIndicator = updateSyncIndicator;
 
+  /* ---------- デスクトップ↔モバイル切替時のプリセット再適用 ---------- */
+  var _lastIsDesktop = window.innerWidth >= 1024;
+  window.addEventListener('resize', function() {
+    var nowDesktop = window.innerWidth >= 1024;
+    if (nowDesktop !== _lastIsDesktop) {
+      _lastIsDesktop = nowDesktop;
+      if (typeof renderHome === 'function') renderHome();
+      if (typeof renderTopbar === 'function') renderTopbar();
+      if (typeof renderBottombar === 'function') renderBottombar();
+      if (typeof renderFab === 'function') renderFab();
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', initApp);
 
 })();
