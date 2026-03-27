@@ -259,6 +259,9 @@
         </div>
       </div>`;
     document.body.appendChild(div);
+    div.addEventListener('click', function(e) {
+      if (e.target === div) div.remove();
+    });
 
     document.getElementById('edit-exp-cancel').onclick = () => div.remove();
     document.getElementById('edit-exp-save').onclick = () => {

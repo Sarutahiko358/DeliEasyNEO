@@ -98,6 +98,9 @@
         '</div>' +
       '</div>';
     document.body.appendChild(div);
+    div.addEventListener('click', function(e) {
+      if (e.target === div) div.remove();
+    });
 
     /* PF選択のデフォルト値設定 */
     var pfSelect = document.getElementById('edit-earn-pf');

@@ -205,6 +205,9 @@
         '</div>' +
       '</div>';
     document.body.appendChild(div);
+    div.addEventListener('click', function(e) {
+      if (e.target === div) div.remove();
+    });
 
     setTimeout(function() {
       var nameInput = document.getElementById('earn-add-pf-name');

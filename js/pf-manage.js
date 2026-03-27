@@ -217,6 +217,9 @@
         '</div>' +
       '</div>';
     document.body.appendChild(div);
+    div.addEventListener('click', function(e) {
+      if (e.target === div) div.remove();
+    });
     document.getElementById('pf-color-ok').onclick = function() {
       var c = document.getElementById('pf-color-picker').value;
       pfs[idx].color = c;

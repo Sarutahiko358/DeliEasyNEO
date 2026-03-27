@@ -496,6 +496,9 @@
 
     div.innerHTML = h;
     document.body.appendChild(div);
+    div.addEventListener('click', function(e) {
+      if (e.target === div) div.remove();
+    });
   }
 
   /* Manager helpers */

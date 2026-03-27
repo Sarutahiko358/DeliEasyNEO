@@ -568,6 +568,12 @@
 
     _renderDashPickerContent(div, coId, cats, defs);
     document.body.appendChild(div);
+    div.addEventListener('click', function(e) {
+      if (e.target === div) {
+        div.remove();
+        _refreshDashboard(coId);
+      }
+    });
   };
 
   function _renderDashPickerContent(container, coId, cats, defs) {
@@ -2127,6 +2133,9 @@
 
     _renderCreateDialog(div);
     document.body.appendChild(div);
+    div.addEventListener('click', function(e) {
+      if (e.target === div) div.remove();
+    });
 
     function _renderCreateDialog(container) {
       var h = '<div class="confirm-box" style="max-width:360px;max-height:88vh;overflow-y:auto;text-align:left;padding:20px 16px">';
