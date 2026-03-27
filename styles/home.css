@@ -38,6 +38,11 @@
 .edit-mode-header.no-topbar {
   top: 0;
 }
+/* オーバーレイ内では .overlay-body がスクロールコンテナなので top: 0 */
+.overlay-body .edit-mode-header {
+  top: 0;
+  margin-top: 0;
+}
 
 /* ========== 編集モード: リッチリスト ========== */
 

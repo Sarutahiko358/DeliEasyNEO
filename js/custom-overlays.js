@@ -162,7 +162,7 @@
 
     /* Edit mode toggle bar */
     if (isEditing) {
-      html += '<div class="edit-mode-header" style="margin-bottom:12px">';
+      html += '<div class="edit-mode-header" style="margin-bottom:12px;top:0">';
       html += '<button class="btn btn-ghost btn-sm" onclick="_dashExitEdit(\'' + escJs(overlay.id) + '\')">キャンセル</button>';
       html += '<span class="fw6 fz-s">ウィジェット編集</span>';
       html += '<button class="btn btn-primary btn-sm" onclick="_dashExitEdit(\'' + escJs(overlay.id) + '\')">完了</button>';
