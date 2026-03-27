@@ -223,11 +223,14 @@
 .widget-cal-day, .widget-cal-empty {
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: .6rem;
   border-radius: 50%;
   color: var(--c-tx);
+  position: relative;
+  overflow: visible;
 }
 .widget-cal-empty { visibility: hidden; }
 .widget-cal-today {

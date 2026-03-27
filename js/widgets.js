@@ -245,17 +245,27 @@
     miniCalendar: {
       id: 'miniCalendar', name: 'ミニカレンダー', icon: '📅', category: 'detail',
       size: 'full', sizeOptions: ['full'],
-      desc: '今月の稼働ヒートマップ',
-      render: function() {
-        var now = new Date();
-        var year = now.getFullYear();
-        var month = now.getMonth();
+      desc: '月間売上ヒートマップ（スワイプで月移動）',
+      render: function(w) {
+        if (!window._miniCalState) window._miniCalState = {};
+        var stateKey = 'miniCal_' + (w._instanceId || 'default');
+        if (!window._miniCalState[stateKey]) {
+          var now = new Date();
+          window._miniCalState[stateKey] = { year: now.getFullYear(), month: now.getMonth() };
+        }
+        var st = window._miniCalState[stateKey];
+        var year = st.year;
+        var month = st.month;
+
         var firstDay = new Date(year, month, 1).getDay();
         var daysInMonth = new Date(year, month + 1, 0).getDate();
-        var today = now.getDate();
+        var now = new Date();
+        var todayDate = now.getDate();
+        var todayMonth = now.getMonth();
+        var todayYear = now.getFullYear();
+        var isCurrentMonth = (year === todayYear && month === todayMonth);
         var mk = year + '-' + String(month + 1).padStart(2, '0');
 
-        /* 日別売上取得 — earns-db.js APIを使用 */
         var dayData = {};
         var monthEarns = typeof eByMonth === 'function' ? eByMonth(mk) : [];
         monthEarns.forEach(function(r) {
@@ -264,11 +274,26 @@
           dayData[day] = (dayData[day] || 0) + (Number(r.a) || 0);
         });
 
-        var maxSales = 0;
-        Object.keys(dayData).forEach(function(k) { if (dayData[k] > maxSales) maxSales = dayData[k]; });
+        var monthTotal = 0;
+        Object.keys(dayData).forEach(function(k) { monthTotal += dayData[k]; });
 
-        var html = '<div class="widget-mini-cal">';
-        html += '<div class="widget-cal-hdr">' + year + '年' + (month+1) + '月</div>';
+        var workDays = Object.keys(dayData).length;
+
+        var swipeId = 'mini-cal-swipe-' + stateKey.replace(/[^a-zA-Z0-9]/g, '_');
+
+        var html = '<div class="widget-mini-cal" id="' + swipeId + '">';
+
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+        html += '<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();_miniCalPrev(\'' + escJs(stateKey) + '\')" style="padding:2px 8px;font-size:.9rem">◀</button>';
+        html += '<div style="text-align:center">';
+        html += '<div class="widget-cal-hdr" style="margin-bottom:2px">' + year + '年' + (month + 1) + '月</div>';
+        html += '<div style="font-size:.7rem;font-weight:700;color:var(--c-primary);font-variant-numeric:tabular-nums">¥' + fmt(monthTotal);
+        if (workDays > 0) html += ' <span style="font-weight:400;color:var(--c-tx-muted);font-size:.6rem">(' + workDays + '日)</span>';
+        html += '</div>';
+        html += '</div>';
+        html += '<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();_miniCalNext(\'' + escJs(stateKey) + '\')" style="padding:2px 8px;font-size:.9rem">▶</button>';
+        html += '</div>';
+
         html += '<div class="widget-cal-week"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>';
         html += '<div class="widget-cal-grid">';
 
@@ -276,21 +301,36 @@
           html += '<div class="widget-cal-empty"></div>';
         }
         for (var d = 1; d <= daysInMonth; d++) {
+          var sales = dayData[d] || 0;
           var lv = 0;
-          if (dayData[d]) {
-            if (dayData[d] >= 20000) lv = 5;
-            else if (dayData[d] >= 15000) lv = 4;
-            else if (dayData[d] >= 10000) lv = 3;
-            else if (dayData[d] >= 5000) lv = 2;
+          if (sales > 0) {
+            if (sales >= 20000) lv = 5;
+            else if (sales >= 15000) lv = 4;
+            else if (sales >= 10000) lv = 3;
+            else if (sales >= 5000) lv = 2;
             else lv = 1;
           }
-          var isToday = d === today;
+          var isToday = isCurrentMonth && d === todayDate;
           var dk = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+
           html += '<div class="widget-cal-day' + (isToday ? ' widget-cal-today' : '') + '"' +
             (lv > 0 ? ' data-lv="' + lv + '"' : '') +
-            ' onclick="openCalendarAtDate(\'' + dk + '\')" style="cursor:pointer">' + d + '</div>';
+            ' onclick="event.stopPropagation();openCalendarAtDate(\'' + dk + '\')" style="cursor:pointer;position:relative">';
+          html += '<span>' + d + '</span>';
+          if (sales > 0) {
+            var displayAmt = sales >= 10000 ? Math.round(sales / 1000) + 'k' : (sales >= 1000 ? (sales / 1000).toFixed(1) + 'k' : sales);
+            html += '<span style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:.35rem;font-weight:600;line-height:1;white-space:nowrap;color:' + (isToday ? 'rgba(255,255,255,.85)' : 'var(--c-tx-muted)') + ';font-variant-numeric:tabular-nums">' + displayAmt + '</span>';
+          }
+          html += '</div>';
         }
-        html += '</div></div>';
+        html += '</div>';
+
+        html += '<div style="text-align:center;font-size:.5rem;color:var(--c-tx-muted);margin-top:4px;opacity:.5">← スワイプで月移動 →</div>';
+
+        html += '</div>';
+
+        setTimeout(function() { _initMiniCalSwipe(swipeId, stateKey); }, 50);
+
         return html;
       }
     },
@@ -437,5 +477,55 @@
   window.startWidgetClock = startWidgetClock;
   window.widgetTap = widgetTap;
   window.openGoalSetting = openGoalSetting;
+
+  /* ========== ミニカレンダー月移動 ========== */
+  window._miniCalPrev = function(stateKey) {
+    if (!window._miniCalState || !window._miniCalState[stateKey]) return;
+    var st = window._miniCalState[stateKey];
+    st.month--;
+    if (st.month < 0) { st.month = 11; st.year--; }
+    hp();
+    if (typeof renderHome === 'function') renderHome();
+  };
+
+  window._miniCalNext = function(stateKey) {
+    if (!window._miniCalState || !window._miniCalState[stateKey]) return;
+    var st = window._miniCalState[stateKey];
+    st.month++;
+    if (st.month > 11) { st.month = 0; st.year++; }
+    hp();
+    if (typeof renderHome === 'function') renderHome();
+  };
+
+  /* ========== ミニカレンダースワイプ ========== */
+  function _initMiniCalSwipe(elementId, stateKey) {
+    var el = document.getElementById(elementId);
+    if (!el || el._mcSwipeInit) return;
+    el._mcSwipeInit = true;
+
+    var startX = 0;
+    var startY = 0;
+    var swiping = false;
+
+    el.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      swiping = false;
+    }, { passive: true });
+
+    el.addEventListener('touchmove', function(e) {
+      if (swiping) return;
+      var dx = e.touches[0].clientX - startX;
+      var dy = Math.abs(e.touches[0].clientY - startY);
+      if (Math.abs(dx) > 40 && Math.abs(dx) > dy * 1.5) {
+        swiping = true;
+        if (dx > 0) {
+          window._miniCalPrev(stateKey);
+        } else {
+          window._miniCalNext(stateKey);
+        }
+      }
+    }, { passive: false });
+  }
 
 })();
