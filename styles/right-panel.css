@@ -205,19 +205,6 @@
   text-align: right;
 }
 
-/* ---------- 連続稼働 ---------- */
-.rp-streak {
-  text-align: center;
-  font-size: .875rem;
-  color: var(--c-tx);
-  padding: 4px 0;
-}
-.rp-streak-num {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--c-warning);
-}
-
 /* ---------- 経費行 ---------- */
 .rp-exp-row {
   display: flex;
