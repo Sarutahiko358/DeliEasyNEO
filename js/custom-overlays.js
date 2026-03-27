@@ -151,7 +151,7 @@
   /* ============================================================
      Dashboard overlay — widget-based custom screen
      ============================================================ */
-  var _dashEditMode = {};  /* Track edit mode per overlay id */
+  var _dashEditMode = {};
 
   function _renderDashboardOverlay(body, overlay) {
     if (!overlay.data.widgets) overlay.data.widgets = [];
@@ -169,71 +169,78 @@
       html += '</div>';
     }
 
-    /* Widget grid */
-    html += '<div class="widget-grid' + (isEditing ? ' widget-grid-editing' : '') + '" id="dash-widget-grid-' + escHtml(overlay.id) + '">';
-
-    if (widgets.length === 0 && !isEditing) {
-      html += '<div class="widget widget-full">';
-      html += '<div class="widget-empty" style="padding:40px">';
-      html += '<div style="font-size:2rem;margin-bottom:8px">📊</div>';
-      html += '<div class="fz-s c-muted mb8">ウィジェットがまだありません</div>';
-      html += '<button class="btn btn-primary btn-sm" onclick="_dashEnterEdit(\'' + escJs(overlay.id) + '\')">ウィジェットを追加</button>';
-      html += '</div></div>';
-    } else {
-      widgets.forEach(function(w, idx) {
-        var def = window.WIDGET_DEFS ? window.WIDGET_DEFS[w.id] : null;
-        if (!def) return;
-        var sizeClass = 'widget-' + (w.size || def.size || 'full');
-        var tappable = !isEditing && def.tappable ? ' widget-tappable' : '';
-        var tapAttr = '';
-        if (!isEditing && def.tappable && def.tapAction) {
-          tapAttr = ' onclick="widgetTap(\'' + def.tapAction + '\')"';
-        }
-
-        html += '<div class="widget ' + sizeClass + tappable + '"' + tapAttr + '>';
-        html += '<div class="widget-title">';
-        html += '<span>' + def.icon + ' ' + escHtml(def.name) + '</span>';
-
-        if (isEditing) {
-          html += '<div class="widget-edit-controls">';
-          /* Move up */
-          if (idx > 0) {
-            html += '<button class="widget-edit-btn" onclick="event.stopPropagation();_dashMoveWidget(\'' + escJs(overlay.id) + '\',' + idx + ',-1)" title="上へ">▲</button>';
-          }
-          /* Move down */
-          if (idx < widgets.length - 1) {
-            html += '<button class="widget-edit-btn" onclick="event.stopPropagation();_dashMoveWidget(\'' + escJs(overlay.id) + '\',' + idx + ',1)" title="下へ">▼</button>';
-          }
-          /* Size cycle */
-          if (def.sizeOptions && def.sizeOptions.length > 1) {
-            html += '<button class="widget-edit-btn" onclick="event.stopPropagation();_dashCycleSize(\'' + escJs(overlay.id) + '\',' + idx + ')" title="サイズ変更">↔</button>';
-          }
-          /* Remove */
-          html += '<button class="widget-edit-btn widget-edit-del" onclick="event.stopPropagation();_dashRemoveWidget(\'' + escJs(overlay.id) + '\',' + idx + ')" title="削除">✕</button>';
-          html += '</div>';
-        }
-
-        html += '</div>';
-
-        try {
-          html += def.render(w);
-        } catch (e) {
-          html += '<div class="widget-empty">表示エラー</div>';
-        }
-        html += '</div>';
-      });
-    }
-
-    /* Add widget button in edit mode */
     if (isEditing) {
-      html += '<div class="widget widget-full widget-add" onclick="_dashOpenWidgetPicker(\'' + escJs(overlay.id) + '\')">';
-      html += '<div class="widget-add-inner">＋ ウィジェットを追加</div>';
+      /* === 編集モード: リッチリスト === */
+      html += '<div class="home-edit-list" id="dash-edit-list-' + escHtml(overlay.id) + '">';
+
+      var i = 0;
+      while (i < widgets.length) {
+        var w = widgets[i];
+        var def = window.WIDGET_DEFS ? window.WIDGET_DEFS[w.id] : null;
+        if (!def) { i++; continue; }
+        var size = w.size || def.size || 'full';
+
+        if (size === 'half' || size === 'compact') {
+          var nextW = (i + 1 < widgets.length) ? widgets[i + 1] : null;
+          var nextDef = nextW ? (window.WIDGET_DEFS ? window.WIDGET_DEFS[nextW.id] : null) : null;
+          var nextSize = nextW && nextDef ? (nextW.size || nextDef.size || 'full') : 'full';
+
+          if (nextW && (nextSize === 'half' || nextSize === 'compact')) {
+            html += '<div class="home-edit-row home-edit-row-pair" data-row-start="' + i + '" data-row-count="2">';
+            html += _renderDashEditItem(overlay.id, w, def, i, size);
+            html += _renderDashEditItem(overlay.id, nextW, nextDef, i + 1, nextSize);
+            html += '</div>';
+            i += 2;
+          } else {
+            html += '<div class="home-edit-row home-edit-row-single-half" data-row-start="' + i + '" data-row-count="1">';
+            html += _renderDashEditItem(overlay.id, w, def, i, size);
+            html += '</div>';
+            i += 1;
+          }
+        } else {
+          html += '<div class="home-edit-row home-edit-row-full" data-row-start="' + i + '" data-row-count="1">';
+          html += _renderDashEditItem(overlay.id, w, def, i, size);
+          html += '</div>';
+          i += 1;
+        }
+      }
+
+      html += '<div class="home-edit-add" onclick="_dashOpenWidgetPicker(\'' + escJs(overlay.id) + '\')">';
+      html += '<span style="font-size:1.2rem">＋</span> ウィジェットを追加';
+      html += '</div>';
+      html += '</div>';
+
+    } else {
+      /* === 通常モード: ウィジェットグリッド === */
+      html += '<div class="widget-grid" id="dash-widget-grid-' + escHtml(overlay.id) + '">';
+
+      if (widgets.length === 0) {
+        html += '<div class="widget widget-full">';
+        html += '<div class="widget-empty" style="padding:40px">';
+        html += '<div style="font-size:2rem;margin-bottom:8px">📊</div>';
+        html += '<div class="fz-s c-muted mb8">ウィジェットがまだありません</div>';
+        html += '<button class="btn btn-primary btn-sm" onclick="_dashEnterEdit(\'' + escJs(overlay.id) + '\')">ウィジェットを追加</button>';
+        html += '</div></div>';
+      } else {
+        widgets.forEach(function(w) {
+          var wDef = window.WIDGET_DEFS ? window.WIDGET_DEFS[w.id] : null;
+          if (!wDef) return;
+          var sizeClass = 'widget-' + (w.size || wDef.size || 'full');
+          var tappable = wDef.tappable ? ' widget-tappable' : '';
+          var tapAttr = '';
+          if (wDef.tappable && wDef.tapAction) {
+            tapAttr = ' onclick="widgetTap(\'' + wDef.tapAction + '\')"';
+          }
+          html += '<div class="widget ' + sizeClass + tappable + '"' + tapAttr + '>';
+          html += '<div class="widget-title"><span>' + wDef.icon + ' ' + escHtml(wDef.name) + '</span></div>';
+          try { html += wDef.render(w); } catch (e) { html += '<div class="widget-empty">表示エラー</div>'; }
+          html += '</div>';
+        });
+      }
       html += '</div>';
     }
 
-    html += '</div>';
-
-    /* Long-press hint when not editing and has widgets */
+    /* Long-press hint */
     if (!isEditing && widgets.length > 0) {
       html += '<div class="text-c fz-xs c-muted mt16 mb8" style="opacity:.5">';
       html += 'ウィジェットを長押しで編集モード';
@@ -242,15 +249,178 @@
 
     body.innerHTML = html;
 
-    /* Init long-press to enter edit mode */
     if (!isEditing && widgets.length > 0) {
       _initDashLongPress(overlay.id);
     }
+    if (isEditing) {
+      _initDashEditDrag(overlay.id);
+    }
 
-    /* Start clock widget if present */
     if (widgets.some(function(w) { return w.id === 'clock'; })) {
       if (typeof startWidgetClock === 'function') startWidgetClock();
     }
+  }
+
+  /* --- Dashboard edit item renderer --- */
+  function _renderDashEditItem(coId, w, def, index, size) {
+    var sizeLabel = size === 'full' ? 'FULL' : (size === 'compact' ? 'SM' : 'HALF');
+    var sizeColor = size === 'full' ? 'var(--c-primary)' : 'var(--c-info)';
+
+    var html = '<div class="home-edit-item" data-widget-idx="' + index + '">';
+    html += '<span class="home-edit-handle">☰</span>';
+    html += '<span class="home-edit-icon">' + def.icon + '</span>';
+    html += '<span class="home-edit-name">' + escHtml(def.name) + '</span>';
+    html += '<span class="home-edit-size" style="color:' + sizeColor + '">' + sizeLabel + '</span>';
+
+    if (def.sizeOptions && def.sizeOptions.length > 1) {
+      html += '<button class="home-edit-btn" onclick="event.stopPropagation();_dashCycleSize(\'' + escJs(coId) + '\',' + index + ')" title="サイズ変更">↔</button>';
+    }
+    html += '<button class="home-edit-btn home-edit-btn-del" onclick="event.stopPropagation();_dashRemoveWidget(\'' + escJs(coId) + '\',' + index + ')" title="削除">✕</button>';
+    html += '</div>';
+    return html;
+  }
+
+  /* --- Dashboard edit drag (reuses home-edit-list CSS) --- */
+  function _initDashEditDrag(coId) {
+    var list = document.getElementById('dash-edit-list-' + coId);
+    if (!list) return;
+
+    var LONG_PRESS_MS = 300;
+    var longPressTimer = null;
+    var dragRow = null;
+    var placeholder = null;
+    var startY = 0;
+    var offsetY = 0;
+    var isDragging = false;
+
+    function getRows() {
+      return Array.from(list.querySelectorAll('.home-edit-row'));
+    }
+
+    function onTouchStart(e) {
+      if (e.target.closest('.home-edit-btn')) return;
+      var row = e.target.closest('.home-edit-row');
+      if (!row) return;
+
+      startY = e.touches[0].clientY;
+      longPressTimer = setTimeout(function() {
+        isDragging = true;
+        dragRow = row;
+        var rect = dragRow.getBoundingClientRect();
+        offsetY = startY - rect.top;
+
+        placeholder = document.createElement('div');
+        placeholder.className = 'home-edit-placeholder';
+        placeholder.style.height = rect.height + 'px';
+        dragRow.parentNode.insertBefore(placeholder, dragRow);
+
+        dragRow.classList.add('home-edit-dragging');
+        dragRow.style.position = 'fixed';
+        dragRow.style.left = rect.left + 'px';
+        dragRow.style.top = rect.top + 'px';
+        dragRow.style.width = rect.width + 'px';
+        dragRow.style.zIndex = '10000';
+
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function onTouchMove(e) {
+      if (!isDragging && longPressTimer) {
+        if (Math.abs(e.touches[0].clientY - startY) > 8) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        return;
+      }
+      if (!isDragging || !dragRow) return;
+      e.preventDefault();
+
+      var touch = e.touches[0];
+      dragRow.style.top = (touch.clientY - offsetY) + 'px';
+
+      var rows = getRows().filter(function(r) { return r !== dragRow; });
+      var inserted = false;
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i].getBoundingClientRect();
+        if (touch.clientY < r.top + r.height / 2) {
+          list.insertBefore(placeholder, rows[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) {
+        var addBtn = list.querySelector('.home-edit-add');
+        if (addBtn) list.insertBefore(placeholder, addBtn);
+        else list.appendChild(placeholder);
+      }
+    }
+
+    function onTouchEnd() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      if (!isDragging || !dragRow) return;
+
+      dragRow.classList.remove('home-edit-dragging');
+      dragRow.style.position = '';
+      dragRow.style.left = '';
+      dragRow.style.top = '';
+      dragRow.style.width = '';
+      dragRow.style.zIndex = '';
+
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragRow, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+
+      /* DOMからウィジェット順序を再構築 */
+      var overlayList = getCustomOverlays();
+      for (var oi = 0; oi < overlayList.length; oi++) {
+        if (overlayList[oi].id === coId) {
+          var oldWidgets = overlayList[oi].data.widgets.slice();
+          var newWidgets = [];
+          var rows = list.querySelectorAll('.home-edit-row');
+          rows.forEach(function(row) {
+            var items = row.querySelectorAll('.home-edit-item');
+            items.forEach(function(item) {
+              var idx = parseInt(item.getAttribute('data-widget-idx'), 10);
+              if (!isNaN(idx) && oldWidgets[idx]) newWidgets.push(oldWidgets[idx]);
+            });
+          });
+          if (newWidgets.length === oldWidgets.length) {
+            overlayList[oi].data.widgets = newWidgets;
+            saveCustomOverlays(overlayList);
+          }
+          break;
+        }
+      }
+
+      dragRow = null;
+      isDragging = false;
+      _refreshDashboard(coId);
+    }
+
+    function onTouchCancel() {
+      clearTimeout(longPressTimer);
+      if (isDragging && dragRow) {
+        dragRow.classList.remove('home-edit-dragging');
+        dragRow.style.position = '';
+        dragRow.style.left = '';
+        dragRow.style.top = '';
+        dragRow.style.width = '';
+        dragRow.style.zIndex = '';
+        if (placeholder) placeholder.remove();
+        dragRow = null;
+        placeholder = null;
+      }
+      isDragging = false;
+    }
+
+    list.addEventListener('touchstart', onTouchStart, { passive: true });
+    list.addEventListener('touchmove', onTouchMove, { passive: false });
+    list.addEventListener('touchend', onTouchEnd, { passive: true });
+    list.addEventListener('touchcancel', onTouchCancel, { passive: true });
   }
 
   /* --- Dashboard edit mode --- */
@@ -280,24 +450,6 @@
     }
   };
 
-  window._dashMoveWidget = function(coId, idx, dir) {
-    hp();
-    var list = getCustomOverlays();
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].id === coId && list[i].data.widgets) {
-        var ws = list[i].data.widgets;
-        var newIdx = idx + dir;
-        if (newIdx < 0 || newIdx >= ws.length) return;
-        var tmp = ws[newIdx];
-        ws[newIdx] = ws[idx];
-        ws[idx] = tmp;
-        saveCustomOverlays(list);
-        _refreshDashboard(coId);
-        return;
-      }
-    }
-  };
-
   window._dashCycleSize = function(coId, idx) {
     hp();
     var list = getCustomOverlays();
@@ -316,7 +468,7 @@
     }
   };
 
-  /* --- Dashboard widget picker --- */
+  /* --- Dashboard widget picker (stays open) --- */
   window._dashOpenWidgetPicker = function(coId) {
     hp();
     var cats = window.WIDGET_CATEGORIES || [];
@@ -324,29 +476,56 @@
 
     var div = document.createElement('div');
     div.className = 'confirm-overlay';
+    div.id = 'dash-picker-' + coId;
+
+    _renderDashPickerContent(div, coId, cats, defs);
+    document.body.appendChild(div);
+  };
+
+  function _renderDashPickerContent(container, coId, cats, defs) {
+    /* 現在のウィジェットIDリストを取得 */
+    var overlayList = getCustomOverlays();
+    var currentIds = [];
+    for (var i = 0; i < overlayList.length; i++) {
+      if (overlayList[i].id === coId && overlayList[i].data.widgets) {
+        currentIds = overlayList[i].data.widgets.map(function(w) { return w.id; });
+        break;
+      }
+    }
+
     var h = '<div class="confirm-box" style="width:340px;max-height:80vh;overflow-y:auto;text-align:left">';
-    h += '<h3 class="fz-s fw6 mb12 text-c">ウィジェットを追加</h3>';
+    h += '<h3 class="fz-s fw6 mb8 text-c">ウィジェットを追加</h3>';
+    h += '<div class="fz-xs c-muted mb12 text-c">タップで追加。続けて複数追加できます。</div>';
 
     cats.forEach(function(cat) {
       var items = Object.values(defs).filter(function(w) { return w.category === cat.id; });
       if (items.length === 0) return;
       h += '<div class="fz-xs fw6 c-secondary mb8 mt8">' + cat.icon + ' ' + escHtml(cat.name) + '</div>';
       items.forEach(function(w) {
-        h += '<button class="btn btn-secondary btn-sm btn-block mb4" style="text-align:left;justify-content:flex-start" onclick="_dashAddWidget(\'' + escJs(coId) + '\',\'' + escJs(w.id) + '\');this.closest(\'.confirm-overlay\').remove()">';
-        h += w.icon + ' ' + escHtml(w.name) + ' <span class="fz-xs c-muted">- ' + escHtml(w.desc) + '</span>';
+        var count = 0;
+        currentIds.forEach(function(id) { if (id === w.id) count++; });
+        var badge = '';
+        if (count > 0) {
+          badge = ' <span class="fz-xxs" style="background:var(--c-success-light);color:var(--c-success);padding:1px 6px;border-radius:980px;margin-left:4px">追加済み' + (count > 1 ? ' ×' + count : '') + '</span>';
+        }
+        h += '<button class="btn btn-secondary btn-sm btn-block mb4" style="text-align:left;justify-content:flex-start" onclick="_dashPickerAdd(\'' + escJs(coId) + '\',\'' + escJs(w.id) + '\')">';
+        h += w.icon + ' ' + escHtml(w.name) + badge;
+        h += ' <span class="fz-xs c-muted">- ' + escHtml(w.desc) + '</span>';
         h += '</button>';
       });
     });
 
-    h += '<button class="btn btn-ghost btn-block mt12" onclick="this.closest(\'.confirm-overlay\').remove()">閉じる</button>';
+    h += '<button class="btn btn-primary btn-block mt12" onclick="_dashPickerClose(\'' + escJs(coId) + '\')">完了</button>';
     h += '</div>';
-    div.innerHTML = h;
-    document.body.appendChild(div);
-  };
 
-  window._dashAddWidget = function(coId, widgetId) {
+    container.innerHTML = h;
+  }
+
+  window._dashPickerAdd = function(coId, widgetId) {
     var def = window.WIDGET_DEFS ? window.WIDGET_DEFS[widgetId] : null;
     if (!def) return;
+    hp();
+
     var list = getCustomOverlays();
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === coId) {
@@ -354,10 +533,23 @@
         list[i].data.widgets.push({ id: widgetId, size: def.size });
         saveCustomOverlays(list);
         toast('✅ ' + def.name + 'を追加しました');
-        _refreshDashboard(coId);
+
+        /* ピッカーの内容を更新 */
+        var container = document.getElementById('dash-picker-' + coId);
+        if (container) {
+          var cats = window.WIDGET_CATEGORIES || [];
+          var defs = window.WIDGET_DEFS || {};
+          _renderDashPickerContent(container, coId, cats, defs);
+        }
         return;
       }
     }
+  };
+
+  window._dashPickerClose = function(coId) {
+    var container = document.getElementById('dash-picker-' + coId);
+    if (container) container.remove();
+    _refreshDashboard(coId);
   };
 
   /* --- Dashboard long-press to enter edit --- */

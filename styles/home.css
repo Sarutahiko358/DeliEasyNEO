@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — styles/home.css
-   ホーム画面固有のスタイル
+   ホーム画面固有のスタイル（リッチリスト編集対応版）
    ========================================================== */
 
 /* 編集モード時のウィジェットにシェイクアニメ（iOS風） */
@@ -26,10 +26,9 @@
 }
 
 /* 編集モードヘッダーを画面上部に固定 */
-/* トップバー有無に応じてJSでクラスを切り替える */
 .edit-mode-header {
   position: sticky;
-  top: 44px; /* トップバー表示時（デフォルト） */
+  top: 44px;
   z-index: 50;
   background: var(--c-bg);
   margin: 0 -16px 12px;
@@ -37,5 +36,175 @@
   border-bottom: var(--ds-divider);
 }
 .edit-mode-header.no-topbar {
-  top: 0; /* トップバー非表示時 */
+  top: 0;
+}
+
+/* ========== 編集モード: リッチリスト ========== */
+
+.home-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+/* --- 行コンテナ --- */
+.home-edit-row {
+  display: flex;
+  gap: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: opacity .15s;
+}
+
+/* full幅の行 */
+.home-edit-row-full .home-edit-item {
+  flex: 1;
+}
+
+/* halfペアの行 */
+.home-edit-row-pair .home-edit-item {
+  flex: 1;
+}
+
+/* halfが1個だけの行（次がfullや末尾） */
+.home-edit-row-single-half .home-edit-item {
+  flex: 0 0 calc(50% - 3px);
+}
+
+/* --- 個別アイテム --- */
+.home-edit-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px;
+  background: var(--c-card);
+  border-radius: var(--ds-radius-sm);
+  border: var(--ds-card-border);
+  box-shadow: var(--ds-shadow-card);
+  min-height: 48px;
+  transition: background .12s, box-shadow .12s;
+}
+
+/* --- ハンドル --- */
+.home-edit-handle {
+  font-size: .9rem;
+  color: var(--c-tx-muted);
+  cursor: grab;
+  flex-shrink: 0;
+  padding: 2px;
+  line-height: 1;
+}
+
+/* --- アイコン --- */
+.home-edit-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* --- 名前 --- */
+.home-edit-name {
+  flex: 1;
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--c-tx);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- サイズラベル --- */
+.home-edit-size {
+  font-size: .55rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--c-fill-quaternary);
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+/* --- ボタン --- */
+.home-edit-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: var(--c-fill-quaternary);
+  color: var(--c-tx-muted);
+  font-size: .7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-edit-btn:active {
+  transform: scale(.85);
+}
+.home-edit-btn-del {
+  background: var(--c-danger-light);
+  color: var(--c-danger);
+}
+
+/* --- ドラッグ中の行 --- */
+.home-edit-row.home-edit-dragging {
+  background: var(--c-card);
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  opacity: .9;
+  border-radius: var(--ds-radius-sm);
+  z-index: 10000;
+}
+.home-edit-row.home-edit-dragging .home-edit-item {
+  box-shadow: none;
+}
+
+/* --- プレースホルダー --- */
+.home-edit-placeholder {
+  background: var(--c-primary-light);
+  border: 2px dashed var(--c-primary);
+  border-radius: var(--ds-radius-sm);
+  transition: height .15s;
+}
+
+/* --- 追加ボタン --- */
+.home-edit-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: 2px dashed var(--c-border);
+  border-radius: var(--ds-radius-sm);
+  color: var(--c-primary);
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-edit-add:active {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+
+/* --- レスポンシブ: 狭い画面 --- */
+@media (max-width: 340px) {
+  .home-edit-item {
+    padding: 10px 8px;
+    gap: 4px;
+  }
+  .home-edit-name {
+    font-size: .68rem;
+  }
+  .home-edit-btn {
+    width: 24px;
+    height: 24px;
+    font-size: .6rem;
+  }
 }
