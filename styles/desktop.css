@@ -1,0 +1,262 @@
+/* ==========================================================
+   DeliEasy v2 — styles/desktop.css
+   デスクトップ＋タブレット レスポンシブ対応
+   Phase 3: ワイドレイアウト
+   ========================================================== */
+
+/* ==========================================================
+   タブレット (768px〜1023px)
+   ========================================================== */
+@media (min-width: 768px) {
+  /* --- ウィジェット --- */
+  .widget-grid {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* --- カレンダーセル拡大 --- */
+  .cal-c {
+    min-height: 48px;
+  }
+  .cal-c .cal-am {
+    font-size: .55rem;
+  }
+
+  /* --- 統計グリッド --- */
+  .ds-grid {
+    gap: 14px;
+  }
+  .ds-gbox .ds-gv {
+    font-size: 1.25rem;
+  }
+
+  /* --- オーバーレイ幅80% --- */
+  .overlay-sheet {
+    width: 80%;
+    max-width: 80vw;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+  }
+  .overlay-sheet.open {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ==========================================================
+   デスクトップ (1024px以上) — 3カラムレイアウト
+   ========================================================== */
+@media (min-width: 1024px) {
+
+  /* --- Body: グリッドレイアウト --- */
+  body {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: 1fr;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* --- #app: メインカラム --- */
+  #app {
+    max-width: none;
+    margin: 0;
+    border-left: none;
+    border-right: none;
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* --- メインコンテンツ --- */
+  .main-content {
+    flex: 1;
+    padding: 16px 24px 40px;
+    min-height: 0;
+  }
+
+  /* --- トップバー --- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    height: 52px;
+    padding: 0 24px;
+  }
+
+  /* ==========================================================
+     サイドバー — 常時固定表示
+     ========================================================== */
+  .sidebar-overlay {
+    display: none;
+  }
+
+  .sidebar {
+    position: static;
+    transform: none;
+    width: 240px;
+    min-width: 240px;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    z-index: auto;
+    border-right: var(--ds-divider);
+    flex-shrink: 0;
+    grid-column: 1;
+    grid-row: 1;
+    transition: width .25s cubic-bezier(.28,.11,.32,1),
+                min-width .25s cubic-bezier(.28,.11,.32,1);
+    overflow-y: auto;
+  }
+
+  /* サイドバー折り畳み状態 */
+  .sidebar.sidebar-collapsed {
+    width: 60px;
+    min-width: 60px;
+  }
+  .sidebar.sidebar-collapsed .sidebar-item-label,
+  .sidebar.sidebar-collapsed .sidebar-user-name,
+  .sidebar.sidebar-collapsed .sidebar-user-email,
+  .sidebar.sidebar-collapsed .sidebar-user-login,
+  .sidebar.sidebar-collapsed .sidebar-footer,
+  .sidebar.sidebar-collapsed #sidebar-add-overlay .sidebar-item-label {
+    display: none;
+  }
+  .sidebar.sidebar-collapsed .sidebar-item {
+    justify-content: center;
+    padding: 12px 0;
+    gap: 0;
+  }
+  .sidebar.sidebar-collapsed .sidebar-item-icon {
+    width: auto;
+    margin: 0;
+  }
+  .sidebar.sidebar-collapsed .sidebar-user {
+    padding: 16px 8px;
+    text-align: center;
+  }
+  .sidebar.sidebar-collapsed .sidebar-divider {
+    margin: 0 8px;
+  }
+  .sidebar.sidebar-collapsed .sidebar-collapse-btn-text {
+    display: none;
+  }
+
+  /* ==========================================================
+     右パネル — 常時表示オプション
+     ========================================================== */
+  .right-panel-overlay {
+    display: none;
+  }
+
+  body.desktop-rp-visible .right-panel {
+    position: static;
+    transform: none;
+    width: 280px;
+    min-width: 280px;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    z-index: auto;
+    border-left: var(--ds-divider);
+    flex-shrink: 0;
+    grid-column: 3;
+    grid-row: 1;
+    overflow-y: auto;
+  }
+
+  /* 常時表示が無効の場合 — モバイルと同じ挙動を維持 */
+  body:not(.desktop-rp-visible) .right-panel-overlay {
+    display: block;
+  }
+
+  /* ==========================================================
+     ボトムバー — 非表示
+     ========================================================== */
+  .bottombar {
+    display: none;
+  }
+
+  /* ==========================================================
+     オーバーレイ — 中央モーダル
+     ========================================================== */
+  .overlay-sheet {
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(.95);
+    width: 680px;
+    max-width: 90vw;
+    height: 80vh;
+    max-height: 80vh;
+    border-radius: var(--ds-radius-lg);
+    opacity: 0;
+    transition: transform .3s cubic-bezier(.28,.11,.32,1),
+                opacity .3s cubic-bezier(.28,.11,.32,1);
+  }
+  .overlay-sheet.open {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  /* ハンドルはデスクトップでは非表示 */
+  .overlay-handle {
+    display: none;
+  }
+
+  /* ==========================================================
+     ウィジェットグリッド — 3カラム
+     ========================================================== */
+  .widget-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 900px;
+    margin: 0 auto;
+    gap: 16px;
+  }
+  .widget-full { grid-column: 1 / -1; }
+  .widget-half { grid-column: span 1; }
+
+  /* ==========================================================
+     FAB — デスクトップ調整
+     ========================================================== */
+  .fab-container {
+    /* サイドバー分の最小left確保（JSクランプはPhase Eで対応） */
+    min-height: 0;
+  }
+
+  /* ==========================================================
+     スクロールバー表示
+     ========================================================== */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--c-fill-primary);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--c-fill-secondary);
+  }
+
+  /* --- sync-popup位置調整 --- */
+  .sync-popup {
+    right: 24px;
+  }
+}
+
+/* ==========================================================
+   ワイドデスクトップ (1440px以上) — 4カラムウィジェット
+   ========================================================== */
+@media (min-width: 1440px) {
+  .widget-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1200px;
+  }
+}

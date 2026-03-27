@@ -71,7 +71,16 @@
 
     container.appendChild(sheet);
     container.classList.add('has-overlay');
-    if (backdrop) backdrop.classList.add('visible');
+    if (backdrop) {
+      backdrop.classList.add('visible');
+      /* デスクトップ: バックドロップクリックで閉じる */
+      if (!backdrop._clickInit) {
+        backdrop._clickInit = true;
+        backdrop.addEventListener('click', function() {
+          if (_stack.length > 0) closeOverlay();
+        });
+      }
+    }
 
     /* pull-to-refresh を無効化 */
     _disablePullToRefresh();
@@ -145,6 +154,8 @@
     }
 
     function onTouchStart(e) {
+      /* デスクトップではスワイプダウン閉じを無効化 */
+      if (window.innerWidth >= 1024) { canDrag = false; return; }
       /* ウィジェット編集ドラッグ中はスワイプクローズを完全に無効化 */
       if (window.__widgetDragActive) { canDrag = false; return; }
 

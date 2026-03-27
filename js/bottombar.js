@@ -132,6 +132,11 @@
   function _adjustMainPadding(hasBottombar) {
     var main = document.getElementById('main-content');
     if (!main) return;
+    /* デスクトップではボトムバーが非表示なのでpadding不要 */
+    if (window.innerWidth >= 1024) {
+      main.style.paddingBottom = '';
+      return;
+    }
     if (hasBottombar) {
       main.style.paddingBottom = '140px'; /* 84px bar + 56px extra */
     } else {

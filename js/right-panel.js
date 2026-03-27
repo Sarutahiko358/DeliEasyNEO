@@ -28,6 +28,30 @@
     return defaults[key] || 50;
   }
 
+  /* ---------- デスクトップ判定 ---------- */
+  function _isDesktop() {
+    return window.innerWidth >= 1024;
+  }
+
+  function _isDesktopRightPanelVisible() {
+    return _isDesktop() && !!S.g('desktopRightPanel', false);
+  }
+
+  /* ---------- デスクトップ常時表示制御 ---------- */
+  function _applyDesktopRightPanel() {
+    if (_isDesktopRightPanelVisible()) {
+      document.body.classList.add('desktop-rp-visible');
+      renderRightPanel();
+    } else {
+      document.body.classList.remove('desktop-rp-visible');
+    }
+  }
+
+  function setDesktopRightPanelVisible(val) {
+    S.s('desktopRightPanel', !!val);
+    _applyDesktopRightPanel();
+  }
+
   /* ---------- セクション定義 ---------- */
   var RIGHT_PANEL_SECTIONS = [
     { id: 'todaySummary',   name: '今日のサマリー',   icon: '📊', render: _renderTodaySummary },
@@ -290,6 +314,7 @@
 
   /* ---------- 開閉 ---------- */
   function openRightPanel() {
+    if (_isDesktopRightPanelVisible()) return; /* 常時表示中はno-op */
     if (_isOpen) return;
     _isOpen = true;
     hp();
@@ -301,6 +326,7 @@
   }
 
   function closeRightPanel() {
+    if (_isDesktopRightPanelVisible()) return; /* 常時表示中はno-op */
     if (!_isOpen) return;
     _isOpen = false;
     var overlay = document.getElementById('right-panel-overlay');
@@ -314,6 +340,7 @@
   /* ---------- 右端スワイプで開く ---------- */
   function initRightPanelGestures() {
     document.addEventListener('touchstart', function(e) {
+      if (_isDesktop()) return; /* デスクトップではエッジスワイプ無効 */
       var screenW = window.innerWidth;
       _touchStartX = e.touches[0].clientX;
       _touchStartY = e.touches[0].clientY;
@@ -360,6 +387,20 @@
     });
 
     html += '</div></div>';
+
+    /* デスクトップ常時表示トグル */
+    html += '<div class="card mb12"><div class="card-body">';
+    html += '<div class="fz-s fw6 mb12">🖥️ デスクトップ表示</div>';
+    html += '<div class="flex flex-between items-center mb8">';
+    html += '<span class="fz-s">右パネルを常時表示 (1024px以上)</span>';
+    html += '<label class="topbar-toggle">';
+    var rpVisible = !!S.g('desktopRightPanel', false);
+    html += '<input type="checkbox" ' + (rpVisible ? 'checked' : '') + ' onchange="setDesktopRightPanelVisible(this.checked)">';
+    html += '<span class="topbar-toggle-slider"></span>';
+    html += '</label>';
+    html += '</div>';
+    html += '</div></div>';
+
     html += '</div>';
     return html;
   }
@@ -396,5 +437,7 @@
   window.saveRightPanelConfig = saveRightPanelConfig;
   window.toggleRightPanelSection = toggleRightPanelSection;
   window.RIGHT_PANEL_SECTIONS = RIGHT_PANEL_SECTIONS;
+  window.setDesktopRightPanelVisible = setDesktopRightPanelVisible;
+  window._applyDesktopRightPanel = _applyDesktopRightPanel;
 
 })();
