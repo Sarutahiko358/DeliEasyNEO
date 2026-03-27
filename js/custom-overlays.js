@@ -650,51 +650,216 @@
   }
 
   /* ============================================================
-     Memo overlay renderer
+     Memo overlay renderer — リッチ版
      ============================================================ */
   function _renderMemoOverlay(body, overlay) {
+    var text = overlay.data.text || '';
+    var charCount = text.length;
+    var lineCount = text ? text.split('\n').length : 0;
+    var lastSaved = overlay.data.memoSavedAt || '';
+
     var html = '';
-    html += '<div class="card mb12"><div class="card-body">';
-    html += '<textarea class="input" id="custom-memo-text" placeholder="メモを入力..." style="min-height:200px;resize:vertical">' + escHtml(overlay.data.text || '') + '</textarea>';
-    html += '<button class="btn btn-primary btn-sm btn-block mt8" onclick="_saveCustomMemo(\'' + escJs(overlay.id) + '\')">保存</button>';
-    html += '</div></div>';
+
+    /* ヘッダーカード: メモ情報 */
+    html += '<div class="co-section">';
+    html += '<div class="co-section-header">';
+    html += '<span class="co-section-icon">📝</span>';
+    html += '<span class="co-section-title">メモ</span>';
+    if (lastSaved) {
+      html += '<span class="co-section-badge">' + escHtml(lastSaved) + '</span>';
+    }
+    html += '</div>';
+
+    /* テキストエリア */
+    html += '<div class="co-memo-wrap">';
+    html += '<textarea class="co-memo-textarea" id="custom-memo-text" placeholder="ここにメモを入力…&#10;&#10;買い物リスト、業務連絡、アイデアなど&#10;何でも自由に書けます"';
+    html += ' oninput="_memoAutoUpdate(\'' + escJs(overlay.id) + '\',this)"';
+    html += '>' + escHtml(text) + '</textarea>';
+    html += '</div>';
+
+    /* フッター: 文字数 + 保存ボタン */
+    html += '<div class="co-memo-footer">';
+    html += '<span class="co-memo-stats" id="co-memo-stats">' + charCount + '文字 / ' + lineCount + '行</span>';
+    html += '<div class="co-memo-actions">';
+    html += '<button class="btn btn-ghost btn-xs" onclick="_memoClear(\'' + escJs(overlay.id) + '\')" title="クリア">🗑</button>';
+    html += '<button class="btn btn-primary btn-sm" onclick="_saveCustomMemo(\'' + escJs(overlay.id) + '\')">💾 保存</button>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>'; /* co-section */
+
     body.innerHTML = html;
+
+    /* テキストエリア自動リサイズ */
+    var ta = document.getElementById('custom-memo-text');
+    if (ta) {
+      ta.style.height = 'auto';
+      ta.style.height = Math.max(200, ta.scrollHeight) + 'px';
+    }
   }
 
+  /* メモ自動保存（入力中に文字数更新） */
+  window._memoAutoUpdate = function(id, el) {
+    var stats = document.getElementById('co-memo-stats');
+    if (stats) {
+      var charCount = el.value.length;
+      var lineCount = el.value ? el.value.split('\n').length : 0;
+      stats.textContent = charCount + '文字 / ' + lineCount + '行';
+    }
+    /* 自動リサイズ */
+    el.style.height = 'auto';
+    el.style.height = Math.max(200, el.scrollHeight) + 'px';
+  };
+
+  /* メモクリア */
+  window._memoClear = function(id) {
+    customConfirm('メモを全て消去しますか？', function() {
+      var list = getCustomOverlays();
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === id) {
+          list[i].data.text = '';
+          list[i].data.memoSavedAt = '';
+          saveCustomOverlays(list);
+          var b = document.getElementById('overlay-body-' + id);
+          if (b) _renderMemoOverlay(b, list[i]);
+          toast('🗑 メモをクリアしました');
+          return;
+        }
+      }
+    });
+  };
+
+  /* 保存関数を上書き（タイムスタンプ付き） */
   window._saveCustomMemo = function(id) {
     var list = getCustomOverlays();
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === id) {
         var el = document.getElementById('custom-memo-text');
         list[i].data.text = el ? el.value : '';
+        var now = new Date();
+        list[i].data.memoSavedAt = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0') + ' 保存済み';
         break;
       }
     }
     saveCustomOverlays(list);
     toast('✅ メモを保存しました');
+
+    /* バッジ更新 */
+    var badge = document.querySelector('.co-section-badge');
+    if (badge) {
+      var now2 = new Date();
+      badge.textContent = now2.getHours() + ':' + String(now2.getMinutes()).padStart(2,'0') + ' 保存済み';
+      badge.style.animation = 'coBadgePulse .4s ease';
+    }
   };
 
   /* ============================================================
-     Checklist overlay renderer
+     Checklist overlay renderer — リッチ版
      ============================================================ */
   function _renderChecklistOverlay(body, overlay) {
     var items = overlay.data.items || [];
+    var doneCount = items.filter(function(it) { return it.done; }).length;
+    var totalCount = items.length;
+    var pct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
+
     var html = '';
-    html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="flex gap8 mb12">';
-    html += '<input type="text" class="input" id="custom-cl-input" placeholder="新しいタスク" style="flex:1">';
-    html += '<button class="btn btn-primary btn-sm" onclick="_addChecklistItem(\'' + escJs(overlay.id) + '\')">追加</button>';
+
+    /* ヘッダー: 進捗バー付き */
+    html += '<div class="co-section">';
+    html += '<div class="co-section-header">';
+    html += '<span class="co-section-icon">✅</span>';
+    html += '<span class="co-section-title">チェックリスト</span>';
+    html += '<span class="co-section-badge">' + doneCount + '/' + totalCount + '</span>';
     html += '</div>';
-    items.forEach(function(item, idx) {
-      html += '<div class="flex items-center gap8 mb8" style="padding:8px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm)">';
-      html += '<input type="checkbox" ' + (item.done ? 'checked' : '') + ' onchange="_toggleChecklistItem(\'' + escJs(overlay.id) + '\',' + idx + ',this.checked)">';
-      html += '<span class="fz-s" style="flex:1;' + (item.done ? 'text-decoration:line-through;opacity:.5' : '') + '">' + escHtml(item.text) + '</span>';
-      html += '<button class="btn btn-danger btn-xs" onclick="_deleteChecklistItem(\'' + escJs(overlay.id) + '\',' + idx + ')">✕</button>';
+
+    if (totalCount > 0) {
+      html += '<div class="co-progress">';
+      html += '<div class="co-progress-bar" style="width:' + pct + '%"></div>';
       html += '</div>';
-    });
-    html += '</div></div>';
+      html += '<div class="co-progress-label">' + pct + '% 完了</div>';
+    }
+
+    /* 入力フォーム */
+    html += '<div class="co-cl-input-wrap">';
+    html += '<input type="text" class="co-cl-input" id="custom-cl-input" placeholder="＋ 新しいタスクを追加…"';
+    html += ' onkeydown="if(event.key===\'Enter\'){_addChecklistItem(\'' + escJs(overlay.id) + '\');}">';
+    html += '<button class="co-cl-add-btn" onclick="_addChecklistItem(\'' + escJs(overlay.id) + '\')" title="追加">＋</button>';
+    html += '</div>';
+
+    /* タスクリスト */
+    if (items.length === 0) {
+      html += '<div class="co-empty">';
+      html += '<div class="co-empty-icon">📋</div>';
+      html += '<div class="co-empty-text">タスクがありません</div>';
+      html += '<div class="co-empty-hint">上のフォームからタスクを追加しましょう</div>';
+      html += '</div>';
+    } else {
+      /* 未完了タスク */
+      var pending = [];
+      var done = [];
+      items.forEach(function(item, idx) {
+        if (item.done) done.push({ item: item, idx: idx });
+        else pending.push({ item: item, idx: idx });
+      });
+
+      pending.forEach(function(entry) {
+        html += _renderCheckItem(overlay.id, entry.item, entry.idx, false);
+      });
+
+      /* 完了済み（折り畳み可能） */
+      if (done.length > 0) {
+        html += '<div class="co-cl-done-divider" onclick="this.classList.toggle(\'collapsed\');var s=this.nextElementSibling;s.style.display=s.style.display===\'none\'?\'\':\'none\'">';
+        html += '<span>完了済み (' + done.length + '件)</span>';
+        html += '<span class="co-cl-done-arrow">▼</span>';
+        html += '</div>';
+        html += '<div class="co-cl-done-list">';
+        done.forEach(function(entry) {
+          html += _renderCheckItem(overlay.id, entry.item, entry.idx, true);
+        });
+        html += '</div>';
+      }
+
+      /* 一括操作 */
+      if (done.length > 0) {
+        html += '<div class="co-cl-bulk-actions">';
+        html += '<button class="btn btn-ghost btn-xs" onclick="_clearDoneItems(\'' + escJs(overlay.id) + '\')">🗑 完了済みを削除</button>';
+        html += '</div>';
+      }
+    }
+
+    html += '</div>'; /* co-section */
+
     body.innerHTML = html;
   }
+
+  function _renderCheckItem(overlayId, item, idx, isDone) {
+    var h = '<div class="co-cl-item' + (isDone ? ' co-cl-item-done' : '') + '">';
+    h += '<label class="co-cl-checkbox-wrap">';
+    h += '<input type="checkbox" class="co-cl-checkbox" ' + (isDone ? 'checked' : '') + ' onchange="_toggleChecklistItem(\'' + escJs(overlayId) + '\',' + idx + ',this.checked)">';
+    h += '<span class="co-cl-checkmark"></span>';
+    h += '</label>';
+    h += '<span class="co-cl-text">' + escHtml(item.text) + '</span>';
+    h += '<button class="co-cl-del" onclick="_deleteChecklistItem(\'' + escJs(overlayId) + '\',' + idx + ')" title="削除">✕</button>';
+    h += '</div>';
+    return h;
+  }
+
+  /* 完了済み一括削除 */
+  window._clearDoneItems = function(id) {
+    customConfirm('完了済みタスクを全て削除しますか？', function() {
+      var list = getCustomOverlays();
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === id && list[i].data.items) {
+          list[i].data.items = list[i].data.items.filter(function(it) { return !it.done; });
+          saveCustomOverlays(list);
+          var b = document.getElementById('overlay-body-' + id);
+          if (b) _renderChecklistOverlay(b, list[i]);
+          toast('🗑 完了済みタスクを削除しました');
+          return;
+        }
+      }
+    });
+  };
 
   window._addChecklistItem = function(id) {
     var input = document.getElementById('custom-cl-input');
@@ -739,27 +904,68 @@
   };
 
   /* ============================================================
-     Links overlay renderer
+     Links overlay renderer — リッチ版
      ============================================================ */
   function _renderLinksOverlay(body, overlay) {
     var links = overlay.data.links || [];
+
     var html = '';
-    html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="flex gap8 mb8">';
-    html += '<input type="text" class="input" id="custom-link-name" placeholder="名前" style="flex:1">';
+
+    html += '<div class="co-section">';
+    html += '<div class="co-section-header">';
+    html += '<span class="co-section-icon">🔗</span>';
+    html += '<span class="co-section-title">リンク集</span>';
+    html += '<span class="co-section-badge">' + links.length + '件</span>';
     html += '</div>';
-    html += '<div class="flex gap8 mb12">';
-    html += '<input type="url" class="input" id="custom-link-url" placeholder="https://..." style="flex:1">';
-    html += '<button class="btn btn-primary btn-sm" onclick="_addLink(\'' + escJs(overlay.id) + '\')">追加</button>';
+
+    /* 入力フォーム */
+    html += '<div class="co-link-form">';
+    html += '<input type="text" class="co-link-input" id="custom-link-name" placeholder="リンク名（例: Uber管理画面）">';
+    html += '<div class="co-link-url-row">';
+    html += '<input type="url" class="co-link-input" id="custom-link-url" placeholder="https://…" onkeydown="if(event.key===\'Enter\'){_addLink(\'' + escJs(overlay.id) + '\');}">';
+    html += '<button class="co-link-add-btn" onclick="_addLink(\'' + escJs(overlay.id) + '\')" title="追加">＋</button>';
     html += '</div>';
-    links.forEach(function(link, idx) {
-      html += '<div class="flex items-center gap8 mb8" style="padding:8px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm)">';
-      html += '<a href="' + escHtml(link.url) + '" target="_blank" rel="noopener" class="fz-s c-primary" style="flex:1;text-decoration:none">' + escHtml(link.name || link.url) + '</a>';
-      html += '<button class="btn btn-danger btn-xs" onclick="_deleteLink(\'' + escJs(overlay.id) + '\',' + idx + ')">✕</button>';
+    html += '</div>';
+
+    /* リンクリスト */
+    if (links.length === 0) {
+      html += '<div class="co-empty">';
+      html += '<div class="co-empty-icon">🌐</div>';
+      html += '<div class="co-empty-text">リンクがありません</div>';
+      html += '<div class="co-empty-hint">よく使うURLを追加してすぐアクセス</div>';
       html += '</div>';
-    });
-    html += '</div></div>';
+    } else {
+      html += '<div class="co-link-list">';
+      links.forEach(function(link, idx) {
+        var displayName = link.name || _extractDomain(link.url);
+        var favicon = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(_extractDomain(link.url)) + '&sz=32';
+
+        html += '<div class="co-link-item">';
+        html += '<a href="' + escHtml(link.url) + '" target="_blank" rel="noopener" class="co-link-anchor">';
+        html += '<img class="co-link-favicon" src="' + escHtml(favicon) + '" alt="" onerror="this.style.display=\'none\'">';
+        html += '<div class="co-link-info">';
+        html += '<div class="co-link-name">' + escHtml(displayName) + '</div>';
+        html += '<div class="co-link-url-preview">' + escHtml(link.url.replace(/^https?:\/\//, '').substring(0, 40)) + '</div>';
+        html += '</div>';
+        html += '</a>';
+        html += '<button class="co-link-del" onclick="event.preventDefault();event.stopPropagation();_deleteLink(\'' + escJs(overlay.id) + '\',' + idx + ')" title="削除">✕</button>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>'; /* co-section */
+
     body.innerHTML = html;
+  }
+
+  /* ドメイン抽出ヘルパー */
+  function _extractDomain(url) {
+    try {
+      return new URL(url).hostname;
+    } catch (e) {
+      return url.replace(/^https?:\/\//, '').split('/')[0] || url;
+    }
   }
 
   window._addLink = function(id) {
