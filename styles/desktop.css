@@ -74,7 +74,7 @@
     height: 100dvh;
   }
 
-  /* --- メインコンテンツ --- */
+  /* --- メインコンテンツ --- max-width なし、幅いっぱいに使う */
   .main-content {
     flex: 1;
     padding: 16px 24px 80px;
@@ -213,15 +213,14 @@
      ウィジェットグリッド — 3カラム
      ========================================================== */
   .widget-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
-    max-width: 100%;
+    /* auto-fill を削除、max-width も不要 */
   }
   .widget-full { grid-column: 1 / -1; }
   .widget-half { grid-column: span 1; }
 
-  /* fullウィジェット内部 — 幅が広がりすぎないよう制限 */
+  /* fullウィジェット内部 — 広がりすぎ防止 */
   .widget-full .widget-inner,
   .widget-full .widget-clock,
   .widget-full .widget-records,
@@ -279,6 +278,6 @@
    ========================================================== */
 @media (min-width: 1440px) {
   .widget-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
   }
 }
