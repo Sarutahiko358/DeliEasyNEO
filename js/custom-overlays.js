@@ -839,29 +839,32 @@
     };
     document.getElementById('co-edit-cancel').onclick = function() { div.remove(); };
     document.getElementById('co-edit-delete').onclick = function() {
-      customConfirm('このオーバーレイを削除しますか？', function() {
-        /* 1. 設定ダイアログを即座に除去 */
-        div.remove();
+      /* 設定ダイアログを先に消してから確認ダイアログを出す（z-index競合回避） */
+      div.remove();
 
-        /* 2. オーバーレイを閉じる（スタックからpop） */
+      customConfirm('このオーバーレイを削除しますか？', function() {
+        /* 1. オーバーレイを閉じる（スタックからpop） */
         if (typeof closeOverlay === 'function') closeOverlay();
 
-        /* 3. 残っている confirm-overlay を全て除去（customConfirm自身のものを含む） */
+        /* 2. 残っている confirm-overlay を全て除去してからUI更新 */
         setTimeout(function() {
           document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
 
-          /* 4. データ削除 */
+          /* 3. データ削除 */
           deleteCustomOverlay(id);
 
-          /* 5. フィードバック */
+          /* 4. フィードバック */
           toast('🗑 オーバーレイを削除しました');
 
-          /* 6. UI更新 */
+          /* 5. UI更新 */
           if (typeof refreshHome === 'function') refreshHome();
           if (typeof renderSidebar === 'function') {
             try { renderSidebar(); } catch(e) {}
           }
         }, 150);
+      }, function() {
+        /* キャンセル時: 設定ダイアログを再表示 */
+        _editCustomOverlaySettings(id);
       });
     };
   };
