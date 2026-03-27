@@ -205,7 +205,7 @@
   }
 
   function _renderEditAdvancedIcon() {
-    return '<button class="topbar-btn" onclick="if(typeof openEditAdvanced===\'function\')openEditAdvanced()" title="詳細設定">🔧</button>';
+    return '<button class="topbar-btn" onclick="if(typeof openOverlay===\'function\')openOverlay(\'detailSettings\')" title="詳細設定">🔧</button>';
   }
 
   function _renderTodaySalesCompact() {

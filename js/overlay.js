@@ -16,7 +16,8 @@
     pfManage:      { title: '📦 PF・カテゴリ管理' },
     theme:         { title: '🎨 テーマ' },
     settings:      { title: '⚙️ 設定' },
-    help:          { title: '❓ ヘルプ' }
+    help:          { title: '❓ ヘルプ' },
+    detailSettings: { title: '🔧 詳細設定' }
   };
 
   /* ---------- State ---------- */

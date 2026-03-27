@@ -657,22 +657,26 @@
   window.openWidgetPicker = openWidgetPicker;
 
   function openEditAdvanced() {
-    _editMode = true;
-    if (typeof hideFab === 'function') hideFab();
-    if (typeof hideBottombar === 'function') hideBottombar();
-    renderHome();
-    setTimeout(function() {
-      var advBody = document.getElementById('edit-advanced-body');
-      var advHeader = advBody ? advBody.previousElementSibling : null;
-      if (advBody && advBody.style.display === 'none') {
-        advBody.style.display = '';
-        if (advHeader) advHeader.classList.add('open');
-      }
-      if (advBody) {
-        advBody.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
+    if (typeof openOverlay === 'function') {
+      openOverlay('detailSettings');
+    }
   }
+
+  /* ========== 詳細設定オーバーレイ ========== */
+  function renderOverlay_detailSettings(body) {
+    if (!body) return;
+    var html = '';
+
+    html += '<div style="margin-bottom:16px">';
+    if (typeof renderTopbarSettings === 'function') html += renderTopbarSettings();
+    if (typeof renderBottombarSettings === 'function') html += renderBottombarSettings();
+    if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
+    if (typeof renderFabSettings === 'function') html += renderFabSettings();
+    html += '</div>';
+
+    body.innerHTML = html;
+  }
+  window.renderOverlay_detailSettings = renderOverlay_detailSettings;
 
   window.openEditAdvanced = openEditAdvanced;
 

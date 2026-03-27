@@ -65,7 +65,7 @@
     { id: 'theme',         icon: '🎨', label: 'テーマ',       overlay: 'theme' },
     { id: 'overlay-mgr',   icon: '📐', label: 'オーバーレイ管理', action: 'openOverlayManager' },
     { id: 'home-edit',     icon: '🏠', label: 'ホーム編集',   action: 'enterEditMode' },
-    { id: 'edit-advanced', icon: '🔧', label: '詳細設定',   action: 'openEditAdvanced' },
+    { id: 'edit-advanced', icon: '🔧', label: '詳細設定',   overlay: 'detailSettings' },
     { id: 'settings',      icon: '⚙️', label: '設定',         overlay: 'settings' },
     { id: 'help',          icon: '❓', label: 'ヘルプ',       overlay: 'help' }
   ];

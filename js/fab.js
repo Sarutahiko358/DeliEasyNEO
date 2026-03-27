@@ -19,7 +19,7 @@
     { id: 'pfManage',      icon: '📦', label: 'PF管理',      overlay: 'pfManage' },
     { id: 'theme',         icon: '🎨', label: 'テーマ',      overlay: 'theme' },
     { id: 'settings',      icon: '⚙️', label: '設定',        overlay: 'settings' },
-    { id: 'editAdvanced', icon: '🔧', label: '詳細設定',    overlay: null }
+    { id: 'editAdvanced', icon: '🔧', label: '詳細設定',    overlay: 'detailSettings' }
   ];
 
   var DEFAULT_FAB_CFG = {
@@ -133,10 +133,6 @@
         var allAct = _getAllFabActions();
         for (var k = 0; k < allAct.length; k++) {
           if (allAct[k].id === actionId) {
-            if (allAct[k].id === 'editAdvanced') {
-              if (typeof openEditAdvanced === 'function') openEditAdvanced();
-              return;
-            }
             if (allAct[k].customOverlayId) {
               openCustomOverlay(allAct[k].customOverlayId);
             } else if (allAct[k].overlay && typeof openOverlay === 'function') {
