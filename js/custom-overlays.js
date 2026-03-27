@@ -10,21 +10,21 @@
       id: 'dashboard',
       name: 'ダッシュボード',
       icon: '📊',
-      desc: 'ウィジェットを自由に配置できる画面',
+      desc: 'ウィジェットを自由に配置',
       render: _renderDashboardOverlay
     },
     {
       id: 'memo',
       name: 'メモ帳',
       icon: '📝',
-      desc: '自由にメモを書ける画面',
+      desc: '自由にメモを書ける',
       render: _renderMemoOverlay
     },
     {
       id: 'checklist',
       name: 'チェックリスト',
       icon: '✅',
-      desc: 'タスク管理用チェックリスト',
+      desc: 'タスク管理用リスト',
       render: _renderChecklistOverlay
     },
     {
@@ -34,6 +34,14 @@
       desc: 'よく使うURLをまとめる',
       render: _renderLinksOverlay
     }
+  ];
+
+  /* プリセット絵文字リスト */
+  var PRESET_EMOJIS = [
+    '📊', '📝', '✅', '🔗', '📅', '💰', '🚴', '⭐',
+    '🎯', '📦', '🔥', '💡', '🏠', '📋', '🎨', '⚡',
+    '🌟', '📈', '🛒', '🎁', '🔔', '📌', '🗂', '💼',
+    '🧾', '🍕', '☕', '🏃', '🎮', '📱', '💪', '🌈'
   ];
 
   function getCustomOverlays() {
@@ -451,7 +459,6 @@
       if (list[i].id === id && list[i].data.items && list[i].data.items[idx]) {
         list[i].data.items[idx].done = done;
         saveCustomOverlays(list);
-        /* 画面を即座に再描画して取り消し線などを反映 */
         var body = document.getElementById('overlay-body-' + id);
         if (body) _renderChecklistOverlay(body, list[i]);
         return;
@@ -589,41 +596,208 @@
   };
 
   /* ============================================================
-     Create custom overlay dialog — updated with dashboard option
+     Create custom overlay dialog — 完全リニューアル版
+     - アイコン: プリセット絵文字グリッド + カスタム入力
+     - 種類: select廃止 → カード型UI
+     - 作成後そのまま編集画面に遷移
      ============================================================ */
   function openCreateCustomOverlayDialog(onCreated) {
+    /* 内部状態 */
+    var _newIcon = '';
+    var _newType = '';
+    var _newTitle = '';
+
     var div = document.createElement('div');
     div.className = 'confirm-overlay';
-    var h = '<div class="confirm-box" style="max-width:340px;text-align:left">';
-    h += '<h3 class="fz-s fw6 mb12 text-c">新しいオーバーレイを作成</h3>';
-    h += '<div class="input-group"><label class="input-label">タイトル</label>';
-    h += '<input type="text" class="input" id="co-new-title" placeholder="例: マイダッシュボード"></div>';
-    h += '<div class="input-group"><label class="input-label">アイコン（絵文字）</label>';
-    h += '<input type="text" class="input" id="co-new-icon" placeholder="📊" maxlength="2"></div>';
-    h += '<div class="input-group"><label class="input-label">種類</label>';
-    h += '<select class="input" id="co-new-type">';
-    CUSTOM_OVERLAY_TYPES.forEach(function(t) {
-      h += '<option value="' + escHtml(t.id) + '">' + t.icon + ' ' + escHtml(t.name) + ' - ' + escHtml(t.desc) + '</option>';
-    });
-    h += '</select></div>';
-    h += '<div class="flex gap8">';
-    h += '<button class="btn btn-primary btn-sm btn-block" id="co-new-ok">作成</button>';
-    h += '<button class="btn btn-secondary btn-sm" id="co-new-cancel">キャンセル</button>';
-    h += '</div></div>';
-    div.innerHTML = h;
+    div.id = 'co-create-dialog';
+
+    _renderCreateDialog(div);
     document.body.appendChild(div);
 
-    document.getElementById('co-new-ok').onclick = function() {
-      var title = document.getElementById('co-new-title').value.trim();
-      var icon = document.getElementById('co-new-icon').value.trim() || '📄';
-      var type = document.getElementById('co-new-type').value;
-      if (!title) { toast('タイトルを入力してください'); return; }
-      var ov = createCustomOverlay(type, title, icon);
-      div.remove();
-      toast('✅ 「' + title + '」を作成しました');
-      if (typeof onCreated === 'function') onCreated(ov);
+    function _renderCreateDialog(container) {
+      var h = '<div class="confirm-box" style="max-width:360px;max-height:88vh;overflow-y:auto;text-align:left;padding:20px 16px">';
+
+      h += '<h3 style="font-size:.9375rem;font-weight:700;text-align:center;margin-bottom:16px">新しいオーバーレイを作成</h3>';
+
+      /* ===== タイトル ===== */
+      h += '<div class="input-group">';
+      h += '<label class="input-label">タイトル</label>';
+      h += '<input type="text" class="input" id="co-new-title" placeholder="例: マイダッシュボード" value="' + escHtml(_newTitle) + '">';
+      h += '</div>';
+
+      /* ===== アイコン選択 ===== */
+      h += '<div class="input-group">';
+      h += '<label class="input-label">アイコン</label>';
+
+      /* 選択済みアイコンのプレビュー or 未選択表示 */
+      if (_newIcon) {
+        h += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+        h += '<span style="font-size:2rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--c-primary-light);border-radius:var(--ds-radius-sm);border:2px solid var(--c-primary)">' + escHtml(_newIcon) + '</span>';
+        h += '<span class="fz-xs c-success fw6">選択済み</span>';
+        h += '</div>';
+      } else {
+        h += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+        h += '<span style="font-size:1.2rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm);border:2px dashed var(--c-border);color:var(--c-tx-muted)">?</span>';
+        h += '<span class="fz-xs c-muted">下から選んでください</span>';
+        h += '</div>';
+      }
+
+      /* プリセット絵文字グリッド */
+      h += '<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:8px">';
+      PRESET_EMOJIS.forEach(function(emoji) {
+        var isSelected = _newIcon === emoji;
+        h += '<button style="width:100%;aspect-ratio:1;border:2px solid ' + (isSelected ? 'var(--c-primary)' : 'transparent') + ';';
+        h += 'background:' + (isSelected ? 'var(--c-primary-light)' : 'var(--c-fill-quaternary)') + ';';
+        h += 'border-radius:var(--ds-radius-sm);font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+        h += 'transition:all .1s;-webkit-tap-highlight-color:transparent"';
+        h += ' onclick="_coCreateSelectIcon(\'' + escJs(emoji) + '\')">' + emoji + '</button>';
+      });
+      h += '</div>';
+
+      /* カスタム入力 */
+      h += '<div style="display:flex;gap:6px;align-items:center">';
+      h += '<input type="text" class="input" id="co-new-icon-custom" placeholder="他の絵文字を直接入力" maxlength="2" style="flex:1;font-size:.8125rem" value="">';
+      h += '<button class="btn btn-secondary btn-xs" onclick="_coCreateApplyCustomIcon()" style="white-space:nowrap">決定</button>';
+      h += '</div>';
+      h += '</div>';
+
+      /* ===== 種類選択（カード型） ===== */
+      h += '<div class="input-group">';
+      h += '<label class="input-label">種類</label>';
+      h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+      CUSTOM_OVERLAY_TYPES.forEach(function(t) {
+        var isSelected = _newType === t.id;
+        h += '<button style="display:flex;flex-direction:column;align-items:center;gap:4px;';
+        h += 'padding:14px 8px;border-radius:var(--ds-radius-sm);cursor:pointer;';
+        h += 'border:2px solid ' + (isSelected ? 'var(--c-primary)' : 'transparent') + ';';
+        h += 'background:' + (isSelected ? 'var(--c-primary-light)' : 'var(--c-fill-quaternary)') + ';';
+        h += 'color:var(--c-tx);transition:all .12s;-webkit-tap-highlight-color:transparent;text-align:center"';
+        h += ' onclick="_coCreateSelectType(\'' + escJs(t.id) + '\')">';
+        h += '<span style="font-size:1.4rem">' + t.icon + '</span>';
+        h += '<span style="font-size:.75rem;font-weight:' + (isSelected ? '700' : '500') + ';line-height:1.2">' + escHtml(t.name) + '</span>';
+        h += '<span style="font-size:.6rem;color:var(--c-tx-muted);line-height:1.3">' + escHtml(t.desc) + '</span>';
+        h += '</button>';
+      });
+      h += '</div>';
+
+      if (!_newType) {
+        h += '<div class="fz-xxs c-muted mt4" style="text-align:center">種類を選択してください</div>';
+      }
+      h += '</div>';
+
+      /* ===== バリデーションメッセージ ===== */
+      var canCreate = _newTitle.trim() && _newIcon && _newType;
+
+      /* ===== ボタン ===== */
+      h += '<div style="display:flex;gap:8px;margin-top:16px">';
+      if (canCreate) {
+        h += '<button class="btn btn-primary btn-sm btn-block" id="co-new-ok">作成して編集</button>';
+      } else {
+        h += '<button class="btn btn-primary btn-sm btn-block" disabled style="opacity:.35;cursor:not-allowed">作成して編集</button>';
+      }
+      h += '<button class="btn btn-secondary btn-sm" id="co-new-cancel" style="min-width:80px">キャンセル</button>';
+      h += '</div>';
+
+      /* 未入力のヒント */
+      if (!canCreate) {
+        var missing = [];
+        if (!_newTitle.trim()) missing.push('タイトル');
+        if (!_newIcon) missing.push('アイコン');
+        if (!_newType) missing.push('種類');
+        h += '<div class="fz-xxs c-warning mt8 text-c">' + missing.join('・') + 'を入力してください</div>';
+      }
+
+      h += '</div>';
+      container.innerHTML = h;
+
+      /* イベントバインド */
+      var cancelBtn = container.querySelector('#co-new-cancel');
+      if (cancelBtn) cancelBtn.onclick = function() { container.remove(); };
+
+      var okBtn = container.querySelector('#co-new-ok');
+      if (okBtn) {
+        okBtn.onclick = function() {
+          var title = _newTitle.trim();
+          if (!title) { toast('タイトルを入力してください'); return; }
+          if (!_newIcon) { toast('アイコンを選択してください'); return; }
+          if (!_newType) { toast('種類を選択してください'); return; }
+
+          var ov = createCustomOverlay(_newType, title, _newIcon);
+          container.remove();
+          toast('✅ 「' + title + '」を作成しました');
+
+          /* サイドバーを更新 */
+          if (typeof renderSidebar === 'function') {
+            try { renderSidebar(); } catch(e) {}
+          }
+
+          /* onCreated コールバック */
+          if (typeof onCreated === 'function') onCreated(ov);
+
+          /* 作成後すぐにオーバーレイを開く（編集可能状態に） */
+          setTimeout(function() {
+            openCustomOverlay(ov.id);
+          }, 200);
+        };
+      }
+
+      /* タイトル入力のリアルタイム追跡 */
+      var titleInput = container.querySelector('#co-new-title');
+      if (titleInput) {
+        titleInput.oninput = function() {
+          _newTitle = titleInput.value;
+          /* 全部揃っているかチェックして、ボタンの状態のみ更新 */
+          _updateCreateButtonState(container);
+        };
+      }
+    }
+
+    /* アイコン選択 */
+    window._coCreateSelectIcon = function(emoji) {
+      hp();
+      _newIcon = emoji;
+      var titleInput = div.querySelector('#co-new-title');
+      if (titleInput) _newTitle = titleInput.value;
+      _renderCreateDialog(div);
     };
-    document.getElementById('co-new-cancel').onclick = function() { div.remove(); };
+
+    /* カスタムアイコン適用 */
+    window._coCreateApplyCustomIcon = function() {
+      var input = document.getElementById('co-new-icon-custom');
+      if (!input || !input.value.trim()) { toast('絵文字を入力してください'); return; }
+      hp();
+      _newIcon = input.value.trim().substring(0, 2);
+      var titleInput = div.querySelector('#co-new-title');
+      if (titleInput) _newTitle = titleInput.value;
+      _renderCreateDialog(div);
+    };
+
+    /* 種類選択 */
+    window._coCreateSelectType = function(typeId) {
+      hp();
+      _newType = typeId;
+      var titleInput = div.querySelector('#co-new-title');
+      if (titleInput) _newTitle = titleInput.value;
+      _renderCreateDialog(div);
+    };
+
+    /* ボタン状態の更新（再描画なし） */
+    function _updateCreateButtonState(container) {
+      /* フルリレンダリングせずにボタンの disabled だけ変える */
+      var canCreate = _newTitle.trim() && _newIcon && _newType;
+      var okBtn = container.querySelector('#co-new-ok');
+      if (okBtn) {
+        if (canCreate) {
+          okBtn.disabled = false;
+          okBtn.style.opacity = '';
+          okBtn.style.cursor = '';
+        } else {
+          okBtn.disabled = true;
+          okBtn.style.opacity = '.35';
+          okBtn.style.cursor = 'not-allowed';
+        }
+      }
+    }
   }
 
   /* Expose */
