@@ -1030,3 +1030,182 @@ textarea.input { resize: vertical; min-height: 80px; }
   background: var(--c-danger-light, rgba(255, 59, 48, .1));
   color: var(--c-danger, #ff3b30);
 }
+
+/* ==========================================================
+   管理ダイアログ — 並び替え可能なアイテムリスト
+   ========================================================== */
+.co-manage-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px;
+  margin-bottom: 4px;
+  background: var(--c-fill-quaternary, #f2f2f7);
+  border-radius: var(--ds-radius-sm, 10px);
+  transition: background .12s, box-shadow .12s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.co-manage-handle {
+  font-size: .85rem;
+  color: var(--c-tx-muted, #8e8e93);
+  cursor: grab;
+  flex-shrink: 0;
+  padding: 2px 4px;
+  line-height: 1;
+}
+
+.co-manage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.co-manage-title {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-tx, #000);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-manage-title.co-manage-done {
+  text-decoration: line-through;
+  opacity: .5;
+}
+
+.co-manage-preview {
+  font-size: .6875rem;
+  color: var(--c-tx-muted, #8e8e93);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-manage-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-tx-muted, #8e8e93);
+  font-size: .7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.co-manage-btn:active {
+  transform: scale(.85);
+  background: var(--c-fill-tertiary, #e5e5ea);
+}
+
+.co-manage-btn-del {
+  color: var(--c-danger, #ff3b30);
+  opacity: .5;
+}
+
+.co-manage-btn-del:active {
+  opacity: 1;
+  background: var(--c-danger-light, rgba(255, 59, 48, .1));
+}
+
+/* ドラッグ中 */
+.co-manage-item.co-manage-dragging {
+  background: var(--c-card, #fff);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .18);
+  opacity: .9;
+  z-index: 10000;
+}
+
+.co-manage-placeholder {
+  background: var(--c-primary-light, rgba(0, 122, 255, .1));
+  border: 2px dashed var(--c-primary, #007aff);
+  border-radius: var(--ds-radius-sm, 10px);
+  margin-bottom: 4px;
+}
+
+/* ==========================================================
+   メモ帳 — カード一覧
+   ========================================================== */
+.co-memo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.co-memo-card {
+  padding: 14px 16px;
+  background: var(--c-fill-quaternary, #f2f2f7);
+  border-radius: var(--ds-radius-sm, 10px);
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.co-memo-card:active {
+  background: var(--c-fill-tertiary, #e5e5ea);
+  transform: scale(.98);
+}
+
+.co-memo-card-title {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-tx, #000);
+  line-height: 1.3;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-memo-card-preview {
+  font-size: .75rem;
+  color: var(--c-tx-muted, #8e8e93);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-memo-card-date {
+  font-size: .625rem;
+  color: var(--c-tx-muted, #8e8e93);
+  margin-top: 4px;
+  opacity: .7;
+}
+
+/* ==========================================================
+   設定ダイアログ — 絵文字ピッカーボタン
+   ========================================================== */
+.co-emoji-btn {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  background: var(--c-fill-quaternary, #f2f2f7);
+  border-radius: var(--ds-radius-sm, 8px);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.co-emoji-btn:active {
+  transform: scale(.9);
+}
+
+.co-emoji-btn-active {
+  border-color: var(--c-primary, #007aff);
+  background: var(--c-primary-light, rgba(0, 122, 255, .1));
+}

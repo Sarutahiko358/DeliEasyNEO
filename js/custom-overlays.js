@@ -650,107 +650,284 @@
   }
 
   /* ============================================================
-     Memo overlay renderer — リッチ版
+     Memo overlay renderer — 複数メモ対応版
      ============================================================ */
+  var _activeMemoId = {};
+
   function _renderMemoOverlay(body, overlay) {
-    var text = overlay.data.text || '';
-    var charCount = text.length;
-    var lineCount = text ? text.split('\n').length : 0;
-    var lastSaved = overlay.data.memoSavedAt || '';
+    /* 旧フォーマットからの移行 */
+    if (!overlay.data.memos) {
+      if (overlay.data.text) {
+        overlay.data.memos = [{ id: 'memo_' + Date.now(), title: 'メモ 1', text: overlay.data.text, createdAt: Date.now(), updatedAt: Date.now() }];
+        delete overlay.data.text;
+        delete overlay.data.memoSavedAt;
+        saveCustomOverlays(getCustomOverlays());
+      } else {
+        overlay.data.memos = [];
+      }
+    }
+
+    var memos = overlay.data.memos;
+    var activeId = _activeMemoId[overlay.id];
+    var activeMemo = null;
+    if (activeId) {
+      for (var i = 0; i < memos.length; i++) {
+        if (memos[i].id === activeId) { activeMemo = memos[i]; break; }
+      }
+    }
 
     var html = '';
 
-    /* ヘッダーカード: メモ情報 */
-    html += '<div class="co-section">';
-    html += '<div class="co-section-header">';
-    html += '<span class="co-section-icon">📝</span>';
-    html += '<span class="co-section-title">メモ</span>';
-    if (lastSaved) {
-      html += '<span class="co-section-badge">' + escHtml(lastSaved) + '</span>';
+    if (activeMemo) {
+      /* === 個別メモ編集画面 === */
+      html += '<div class="co-section">';
+
+      /* 戻るバー */
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
+      html += '<button class="btn btn-ghost btn-xs" onclick="_memoBack(\'' + escJs(overlay.id) + '\')" style="font-size:1rem;padding:4px 8px">←</button>';
+      html += '<span class="fz-s fw6" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(activeMemo.title) + '</span>';
+      html += '<button class="btn btn-ghost btn-xs" onclick="_memoCopyOne(\'' + escJs(overlay.id) + '\',\'' + escJs(activeMemo.id) + '\')" title="コピー">📋</button>';
+      html += '</div>';
+
+      /* テキストエリア */
+      html += '<div class="co-memo-wrap">';
+      html += '<textarea class="co-memo-textarea" id="custom-memo-text" placeholder="ここにメモを入力…"';
+      html += ' oninput="_memoAutoUpdate(\'' + escJs(overlay.id) + '\',this)"';
+      html += '>' + escHtml(activeMemo.text || '') + '</textarea>';
+      html += '</div>';
+
+      /* フッター */
+      var charCount = (activeMemo.text || '').length;
+      var lineCount = activeMemo.text ? activeMemo.text.split('\n').length : 0;
+      html += '<div class="co-memo-footer">';
+      html += '<span class="co-memo-stats" id="co-memo-stats">' + charCount + '文字 / ' + lineCount + '行</span>';
+      html += '<div class="co-memo-actions">';
+      html += '<button class="btn btn-ghost btn-xs" onclick="_memoDeleteOne(\'' + escJs(overlay.id) + '\',\'' + escJs(activeMemo.id) + '\')" title="削除">🗑</button>';
+      html += '<button class="btn btn-primary btn-sm" onclick="_memoSaveOne(\'' + escJs(overlay.id) + '\',\'' + escJs(activeMemo.id) + '\')">💾 保存</button>';
+      html += '</div>';
+      html += '</div>';
+
+      html += '</div>';
+    } else {
+      /* === メモ一覧画面 === */
+      html += '<div class="co-section">';
+      html += '<div class="co-section-header">';
+      html += '<span class="co-section-icon">📝</span>';
+      html += '<span class="co-section-title">メモ帳</span>';
+      html += '<span class="co-section-badge">' + memos.length + '件</span>';
+      html += '</div>';
+
+      if (memos.length === 0) {
+        html += '<div class="co-empty">';
+        html += '<div class="co-empty-icon">📝</div>';
+        html += '<div class="co-empty-text">メモがありません</div>';
+        html += '<div class="co-empty-hint">下のボタンから新しいメモを作成しましょう</div>';
+        html += '</div>';
+      } else {
+        html += '<div class="co-memo-list">';
+        memos.forEach(function(memo) {
+          var preview = (memo.text || '').substring(0, 60).replace(/\n/g, ' ') || '(空のメモ)';
+          var dateStr = memo.updatedAt ? _formatMemoDate(memo.updatedAt) : '';
+          html += '<div class="co-memo-card" onclick="_memoOpen(\'' + escJs(overlay.id) + '\',\'' + escJs(memo.id) + '\')">';
+          html += '<div class="co-memo-card-title">' + escHtml(memo.title || '無題のメモ') + '</div>';
+          html += '<div class="co-memo-card-preview">' + escHtml(preview) + '</div>';
+          if (dateStr) html += '<div class="co-memo-card-date">' + escHtml(dateStr) + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
+      html += '<button class="btn btn-primary btn-sm btn-block mt12" onclick="_memoAddFromOverlay(\'' + escJs(overlay.id) + '\')">＋ 新しいメモを追加</button>';
+      html += '</div>';
     }
-    html += '</div>';
-
-    /* テキストエリア */
-    html += '<div class="co-memo-wrap">';
-    html += '<textarea class="co-memo-textarea" id="custom-memo-text" placeholder="ここにメモを入力…&#10;&#10;買い物リスト、業務連絡、アイデアなど&#10;何でも自由に書けます"';
-    html += ' oninput="_memoAutoUpdate(\'' + escJs(overlay.id) + '\',this)"';
-    html += '>' + escHtml(text) + '</textarea>';
-    html += '</div>';
-
-    /* フッター: 文字数 + 保存ボタン */
-    html += '<div class="co-memo-footer">';
-    html += '<span class="co-memo-stats" id="co-memo-stats">' + charCount + '文字 / ' + lineCount + '行</span>';
-    html += '<div class="co-memo-actions">';
-    html += '<button class="btn btn-ghost btn-xs" onclick="_memoClear(\'' + escJs(overlay.id) + '\')" title="クリア">🗑</button>';
-    html += '<button class="btn btn-primary btn-sm" onclick="_saveCustomMemo(\'' + escJs(overlay.id) + '\')">💾 保存</button>';
-    html += '</div>';
-    html += '</div>';
-
-    html += '</div>'; /* co-section */
 
     body.innerHTML = html;
 
     /* テキストエリア自動リサイズ */
-    var ta = document.getElementById('custom-memo-text');
-    if (ta) {
-      ta.style.height = 'auto';
-      ta.style.height = Math.max(200, ta.scrollHeight) + 'px';
+    if (activeMemo) {
+      var ta = document.getElementById('custom-memo-text');
+      if (ta) {
+        ta.style.height = 'auto';
+        ta.style.height = Math.max(200, ta.scrollHeight) + 'px';
+      }
     }
   }
 
+  function _formatMemoDate(ts) {
+    var d = new Date(ts);
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  /* メモ一覧に戻る */
+  window._memoBack = function(overlayId) {
+    hp();
+    _activeMemoId[overlayId] = null;
+    var body = document.getElementById('overlay-body-' + overlayId);
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId) { _renderMemoOverlay(body, list[i]); return; }
+    }
+  };
+
+  /* メモを開く */
+  window._memoOpen = function(overlayId, memoId) {
+    hp();
+    _activeMemoId[overlayId] = memoId;
+    var body = document.getElementById('overlay-body-' + overlayId);
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId) { _renderMemoOverlay(body, list[i]); return; }
+    }
+  };
+
+  /* オーバーレイ内から新しいメモを追加 */
+  window._memoAddFromOverlay = function(overlayId) {
+    hp();
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId) {
+        if (!list[i].data.memos) list[i].data.memos = [];
+        var newMemo = { id: 'memo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), title: 'メモ ' + (list[i].data.memos.length + 1), text: '', createdAt: Date.now(), updatedAt: Date.now() };
+        list[i].data.memos.push(newMemo);
+        saveCustomOverlays(list);
+        _activeMemoId[overlayId] = newMemo.id;
+        var body = document.getElementById('overlay-body-' + overlayId);
+        if (body) _renderMemoOverlay(body, list[i]);
+        return;
+      }
+    }
+  };
+
   /* メモ自動保存（入力中に文字数更新） */
-  window._memoAutoUpdate = function(id, el) {
+  window._memoAutoUpdate = function(overlayId, el) {
     var stats = document.getElementById('co-memo-stats');
     if (stats) {
       var charCount = el.value.length;
       var lineCount = el.value ? el.value.split('\n').length : 0;
       stats.textContent = charCount + '文字 / ' + lineCount + '行';
     }
-    /* 自動リサイズ */
     el.style.height = 'auto';
     el.style.height = Math.max(200, el.scrollHeight) + 'px';
   };
 
-  /* メモクリア */
-  window._memoClear = function(id) {
-    customConfirm('メモを全て消去しますか？', function() {
+  /* 個別メモ保存 */
+  window._memoSaveOne = function(overlayId, memoId) {
+    var el = document.getElementById('custom-memo-text');
+    if (!el) return;
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.memos) {
+        for (var j = 0; j < list[i].data.memos.length; j++) {
+          if (list[i].data.memos[j].id === memoId) {
+            list[i].data.memos[j].text = el.value;
+            list[i].data.memos[j].updatedAt = Date.now();
+            saveCustomOverlays(list);
+            toast('✅ メモを保存しました');
+            return;
+          }
+        }
+      }
+    }
+  };
+
+  /* 個別メモ削除 */
+  window._memoDeleteOne = function(overlayId, memoId) {
+    customConfirm('このメモを削除しますか？', function() {
       var list = getCustomOverlays();
       for (var i = 0; i < list.length; i++) {
-        if (list[i].id === id) {
-          list[i].data.text = '';
-          list[i].data.memoSavedAt = '';
+        if (list[i].id === overlayId && list[i].data.memos) {
+          list[i].data.memos = list[i].data.memos.filter(function(m) { return m.id !== memoId; });
           saveCustomOverlays(list);
-          var b = document.getElementById('overlay-body-' + id);
-          if (b) _renderMemoOverlay(b, list[i]);
-          toast('🗑 メモをクリアしました');
+          _activeMemoId[overlayId] = null;
+          var body = document.getElementById('overlay-body-' + overlayId);
+          if (body) _renderMemoOverlay(body, list[i]);
+          toast('🗑 メモを削除しました');
           return;
         }
       }
     });
   };
 
-  /* 保存関数を上書き（タイムスタンプ付き） */
-  window._saveCustomMemo = function(id) {
+  /* メモをコピー */
+  window._memoCopyOne = function(overlayId, memoId) {
     var list = getCustomOverlays();
     for (var i = 0; i < list.length; i++) {
-      if (list[i].id === id) {
-        var el = document.getElementById('custom-memo-text');
-        list[i].data.text = el ? el.value : '';
-        var now = new Date();
-        list[i].data.memoSavedAt = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0') + ' 保存済み';
-        break;
+      if (list[i].id === overlayId && list[i].data.memos) {
+        for (var j = 0; j < list[i].data.memos.length; j++) {
+          if (list[i].data.memos[j].id === memoId) {
+            _copyToClipboard(list[i].data.memos[j].text || '');
+            toast('📋 メモをコピーしました');
+            return;
+          }
+        }
       }
     }
-    saveCustomOverlays(list);
-    toast('✅ メモを保存しました');
+  };
 
-    /* バッジ更新 */
-    var badge = document.querySelector('.co-section-badge');
-    if (badge) {
-      var now2 = new Date();
-      badge.textContent = now2.getHours() + ':' + String(now2.getMinutes()).padStart(2,'0') + ' 保存済み';
-      badge.style.animation = 'coBadgePulse .4s ease';
+  /* 管理タブからのメモ操作 */
+  window._coMemoAdd = function(overlayId) {
+    hp();
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId) {
+        if (!list[i].data.memos) list[i].data.memos = [];
+        list[i].data.memos.push({ id: 'memo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), title: 'メモ ' + (list[i].data.memos.length + 1), text: '', createdAt: Date.now(), updatedAt: Date.now() });
+        saveCustomOverlays(list);
+        toast('✅ メモを追加しました');
+        /* 設定ダイアログを更新 */
+        _editCustomOverlaySettings(overlayId);
+        /* オーバーレイも更新 */
+        var body = document.getElementById('overlay-body-' + overlayId);
+        if (body) _renderMemoOverlay(body, list[i]);
+        return;
+      }
     }
+  };
+
+  window._coMemoRename = function(overlayId, idx) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.memos && list[i].data.memos[idx]) {
+        customPrompt('メモの名前', list[i].data.memos[idx].title || '', function(val) {
+          if (val && val.trim()) {
+            list[i].data.memos[idx].title = val.trim();
+            saveCustomOverlays(list);
+            _editCustomOverlaySettings(overlayId);
+            var body = document.getElementById('overlay-body-' + overlayId);
+            if (body) _renderMemoOverlay(body, list[i]);
+          }
+        });
+        return;
+      }
+    }
+  };
+
+  window._coMemoCopy = function(overlayId, idx) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.memos && list[i].data.memos[idx]) {
+        _copyToClipboard(list[i].data.memos[idx].text || '');
+        toast('📋 メモをコピーしました');
+        return;
+      }
+    }
+  };
+
+  window._coMemoDelete = function(overlayId, idx) {
+    customConfirm('このメモを削除しますか？', function() {
+      var list = getCustomOverlays();
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === overlayId && list[i].data.memos) {
+          list[i].data.memos.splice(idx, 1);
+          saveCustomOverlays(list);
+          toast('🗑 削除しました');
+          _editCustomOverlaySettings(overlayId);
+          var body = document.getElementById('overlay-body-' + overlayId);
+          if (body) _renderMemoOverlay(body, list[i]);
+          return;
+        }
+      }
+    });
   };
 
   /* ============================================================
@@ -839,10 +1016,23 @@
     h += '<span class="co-cl-checkmark"></span>';
     h += '</label>';
     h += '<span class="co-cl-text">' + escHtml(item.text) + '</span>';
+    h += '<button class="co-cl-del" onclick="_coClItemCopy(\'' + escJs(overlayId) + '\',' + idx + ')" title="コピー" style="opacity:.3;color:var(--c-tx-muted)">📋</button>';
     h += '<button class="co-cl-del" onclick="_deleteChecklistItem(\'' + escJs(overlayId) + '\',' + idx + ')" title="削除">✕</button>';
     h += '</div>';
     return h;
   }
+
+  /* インラインコピー */
+  window._coClItemCopy = function(overlayId, idx) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.items && list[i].data.items[idx]) {
+        _copyToClipboard(list[i].data.items[idx].text);
+        toast('📋 コピーしました');
+        return;
+      }
+    }
+  };
 
   /* 完了済み一括削除 */
   window._clearDoneItems = function(id) {
@@ -999,7 +1189,100 @@
   };
 
   /* ============================================================
-     Custom overlay settings editor
+     クリップボードコピーヘルパー
+     ============================================================ */
+  function _copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(function() { _fallbackCopy(text); });
+    } else {
+      _fallbackCopy(text);
+    }
+  }
+
+  function _fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    ta.remove();
+  }
+
+  /* チェックリスト: 個別タスクコピー */
+  window._coClCopy = function(overlayId, idx) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.items && list[i].data.items[idx]) {
+        _copyToClipboard(list[i].data.items[idx].text);
+        toast('📋 タスクをコピーしました');
+        return;
+      }
+    }
+  };
+
+  /* チェックリスト: 管理タブからの削除 */
+  window._coClDelete = function(overlayId, idx) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.items) {
+        list[i].data.items.splice(idx, 1);
+        saveCustomOverlays(list);
+        toast('🗑 削除しました');
+        _editCustomOverlaySettings(overlayId);
+        var body = document.getElementById('overlay-body-' + overlayId);
+        if (body) _renderChecklistOverlay(body, list[i]);
+        return;
+      }
+    }
+  };
+
+  /* チェックリスト: 全タスクをテキストとしてコピー */
+  window._coClCopyAll = function(overlayId) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.items) {
+        var text = list[i].data.items.map(function(item) {
+          return (item.done ? '✅ ' : '☐ ') + item.text;
+        }).join('\n');
+        _copyToClipboard(text);
+        toast('📋 タスクリストをコピーしました');
+        return;
+      }
+    }
+  };
+
+  /* リンク: URLコピー */
+  window._coLinkCopy = function(overlayId, idx) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.links && list[i].data.links[idx]) {
+        _copyToClipboard(list[i].data.links[idx].url);
+        toast('📋 URLをコピーしました');
+        return;
+      }
+    }
+  };
+
+  /* リンク: 管理タブからの削除 */
+  window._coLinkDelete = function(overlayId, idx) {
+    var list = getCustomOverlays();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === overlayId && list[i].data.links) {
+        list[i].data.links.splice(idx, 1);
+        saveCustomOverlays(list);
+        toast('🗑 削除しました');
+        _editCustomOverlaySettings(overlayId);
+        var body = document.getElementById('overlay-body-' + overlayId);
+        if (body) _renderLinksOverlay(body, list[i]);
+        return;
+      }
+    }
+  };
+
+  /* ============================================================
+     Custom overlay settings editor — 管理画面統合版
+     背景タップで閉じる + 種類別の管理タブ
      ============================================================ */
   window._editCustomOverlaySettings = function(id) {
     var list = getCustomOverlays();
@@ -1009,71 +1292,228 @@
     }
     if (!overlay) return;
 
+    var _settingsTab = 'manage'; /* 'manage' | 'info' */
+
     var div = document.createElement('div');
     div.className = 'confirm-overlay';
     div.style.zIndex = '9500';
-    div.innerHTML =
-      '<div class="confirm-box" style="max-width:320px;text-align:left">' +
-        '<h3 class="fz-s fw6 mb12 text-c">オーバーレイ設定</h3>' +
-        '<div class="input-group"><label class="input-label">タイトル</label>' +
-          '<input type="text" class="input" id="co-edit-title" value="' + escHtml(overlay.title) + '"></div>' +
-        '<div class="input-group"><label class="input-label">アイコン（絵文字）</label>' +
-          '<input type="text" class="input" id="co-edit-icon" value="' + escHtml(overlay.icon) + '" maxlength="2"></div>' +
-        '<div class="flex gap8 mt12">' +
-          '<button class="btn btn-primary btn-sm" id="co-edit-save">保存</button>' +
-          '<button class="btn btn-secondary btn-sm" id="co-edit-cancel">閉じる</button>' +
-          '<button class="btn btn-danger btn-sm" id="co-edit-delete">削除</button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(div);
 
-    document.getElementById('co-edit-save').onclick = function() {
-      overlay.title = document.getElementById('co-edit-title').value.trim() || 'カスタム';
-      overlay.icon = document.getElementById('co-edit-icon').value.trim() || '📄';
-      saveCustomOverlays(list);
-      div.remove();
-      toast('✅ 設定を保存しました');
-      /* Update OVERLAYS registry and sheet title */
-      if (window.OVERLAYS) {
-        window.OVERLAYS[id] = { title: overlay.icon + ' ' + overlay.title };
+    function _renderSettingsDialog() {
+      var h = '<div class="confirm-box" style="max-width:360px;max-height:85vh;overflow-y:auto;text-align:left;padding:20px 16px">';
+
+      /* ヘッダー */
+      h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+      h += '<h3 style="font-size:.9375rem;font-weight:700;margin:0">' + escHtml(overlay.icon) + ' ' + escHtml(overlay.title) + '</h3>';
+      h += '<button class="btn btn-ghost btn-xs" id="co-settings-close" style="font-size:1rem;padding:4px 8px">✕</button>';
+      h += '</div>';
+
+      /* タブ */
+      h += '<div class="segmented mb12">';
+      h += '<button class="segmented-item' + (_settingsTab === 'manage' ? ' active' : '') + '" id="co-stab-manage">管理</button>';
+      h += '<button class="segmented-item' + (_settingsTab === 'info' ? ' active' : '') + '" id="co-stab-info">設定</button>';
+      h += '</div>';
+
+      if (_settingsTab === 'manage') {
+        h += _renderManageTab(overlay);
+      } else {
+        h += _renderInfoTab(overlay);
       }
-      var sheet = document.getElementById('overlay-sheet-' + id);
-      if (sheet) {
-        var titleEl = sheet.querySelector('.overlay-title');
-        if (titleEl) titleEl.textContent = overlay.icon + ' ' + overlay.title;
-      }
-    };
-    document.getElementById('co-edit-cancel').onclick = function() { div.remove(); };
-    document.getElementById('co-edit-delete').onclick = function() {
-      /* 設定ダイアログを先に消してから確認ダイアログを出す（z-index競合回避） */
-      div.remove();
 
-      customConfirm('このオーバーレイを削除しますか？', function() {
-        /* 1. オーバーレイを閉じる（スタックからpop） */
-        if (typeof closeOverlay === 'function') closeOverlay();
+      h += '</div>';
+      div.innerHTML = h;
 
-        /* 2. 残っている confirm-overlay を全て除去してからUI更新 */
-        setTimeout(function() {
-          document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
+      /* イベントバインド */
+      var closeBtn = div.querySelector('#co-settings-close');
+      if (closeBtn) closeBtn.onclick = function() { div.remove(); };
 
-          /* 3. データ削除 */
-          deleteCustomOverlay(id);
+      var tabManage = div.querySelector('#co-stab-manage');
+      var tabInfo = div.querySelector('#co-stab-info');
+      if (tabManage) tabManage.onclick = function() { hp(); _settingsTab = 'manage'; _renderSettingsDialog(); };
+      if (tabInfo) tabInfo.onclick = function() { hp(); _settingsTab = 'info'; _renderSettingsDialog(); };
 
-          /* 4. フィードバック */
-          toast('🗑 オーバーレイを削除しました');
-
-          /* 5. UI更新 */
-          if (typeof refreshHome === 'function') refreshHome();
-          if (typeof renderSidebar === 'function') {
-            try { renderSidebar(); } catch(e) {}
+      /* 設定タブのイベント */
+      if (_settingsTab === 'info') {
+        var saveBtn = div.querySelector('#co-edit-save');
+        var delBtn = div.querySelector('#co-edit-delete');
+        if (saveBtn) saveBtn.onclick = function() {
+          overlay.title = div.querySelector('#co-edit-title').value.trim() || 'カスタム';
+          overlay.icon = div.querySelector('#co-edit-icon').value.trim() || '📄';
+          saveCustomOverlays(list);
+          toast('✅ 設定を保存しました');
+          if (window.OVERLAYS) window.OVERLAYS[id] = { title: overlay.icon + ' ' + overlay.title };
+          var sheet = document.getElementById('overlay-sheet-' + id);
+          if (sheet) {
+            var titleEl = sheet.querySelector('.overlay-title');
+            if (titleEl) titleEl.textContent = overlay.icon + ' ' + overlay.title;
           }
-        }, 150);
-      }, function() {
-        /* キャンセル時: 設定ダイアログを再表示 */
-        _editCustomOverlaySettings(id);
-      });
-    };
+          if (typeof renderSidebar === 'function') try { renderSidebar(); } catch(e) {}
+          _renderSettingsDialog();
+        };
+        if (delBtn) delBtn.onclick = function() {
+          div.remove();
+          customConfirm('このオーバーレイを削除しますか？', function() {
+            if (typeof closeOverlay === 'function') closeOverlay();
+            setTimeout(function() {
+              document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
+              deleteCustomOverlay(id);
+              toast('🗑 オーバーレイを削除しました');
+              if (typeof refreshHome === 'function') refreshHome();
+              if (typeof renderSidebar === 'function') try { renderSidebar(); } catch(e) {}
+            }, 150);
+          }, function() {
+            _editCustomOverlaySettings(id);
+          });
+        };
+      }
+    }
+
+    /* 背景タップで閉じる */
+    div.addEventListener('click', function(e) {
+      if (e.target === div) div.remove();
+    });
+
+    document.body.appendChild(div);
+    _renderSettingsDialog();
   };
+
+  /* --- 管理タブ: 種類別の管理UI --- */
+  function _renderManageTab(overlay) {
+    switch (overlay.type) {
+      case 'memo': return _renderMemoManageTab(overlay);
+      case 'checklist': return _renderChecklistManageTab(overlay);
+      case 'links': return _renderLinksManageTab(overlay);
+      case 'dashboard': return _renderDashboardManageTab(overlay);
+      default: return '<div class="co-empty"><div class="co-empty-text">管理項目はありません</div></div>';
+    }
+  }
+
+  /* --- 設定タブ: タイトル・アイコン・削除 --- */
+  function _renderInfoTab(overlay) {
+    var h = '';
+    h += '<div class="input-group"><label class="input-label">タイトル</label>';
+    h += '<input type="text" class="input" id="co-edit-title" value="' + escHtml(overlay.title) + '"></div>';
+    h += '<div class="input-group"><label class="input-label">アイコン（絵文字）</label>';
+    h += '<input type="text" class="input" id="co-edit-icon" value="' + escHtml(overlay.icon) + '" maxlength="2"></div>';
+
+    /* プリセット絵文字 */
+    h += '<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:16px">';
+    PRESET_EMOJIS.forEach(function(emoji) {
+      var isSelected = overlay.icon === emoji;
+      h += '<button class="co-emoji-btn' + (isSelected ? ' co-emoji-btn-active' : '') + '" onclick="document.getElementById(\'co-edit-icon\').value=\'' + escJs(emoji) + '\'">' + emoji + '</button>';
+    });
+    h += '</div>';
+
+    h += '<div style="display:flex;gap:8px">';
+    h += '<button class="btn btn-primary btn-sm" id="co-edit-save" style="flex:1">保存</button>';
+    h += '<button class="btn btn-danger btn-sm" id="co-edit-delete">削除</button>';
+    h += '</div>';
+    return h;
+  }
+
+  /* --- メモ管理タブ --- */
+  function _renderMemoManageTab(overlay) {
+    if (!overlay.data.memos) {
+      /* 旧フォーマットからの移行 */
+      if (overlay.data.text) {
+        overlay.data.memos = [{ id: 'memo_' + Date.now(), title: 'メモ 1', text: overlay.data.text, createdAt: Date.now(), updatedAt: Date.now() }];
+        delete overlay.data.text;
+        delete overlay.data.memoSavedAt;
+        saveCustomOverlays(getCustomOverlays());
+      } else {
+        overlay.data.memos = [];
+      }
+    }
+    var memos = overlay.data.memos;
+    var h = '';
+
+    h += '<div class="fz-xs c-muted mb8">' + memos.length + '件のメモ</div>';
+
+    if (memos.length === 0) {
+      h += '<div class="co-empty" style="padding:24px 0"><div class="co-empty-icon">📝</div><div class="co-empty-text">メモがありません</div></div>';
+    } else {
+      h += '<div id="co-memo-manage-list">';
+      memos.forEach(function(memo, idx) {
+        var preview = (memo.text || '').substring(0, 40).replace(/\n/g, ' ') || '(空のメモ)';
+        h += '<div class="co-manage-item" data-memo-idx="' + idx + '">';
+        h += '<span class="co-manage-handle">☰</span>';
+        h += '<div class="co-manage-info" style="flex:1;min-width:0">';
+        h += '<div class="co-manage-title">' + escHtml(memo.title || 'メモ ' + (idx + 1)) + '</div>';
+        h += '<div class="co-manage-preview">' + escHtml(preview) + '</div>';
+        h += '</div>';
+        h += '<button class="co-manage-btn" onclick="_coMemoRename(\'' + escJs(overlay.id) + '\',' + idx + ')" title="名前変更">✏️</button>';
+        h += '<button class="co-manage-btn" onclick="_coMemoCopy(\'' + escJs(overlay.id) + '\',' + idx + ')" title="コピー">📋</button>';
+        h += '<button class="co-manage-btn co-manage-btn-del" onclick="_coMemoDelete(\'' + escJs(overlay.id) + '\',' + idx + ')" title="削除">✕</button>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+
+    h += '<button class="btn btn-primary btn-sm btn-block mt12" onclick="_coMemoAdd(\'' + escJs(overlay.id) + '\')">＋ 新しいメモを追加</button>';
+    return h;
+  }
+
+  /* --- チェックリスト管理タブ --- */
+  function _renderChecklistManageTab(overlay) {
+    var items = overlay.data.items || [];
+    var doneCount = items.filter(function(it) { return it.done; }).length;
+    var h = '';
+    h += '<div class="fz-xs c-muted mb8">' + items.length + '件（完了: ' + doneCount + '件）</div>';
+
+    if (items.length > 0) {
+      h += '<div id="co-cl-manage-list">';
+      items.forEach(function(item, idx) {
+        h += '<div class="co-manage-item" data-cl-idx="' + idx + '">';
+        h += '<span class="co-manage-handle">☰</span>';
+        h += '<div class="co-manage-info" style="flex:1;min-width:0">';
+        h += '<div class="co-manage-title' + (item.done ? ' co-manage-done' : '') + '">' + escHtml(item.text) + '</div>';
+        h += '</div>';
+        h += '<button class="co-manage-btn" onclick="_coClCopy(\'' + escJs(overlay.id) + '\',' + idx + ')" title="コピー">📋</button>';
+        h += '<button class="co-manage-btn co-manage-btn-del" onclick="_coClDelete(\'' + escJs(overlay.id) + '\',' + idx + ')" title="削除">✕</button>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+
+    if (doneCount > 0) {
+      h += '<button class="btn btn-ghost btn-xs btn-block mt8" onclick="_clearDoneItems(\'' + escJs(overlay.id) + '\');setTimeout(function(){_editCustomOverlaySettings(\'' + escJs(overlay.id) + '\')},200)">🗑 完了済みを一括削除</button>';
+    }
+    h += '<button class="btn btn-ghost btn-xs btn-block mt4" onclick="_coClCopyAll(\'' + escJs(overlay.id) + '\')">📋 全タスクをコピー</button>';
+    return h;
+  }
+
+  /* --- リンク管理タブ --- */
+  function _renderLinksManageTab(overlay) {
+    var links = overlay.data.links || [];
+    var h = '';
+    h += '<div class="fz-xs c-muted mb8">' + links.length + '件のリンク</div>';
+
+    if (links.length > 0) {
+      h += '<div id="co-link-manage-list">';
+      links.forEach(function(link, idx) {
+        var displayName = link.name || _extractDomain(link.url);
+        h += '<div class="co-manage-item" data-link-idx="' + idx + '">';
+        h += '<span class="co-manage-handle">☰</span>';
+        h += '<div class="co-manage-info" style="flex:1;min-width:0">';
+        h += '<div class="co-manage-title">' + escHtml(displayName) + '</div>';
+        h += '<div class="co-manage-preview">' + escHtml(link.url.replace(/^https?:\/\//, '').substring(0, 40)) + '</div>';
+        h += '</div>';
+        h += '<button class="co-manage-btn" onclick="_coLinkCopy(\'' + escJs(overlay.id) + '\',' + idx + ')" title="URLコピー">📋</button>';
+        h += '<button class="co-manage-btn co-manage-btn-del" onclick="_coLinkDelete(\'' + escJs(overlay.id) + '\',' + idx + ')" title="削除">✕</button>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+    return h;
+  }
+
+  /* --- ダッシュボード管理タブ --- */
+  function _renderDashboardManageTab(overlay) {
+    var widgets = overlay.data.widgets || [];
+    var h = '';
+    h += '<div class="fz-xs c-muted mb8">' + widgets.length + '個のウィジェット</div>';
+    h += '<button class="btn btn-primary btn-sm btn-block" onclick="_dashManageEdit(\'' + escJs(overlay.id) + '\')">ウィジェットを編集</button>';
+    return h;
+  }
 
   /* ============================================================
      Create custom overlay dialog — 完全リニューアル版
@@ -1279,6 +1719,16 @@
       }
     }
   }
+
+  window._dashManageEdit = function(coId) {
+    /* 設定ダイアログ（z-index:9500のconfirm-overlay）を閉じてから編集モードに入る */
+    var dialogs = document.querySelectorAll('.confirm-overlay');
+    dialogs.forEach(function(el) {
+      if (el.style.zIndex === '9500') el.remove();
+    });
+    _dashEditMode[coId] = true;
+    _refreshDashboard(coId);
+  };
 
   /* Expose */
   window.CUSTOM_OVERLAY_TYPES = CUSTOM_OVERLAY_TYPES;
