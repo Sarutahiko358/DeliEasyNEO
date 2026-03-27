@@ -644,9 +644,24 @@
 
   window._settingsDeleteCustomOverlay = function(coId) {
     customConfirm('このカスタムオーバーレイを削除しますか？', function() {
+      /* 1. データ削除 */
       if (typeof deleteCustomOverlay === 'function') deleteCustomOverlay(coId);
-      toast('🗑 削除しました');
-      _settingsRefresh();
+
+      /* 2. フィードバック */
+      toast('🗑 オーバーレイを削除しました');
+
+      /* 3. confirm-overlay の残骸を除去してからUI更新（順序を保証） */
+      setTimeout(function() {
+        document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
+
+        /* 4. 設定画面を更新 */
+        _settingsRefresh();
+
+        /* 5. サイドバーも更新 */
+        if (typeof renderSidebar === 'function') {
+          try { renderSidebar(); } catch(e) {}
+        }
+      }, 100);
     });
   };
 

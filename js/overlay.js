@@ -505,13 +505,27 @@
 
   window._ovmDeleteCustom = function(coId) {
     customConfirm('このカスタムオーバーレイを削除しますか？', function() {
+      /* 1. データ削除 */
       if (typeof deleteCustomOverlay === 'function') deleteCustomOverlay(coId);
-      toast('🗑 削除しました');
-      /* confirm-overlayを全て除去してから再表示 */
-      document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
-      var existing = document.getElementById('overlay-manager-dialog');
-      if (existing) existing.remove();
-      openOverlayManager();
+
+      /* 2. フィードバック */
+      toast('🗑 オーバーレイを削除しました');
+
+      /* 3. 全ての confirm-overlay と manager-dialog を除去してから再表示 */
+      setTimeout(function() {
+        document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
+        var existing = document.getElementById('overlay-manager-dialog');
+        if (existing) existing.remove();
+
+        /* 4. マネージャーを再表示 */
+        openOverlayManager();
+
+        /* 5. サイドバーとホーム画面も更新 */
+        if (typeof renderSidebar === 'function') {
+          try { renderSidebar(); } catch(e) {}
+        }
+        if (typeof refreshHome === 'function') refreshHome();
+      }, 100);
     });
   };
 

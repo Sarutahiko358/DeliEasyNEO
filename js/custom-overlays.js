@@ -74,9 +74,23 @@
   function deleteCustomOverlay(id) {
     var list = getCustomOverlays().filter(function(o) { return o.id !== id; });
     saveCustomOverlays(list);
+
     /* Clean up dynamic OVERLAYS entry and render function */
     if (window.OVERLAYS) delete window.OVERLAYS[id];
     delete window['renderOverlay_' + id];
+
+    /* ダッシュボード編集モードのクリーンアップ */
+    if (_dashEditMode[id]) delete _dashEditMode[id];
+
+    /* もしこのオーバーレイが現在スタックで開いているなら閉じる */
+    if (typeof getTopOverlayId === 'function' && getTopOverlayId() === id) {
+      if (typeof closeOverlay === 'function') closeOverlay();
+    }
+
+    /* オーバーレイのDOM要素が残っていれば除去 */
+    var sheet = document.getElementById('overlay-sheet-' + id);
+    if (sheet) sheet.remove();
+
     /* サイドバーのカスタムオーバーレイ一覧を更新 */
     if (typeof renderSidebar === 'function') {
       try { renderSidebar(); } catch(e) {}
@@ -826,16 +840,28 @@
     document.getElementById('co-edit-cancel').onclick = function() { div.remove(); };
     document.getElementById('co-edit-delete').onclick = function() {
       customConfirm('このオーバーレイを削除しますか？', function() {
+        /* 1. 設定ダイアログを即座に除去 */
         div.remove();
-        /* まずオーバーレイを閉じる（closeOverlayはスタックからpopする） */
+
+        /* 2. オーバーレイを閉じる（スタックからpop） */
         if (typeof closeOverlay === 'function') closeOverlay();
-        /* 少し遅延してからデータ削除（DOMの整合性を保つため） */
+
+        /* 3. 残っている confirm-overlay を全て除去（customConfirm自身のものを含む） */
         setTimeout(function() {
+          document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
+
+          /* 4. データ削除 */
           deleteCustomOverlay(id);
-          toast('🗑 削除しました');
-          /* ホーム画面を更新 */
+
+          /* 5. フィードバック */
+          toast('🗑 オーバーレイを削除しました');
+
+          /* 6. UI更新 */
           if (typeof refreshHome === 'function') refreshHome();
-        }, 100);
+          if (typeof renderSidebar === 'function') {
+            try { renderSidebar(); } catch(e) {}
+          }
+        }, 150);
       });
     };
   };
