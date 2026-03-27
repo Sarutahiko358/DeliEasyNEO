@@ -1020,7 +1020,8 @@
     body.innerHTML = html;
 
     /* 未完了タスクの並び替え初期化 */
-    if (items.length > 1) {
+    var pendingCount = items.filter(function(it) { return !it.done; }).length;
+    if (pendingCount > 1) {
       requestAnimationFrame(function() {
         _initOverlayListDrag(overlay.id, 'checklist');
       });
