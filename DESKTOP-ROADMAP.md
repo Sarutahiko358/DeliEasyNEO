@@ -10,7 +10,7 @@
 | # | 作業ブロック | 状態 | 担当チャット |
 |---|-------------|------|-------------|
 | A | ミニカレンダー改善 | ✅ 完了 | チャット1 |
-| B | デスクトップ対応 Phase 1: CSS基盤 + ホバー + キーボード | ⬜ 未着手 | チャット2 |
+| B | デスクトップ対応 Phase 1: CSS基盤 + ホバー + キーボード | ✅ 完了 | チャット2 |
 | C | デスクトップ対応 Phase 2: マウスドラッグ対応 | ⬜ 未着手 | チャット3 |
 | D | デスクトップ対応 Phase 3: ワイドレイアウト | ⬜ 未着手 | チャット4 |
 | E | デスクトップ対応 Phase 4: 仕上げ | ⬜ 未着手 | チャット4-5 |
@@ -38,55 +38,55 @@
 ### CSS: ホバースタイル追加
 | タスク | 状態 |
 |--------|------|
-| [ ] .btn:hover — 全ボタンバリエーション |  |
-| [ ] .btn-primary:hover |  |
-| [ ] .btn-secondary:hover |  |
-| [ ] .btn-danger:hover |  |
-| [ ] .btn-ghost:hover |  |
-| [ ] .btn-icon:hover |  |
-| [ ] .card-header:hover |  |
-| [ ] .widget:hover（tappable） |  |
-| [ ] .sidebar-item:hover |  |
-| [ ] .pill:hover |  |
-| [ ] .segmented-item:hover |  |
-| [ ] .numpad-key:hover |  |
-| [ ] .fab-main:hover |  |
-| [ ] .fab-mini:hover |  |
-| [ ] .cal-c:hover（カレンダー日付セル） |  |
-| [ ] .preset-tab:hover |  |
-| [ ] .topbar-btn:hover |  |
-| [ ] .bottombar-item:hover |  |
-| [ ] .stat-box.tappable:hover |  |
-| [ ] .rp-record:hover（右パネル記録行） |  |
-| [ ] .ds-rec:hover（統計記録行） |  |
-| [ ] .co-cl-item:hover（チェックリスト） |  |
-| [ ] .co-link-item:hover（リンク集） |  |
-| [ ] .co-memo-card:hover（メモカード） |  |
+| [x] .btn:hover — 全ボタンバリエーション |  |
+| [x] .btn-primary:hover |  |
+| [x] .btn-secondary:hover |  |
+| [x] .btn-danger:hover |  |
+| [x] .btn-ghost:hover |  |
+| [x] .btn-icon:hover |  |
+| [x] .card-header:hover |  |
+| [x] .widget:hover（tappable） |  |
+| [x] .sidebar-item:hover |  |
+| [x] .pill:hover |  |
+| [x] .segmented-item:hover |  |
+| [x] .numpad-key:hover |  |
+| [x] .fab-main:hover |  |
+| [x] .fab-mini:hover |  |
+| [x] .cal-c:hover（カレンダー日付セル） |  |
+| [x] .preset-tab:hover |  |
+| [x] .topbar-btn:hover |  |
+| [x] .bottombar-item:hover |  |
+| [x] .stat-box.tappable:hover |  |
+| [x] .rp-record:hover（右パネル記録行） |  |
+| [x] .ds-rec:hover（統計記録行） |  |
+| [x] .co-cl-item:hover（チェックリスト） |  |
+| [x] .co-link-item:hover（リンク集） |  |
+| [x] .co-memo-card:hover（メモカード） |  |
 
 ### CSS: フォーカスリング
 | タスク | 状態 |
 |--------|------|
-| [ ] :focus-visible の全体定義 |  |
-| [ ] .input:focus-visible |  |
-| [ ] .btn:focus-visible |  |
-| [ ] .topbar-btn:focus-visible |  |
-| [ ] .sidebar-item:focus-visible |  |
+| [x] :focus-visible の全体定義 |  |
+| [x] .input:focus-visible |  |
+| [x] .btn:focus-visible |  |
+| [x] .topbar-btn:focus-visible |  |
+| [x] .sidebar-item:focus-visible |  |
 
 ### CSS: カーソル指定の追加
 | タスク | 状態 |
 |--------|------|
-| [ ] クリック可能な全要素に cursor: pointer 確認・追加 |  |
-| [ ] ドラッグ可能要素に cursor: grab / grabbing |  |
-| [ ] 無効ボタンに cursor: not-allowed |  |
+| [x] クリック可能な全要素に cursor: pointer 確認・追加 |  |
+| [x] ドラッグ可能要素に cursor: grab / grabbing |  |
+| [x] 無効ボタンに cursor: not-allowed |  |
 
 ### JS: キーボード対応
 | タスク | 状態 |
 |--------|------|
-| [ ] Escape でオーバーレイを閉じる |  |
-| [ ] Escape でサイドバーを閉じる |  |
-| [ ] Escape で右パネルを閉じる |  |
-| [ ] Escape でFABメニューを閉じる |  |
-| [ ] Escape で確認ダイアログを閉じる |  |
+| [x] Escape でオーバーレイを閉じる |  |
+| [x] Escape でサイドバーを閉じる |  |
+| [x] Escape で右パネルを閉じる |  |
+| [x] Escape でFABメニューを閉じる |  |
+| [x] Escape で確認ダイアログを閉じる |  |
 
 ---
 

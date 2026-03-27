@@ -198,3 +198,9 @@
 [data-color="sumi-dark"] .sync-popup, [data-color="charcoal"] .sync-popup {
   box-shadow: 0 8px 40px rgba(0,0,0,.5), 0 0 0 .5px rgba(255,255,255,.08);
 }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .cal-c:hover:not(.empty):not(.today) { background: var(--c-fill-tertiary); }
+  .cal-acc-header:hover { background: var(--c-fill-quaternary); }
+}

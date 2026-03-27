@@ -123,3 +123,14 @@
   color: var(--c-tx-muted);
   text-align: center;
 }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .sidebar-item:hover { background: var(--c-fill-quaternary); }
+}
+
+/* ===== Desktop: Focus ring ===== */
+.sidebar-item:focus-visible {
+  outline: 3px solid var(--c-primary);
+  outline-offset: -2px;
+}

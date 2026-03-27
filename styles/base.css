@@ -178,3 +178,22 @@ body {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+/* ===== Desktop: Focus ring for keyboard navigation ===== */
+:focus-visible {
+  outline: 3px solid var(--c-primary);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Specific component focus overrides */
+.input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0,122,255,.25);
+}
+.btn:focus-visible {
+  outline: 3px solid var(--c-primary);
+  outline-offset: 2px;
+}

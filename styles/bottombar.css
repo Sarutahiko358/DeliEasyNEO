@@ -67,3 +67,8 @@
   flex: 1;
   visibility: hidden;
 }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .bottombar-item:hover { color: var(--c-primary); }
+}

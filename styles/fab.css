@@ -121,3 +121,10 @@
   animation: v2-fade-in .2s ease;
   pointer-events: none;
 }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .fab-main:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(0,0,0,.22); }
+  .fab-main.open:hover { transform: rotate(45deg) scale(1.05); }
+  .fab-mini:hover { transform: scale(1.03); box-shadow: 0 6px 20px var(--c-shadow-color); }
+}

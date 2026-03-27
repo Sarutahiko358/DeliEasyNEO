@@ -78,3 +78,10 @@
 .ds-bar-hdr { display: flex; justify-content: space-between; font-size: .75rem; margin-bottom: 4px; }
 .ds-bar { height: 6px; background: var(--c-fill-quaternary); border-radius: 3px; overflow: hidden; }
 .ds-bar-fill { height: 100%; border-radius: 3px; transition: width .4s cubic-bezier(.28,.11,.32,1); }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .ds-ptab:hover:not(.on) { background: var(--c-fill-quaternary); }
+  .ds-stab:hover:not(.on) { background: var(--c-fill-quaternary); }
+  .ds-rec:hover { background: var(--c-fill-tertiary); }
+}

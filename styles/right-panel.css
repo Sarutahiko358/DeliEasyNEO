@@ -240,3 +240,8 @@
   0%, 100% { opacity: .15; }
   50% { opacity: .4; }
 }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .rp-record:hover { background: var(--c-fill-quaternary); border-radius: var(--ds-radius-sm); }
+}

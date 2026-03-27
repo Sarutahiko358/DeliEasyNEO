@@ -58,3 +58,8 @@
   border-bottom: var(--ds-divider);
   margin-bottom: 12px;
 }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .preset-tab:hover:not(.active) { background: var(--c-fill-tertiary); }
+}

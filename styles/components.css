@@ -1209,3 +1209,24 @@ textarea.input { resize: vertical; min-height: 80px; }
   border-color: var(--c-primary, #007aff);
   background: var(--c-primary-light, rgba(0, 122, 255, .1));
 }
+
+/* ===== Desktop: Hover styles ===== */
+@media (hover: hover) {
+  .btn-primary:hover { opacity: .85; }
+  .btn-secondary:hover { background: var(--c-fill-secondary); }
+  .btn-danger:hover { background: var(--c-danger); color: #fff; }
+  .btn-ghost:hover { opacity: .65; }
+  .btn-icon:hover { background: var(--c-fill-quaternary); }
+  .pill:hover:not(.active) { background: var(--c-fill-tertiary); }
+  .segmented-item:hover:not(.active) { background: var(--c-fill-quaternary); }
+  .numpad-key:hover { background: var(--c-fill-tertiary); }
+  .stat-box.tappable:hover { transform: scale(.98); opacity: .85; }
+  .card-header:hover { background: var(--c-fill-quaternary); }
+  /* custom-overlays */
+  .co-cl-item:hover { background: var(--c-fill-tertiary); }
+  .co-link-item:hover { background: var(--c-fill-tertiary); }
+  .co-memo-card:hover { background: var(--c-fill-tertiary); transform: scale(.99); }
+}
+
+/* ===== Desktop: Cursor hints ===== */
+.btn:disabled, .btn[disabled] { cursor: not-allowed; opacity: .4; }

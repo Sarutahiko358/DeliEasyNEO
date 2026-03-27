@@ -250,6 +250,48 @@
 
     _initExitGuard();
 
+    /* Escape key handler for closing overlays/sidebars/panels/FAB */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        /* Priority order: confirm dialog > FAB menu > overlay > right panel > sidebar */
+
+        /* 1. Confirm dialog */
+        var confirmOverlay = document.querySelector('.confirm-overlay');
+        if (confirmOverlay) {
+          var cancelBtn = confirmOverlay.querySelector('#v2-cc-no') ||
+                          confirmOverlay.querySelector('#v2-cp-cancel') ||
+                          confirmOverlay.querySelector('[id$="-cancel"]');
+          if (cancelBtn) cancelBtn.click();
+          else confirmOverlay.remove();
+          return;
+        }
+
+        /* 2. FAB menu */
+        if (typeof isFabOpen === 'function' && isFabOpen()) {
+          closeFabMenu();
+          return;
+        }
+
+        /* 3. Overlay */
+        if (typeof isOverlayOpen === 'function' && isOverlayOpen()) {
+          closeOverlay();
+          return;
+        }
+
+        /* 4. Right panel */
+        if (typeof isRightPanelOpen === 'function' && isRightPanelOpen()) {
+          closeRightPanel();
+          return;
+        }
+
+        /* 5. Sidebar */
+        if (typeof isSidebarOpen === 'function' && isSidebarOpen()) {
+          closeSidebar();
+          return;
+        }
+      }
+    });
+
     var fabBd = document.getElementById('fab-backdrop');
     if (fabBd) {
       fabBd.addEventListener('click', function() {
