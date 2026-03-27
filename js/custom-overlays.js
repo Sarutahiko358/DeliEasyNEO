@@ -735,6 +735,7 @@
           html += '<div class="co-memo-card-preview">' + escHtml(preview) + '</div>';
           if (dateStr) html += '<div class="co-memo-card-date">' + escHtml(dateStr) + '</div>';
           html += '</div>';
+          html += '</div>';
         });
         html += '</div>';
       }
