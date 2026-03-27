@@ -212,8 +212,7 @@
      ========================================================== */
   .widget-grid {
     grid-template-columns: repeat(3, 1fr);
-    max-width: 900px;
-    margin: 0 auto;
+    max-width: none;
     gap: 16px;
   }
   .widget-full { grid-column: 1 / -1; }
@@ -257,6 +256,6 @@
 @media (min-width: 1440px) {
   .widget-grid {
     grid-template-columns: repeat(4, 1fr);
-    max-width: 1200px;
+    max-width: none;
   }
 }
