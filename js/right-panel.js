@@ -34,7 +34,7 @@
   }
 
   function _isDesktopRightPanelVisible() {
-    return _isDesktop() && !!S.g('desktopRightPanel', false);
+    return _isDesktop() && !!S.g('desktopRightPanel', true);
   }
 
   /* ---------- デスクトップ常時表示制御 ---------- */
