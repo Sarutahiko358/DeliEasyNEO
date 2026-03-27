@@ -187,7 +187,6 @@
       /* 上方向は無視 */
       if (dy <= 0) {
         if (isDragging) {
-          /* ドラッグ中に上に戻った場合はリセット */
           sheet.style.transform = '';
           var backdrop = _getBackdrop();
           if (backdrop) backdrop.style.opacity = '';
@@ -198,7 +197,6 @@
 
       /* 5px以上動いたらドラッグ開始 */
       if (!isDragging && dy > 5) {
-        /* ドラッグ開始時にbodyがスクロール途中ならキャンセル */
         if (body && body.scrollTop > 2 && !isOnHandleOrHeader(e.touches[0].target || e.target)) {
           canDrag = false;
           return;
@@ -220,13 +218,10 @@
 
       if (!isDragging) return;
 
-      /* ブラウザのpull-to-refreshとスクロールを完全に止める */
       e.preventDefault();
 
-      /* シートを追従移動 */
       sheet.style.transform = 'translateX(-50%) translateY(' + dy + 'px)';
 
-      /* バックドロップの透明度も追従 */
       var backdrop = _getBackdrop();
       if (backdrop) {
         var progress = Math.min(dy / (sheetHeight * 0.5), 1);
@@ -249,7 +244,6 @@
       var backdrop = _getBackdrop();
 
       if (dy > sheetHeight * CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD) {
-        /* 閉じる */
         sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
         sheet.style.transform = 'translateX(-50%) translateY(100%)';
         if (backdrop) {
@@ -263,7 +257,6 @@
           closeOverlay();
         }, 300);
       } else {
-        /* 元に戻す */
         sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
         sheet.style.transform = '';
         if (backdrop) {
@@ -277,7 +270,6 @@
       }
     }
 
-    /* touchmove は passive: false にして preventDefault を呼べるようにする */
     sheet.addEventListener('touchstart', onTouchStart, { passive: true });
     sheet.addEventListener('touchmove', onTouchMove, { passive: false });
     sheet.addEventListener('touchend', onTouchEnd, { passive: true });

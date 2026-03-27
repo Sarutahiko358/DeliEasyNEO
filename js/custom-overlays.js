@@ -285,7 +285,6 @@
     var list = document.getElementById('dash-edit-list-' + coId);
     if (!list) return;
 
-    /* オーバーレイのスクロールコンテナを取得 */
     var scrollContainer = list.closest('.overlay-body');
 
     var LONG_PRESS_MS = 350;
@@ -314,10 +313,8 @@
         isDragging = true;
         dragRow = row;
 
-        /* グローバルフラグを立てる → overlay.js のスワイプクローズを無効化 */
         window.__widgetDragActive = true;
 
-        /* スクロールを一時停止 */
         if (scrollContainer) {
           scrollContainer.style.overflowY = 'hidden';
         }
@@ -325,13 +322,11 @@
         var rect = dragRow.getBoundingClientRect();
         offsetY = startY - rect.top;
 
-        /* プレースホルダー作成 */
         placeholder = document.createElement('div');
         placeholder.className = 'home-edit-placeholder';
         placeholder.style.height = rect.height + 'px';
         dragRow.parentNode.insertBefore(placeholder, dragRow);
 
-        /* ドラッグアイテムをフロート */
         dragRow.classList.add('home-edit-dragging');
         dragRow.style.position = 'fixed';
         dragRow.style.left = rect.left + 'px';
@@ -364,7 +359,6 @@
       var newTop = touch.clientY - offsetY;
       dragRow.style.top = newTop + 'px';
 
-      /* 挿入位置を決定 */
       var rows = getRows().filter(function(r) { return r !== dragRow; });
       var inserted = false;
       for (var i = 0; i < rows.length; i++) {
@@ -401,10 +395,8 @@
       }
       placeholder = null;
 
-      /* グローバルフラグを下ろす */
       window.__widgetDragActive = false;
 
-      /* スクロールを復帰 */
       if (scrollContainer) {
         scrollContainer.style.overflowY = '';
       }
@@ -419,7 +411,6 @@
         return;
       }
 
-      /* ドラッグアイテムのスタイルをリセット */
       dragRow.classList.remove('home-edit-dragging');
       dragRow.style.position = '';
       dragRow.style.left = '';
@@ -428,19 +419,16 @@
       dragRow.style.zIndex = '';
       dragRow.style.pointerEvents = '';
 
-      /* プレースホルダーの位置に挿入 */
       if (placeholder && placeholder.parentNode) {
         placeholder.parentNode.insertBefore(dragRow, placeholder);
         placeholder.remove();
       }
       placeholder = null;
 
-      /* スクロールを復帰 */
       if (scrollContainer) {
         scrollContainer.style.overflowY = '';
       }
 
-      /* DOMの順序からウィジェット配列を再構築 */
       var overlayList = getCustomOverlays();
       for (var oi = 0; oi < overlayList.length; oi++) {
         if (overlayList[oi].id === coId) {
@@ -467,11 +455,8 @@
       var finishedCoId = coId;
       dragRow = null;
       isDragging = false;
-
-      /* グローバルフラグを下ろす */
       window.__widgetDragActive = false;
 
-      /* 再描画 */
       _refreshDashboard(finishedCoId);
     }
 

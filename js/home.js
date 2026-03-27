@@ -214,7 +214,6 @@
         isDragging = true;
         dragRow = row;
 
-        /* グローバルフラグ */
         window.__widgetDragActive = true;
 
         if (scrollContainer) {
