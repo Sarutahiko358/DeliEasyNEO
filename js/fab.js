@@ -163,6 +163,7 @@
     var startTouchX = 0, startTouchY = 0;
     var startElemX = 0, startElemY = 0;
     var hint = null;
+    var isMouseDown = false;
 
     function getContainerPos() {
       var rect = container.getBoundingClientRect();
@@ -180,43 +181,53 @@
       if (hint) { hint.remove(); hint = null; }
     }
 
-    fabMain.addEventListener('touchstart', function(e) {
-      if (_isOpen) return; /* mini menu open — don't start drag */
-      var touch = e.touches[0];
-      startTouchX = touch.clientX;
-      startTouchY = touch.clientY;
-      var pos = getContainerPos();
-      startElemX = pos.x;
-      startElemY = pos.y;
+    function _getXY(e) {
+      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function onPointerDown(e, isMouse) {
+      if (_isOpen) return;
+      if (isMouse && e.button !== 0) return;
+
+      var pos = _getXY(e);
+      startTouchX = pos.x;
+      startTouchY = pos.y;
+      var cpos = getContainerPos();
+      startElemX = cpos.x;
+      startElemY = cpos.y;
+
+      if (isMouse) isMouseDown = true;
 
       longPressTimer = setTimeout(function() {
         isDragging = true;
         hp();
         container.classList.add('fab-dragging');
+
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+
         showHint();
-        /* haptic feedback if available */
         if (navigator.vibrate) navigator.vibrate(30);
       }, LONG_PRESS_MS);
-    }, { passive: true });
+    }
 
-    fabMain.addEventListener('touchmove', function(e) {
-      var dx = e.touches[0].clientX - startTouchX;
-      var dy = e.touches[0].clientY - startTouchY;
+    function onPointerMove(e) {
+      var pos = _getXY(e);
+      var dx = pos.x - startTouchX;
+      var dy = pos.y - startTouchY;
 
-      /* Cancel long press if moved before threshold */
       if (!isDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
         clearTimeout(longPressTimer);
         return;
       }
 
       if (!isDragging) return;
-
-      e.preventDefault();
+      if (e.preventDefault) e.preventDefault();
 
       var newX = startElemX + dx;
       var newY = startElemY + dy;
 
-      /* Clamp to viewport */
       var vw = window.innerWidth;
       var vh = window.innerHeight;
       newX = Math.max(0, Math.min(newX, vw - 56));
@@ -226,17 +237,20 @@
       container.style.top = newY + 'px';
       container.style.right = 'auto';
       container.style.bottom = 'auto';
-    }, { passive: false });
+    }
 
-    fabMain.addEventListener('touchend', function() {
+    function onPointerEnd() {
       clearTimeout(longPressTimer);
+      isMouseDown = false;
+
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
 
       if (isDragging) {
         isDragging = false;
         container.classList.remove('fab-dragging');
         removeHint();
 
-        /* Save position */
         var rect = container.getBoundingClientRect();
         var cfg = getFabConfig();
         cfg.posX = Math.round(rect.left);
@@ -245,16 +259,39 @@
 
         if (typeof toast === 'function') toast('📌 FABの位置を保存しました');
       }
-    }, { passive: true });
+    }
 
-    fabMain.addEventListener('touchcancel', function() {
+    function onPointerCancel() {
       clearTimeout(longPressTimer);
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
       if (isDragging) {
         isDragging = false;
         container.classList.remove('fab-dragging');
         removeHint();
       }
-    }, { passive: true });
+    }
+
+    /* Touch */
+    fabMain.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
+    fabMain.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
+    fabMain.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
+    fabMain.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
+
+    /* Mouse */
+    fabMain.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', function(e) {
+      if (!isMouseDown && !isDragging) return;
+      onPointerMove(e);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!isMouseDown && !isDragging) return;
+      onPointerEnd();
+    });
+    fabMain.addEventListener('contextmenu', function(e) {
+      if (isDragging) e.preventDefault();
+    });
   }
 
   /* ---------- FAB設定UI ---------- */

@@ -1230,3 +1230,22 @@ textarea.input { resize: vertical; min-height: 80px; }
 
 /* ===== Desktop: Cursor hints ===== */
 .btn:disabled, .btn[disabled] { cursor: not-allowed; opacity: .4; }
+
+/* ===== Desktop: Grab cursor for drag handles ===== */
+@media (hover: hover) {
+  .home-edit-handle,
+  .ovc-drag-handle,
+  .co-manage-handle {
+    cursor: grab;
+  }
+  .home-edit-handle:active,
+  .ovc-drag-handle:active,
+  .co-manage-handle:active {
+    cursor: grabbing;
+  }
+  .home-edit-row.home-edit-dragging .home-edit-handle,
+  .ovc-drag-item.ovc-dragging .ovc-drag-handle,
+  .co-manage-item.co-manage-dragging .co-manage-handle {
+    cursor: grabbing;
+  }
+}

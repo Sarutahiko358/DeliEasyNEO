@@ -122,34 +122,44 @@
     var dragItem = null;
     var placeholder = null;
     var startY = 0;
+    var startX = 0;
     var offsetY = 0;
-    var items = [];
+    var isDragging = false;
+    var isMouseDown = false;
 
     function getItems() {
       return Array.from(list.querySelectorAll('.ovc-drag-item'));
     }
 
-    function onTouchStart(e) {
+    function _getXY(e) {
+      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function onPointerDown(e, isMouse) {
       var target = e.target.closest('.ovc-drag-item');
       if (!target) return;
+      if (isMouse && e.button !== 0) return;
 
-      /* Only start from handle or the item itself */
-      var touch = e.touches[0];
-      startY = touch.clientY;
+      var pos = _getXY(e);
+      startY = pos.y;
+      startX = pos.x;
+      if (isMouse) isMouseDown = true;
 
       longPressTimer = setTimeout(function() {
+        isDragging = true;
         dragItem = target;
-        items = getItems();
         var rect = dragItem.getBoundingClientRect();
         offsetY = startY - rect.top;
 
-        /* Create placeholder */
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+
         placeholder = document.createElement('div');
         placeholder.className = 'ovc-drag-placeholder';
         placeholder.style.height = rect.height + 'px';
         dragItem.parentNode.insertBefore(placeholder, dragItem);
 
-        /* Float the item */
         dragItem.classList.add('ovc-dragging');
         dragItem.style.position = 'fixed';
         dragItem.style.left = rect.left + 'px';
@@ -161,48 +171,42 @@
       }, LONG_PRESS_MS);
     }
 
-    function onTouchMove(e) {
-      /* Cancel long press if moved too early */
-      if (!dragItem && longPressTimer) {
-        var dy = Math.abs(e.touches[0].clientY - startY);
-        if (dy > 8) {
+    function onPointerMove(e) {
+      var pos = _getXY(e);
+      if (!isDragging && longPressTimer) {
+        if (Math.abs(pos.y - startY) > 8 || Math.abs(pos.x - startX) > 8) {
           clearTimeout(longPressTimer);
           longPressTimer = null;
         }
         return;
       }
+      if (!isDragging || !dragItem) return;
+      if (e.preventDefault) e.preventDefault();
 
-      if (!dragItem) return;
-      e.preventDefault();
+      dragItem.style.top = (pos.y - offsetY) + 'px';
 
-      var touch = e.touches[0];
-      var newTop = touch.clientY - offsetY;
-      dragItem.style.top = newTop + 'px';
-
-      /* Determine insertion point */
       var currentItems = getItems().filter(function(el) { return el !== dragItem; });
       var inserted = false;
       for (var i = 0; i < currentItems.length; i++) {
         var r = currentItems[i].getBoundingClientRect();
-        var midY = r.top + r.height / 2;
-        if (touch.clientY < midY) {
+        if (pos.y < r.top + r.height / 2) {
           list.insertBefore(placeholder, currentItems[i]);
           inserted = true;
           break;
         }
       }
-      if (!inserted) {
-        list.appendChild(placeholder);
-      }
+      if (!inserted) list.appendChild(placeholder);
     }
 
-    function onTouchEnd() {
+    function onPointerEnd() {
       clearTimeout(longPressTimer);
       longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
 
-      if (!dragItem) return;
+      if (!isDragging || !dragItem) return;
 
-      /* Place item at placeholder position */
       dragItem.classList.remove('ovc-dragging');
       dragItem.style.position = '';
       dragItem.style.left = '';
@@ -216,6 +220,7 @@
       }
       placeholder = null;
       dragItem = null;
+      isDragging = false;
 
       /* Save new order */
       var newOrder = [];
@@ -228,11 +233,12 @@
       saveOverlayCustomConfig(overlayId, cfg);
     }
 
-    list.addEventListener('touchstart', onTouchStart, { passive: true });
-    list.addEventListener('touchmove', onTouchMove, { passive: false });
-    list.addEventListener('touchend', onTouchEnd, { passive: true });
-    list.addEventListener('touchcancel', function() {
+    function onPointerCancel() {
       clearTimeout(longPressTimer);
+      longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
       if (dragItem) {
         dragItem.classList.remove('ovc-dragging');
         dragItem.style.position = '';
@@ -244,7 +250,28 @@
         dragItem = null;
         placeholder = null;
       }
-    }, { passive: true });
+      isDragging = false;
+    }
+
+    /* Touch */
+    list.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
+    list.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
+    list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
+    list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
+
+    /* Mouse */
+    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', function(e) {
+      if (!isMouseDown && !isDragging) return;
+      onPointerMove(e);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!isMouseDown && !isDragging) return;
+      onPointerEnd();
+    });
+    list.addEventListener('contextmenu', function(e) {
+      if (isDragging) e.preventDefault();
+    });
   }
 
   /* Toggle visibility */

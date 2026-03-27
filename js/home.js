@@ -196,19 +196,29 @@
     var startX = 0;
     var offsetY = 0;
     var isDragging = false;
+    var isMouseDown = false;
 
     function getRows() {
       return Array.from(list.querySelectorAll('.home-edit-row'));
     }
 
-    function onTouchStart(e) {
+    function _getXY(e) {
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function onPointerDown(e, isMouse) {
       if (e.target.closest('.home-edit-btn')) return;
       var row = e.target.closest('.home-edit-row');
       if (!row) return;
+      if (isMouse && e.button !== 0) return;
 
-      var touch = e.touches[0];
-      startY = touch.clientY;
-      startX = touch.clientX;
+      var pos = _getXY(e);
+      startY = pos.y;
+      startX = pos.x;
+      if (isMouse) isMouseDown = true;
 
       longPressTimer = setTimeout(function() {
         isDragging = true;
@@ -219,6 +229,9 @@
         if (scrollContainer) {
           scrollContainer.style.overflowY = 'hidden';
         }
+
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
 
         var rect = dragRow.getBoundingClientRect();
         offsetY = startY - rect.top;
@@ -240,11 +253,12 @@
       }, LONG_PRESS_MS);
     }
 
-    function onTouchMove(e) {
+    function onPointerMove(e) {
+      var pos = _getXY(e);
+
       if (!isDragging && longPressTimer) {
-        var touch = e.touches[0];
-        var dy = Math.abs(touch.clientY - startY);
-        var dx = Math.abs(touch.clientX - startX);
+        var dy = Math.abs(pos.y - startY);
+        var dx = Math.abs(pos.x - startX);
         if (dy > 8 || dx > 8) {
           clearTimeout(longPressTimer);
           longPressTimer = null;
@@ -253,17 +267,15 @@
       }
 
       if (!isDragging || !dragRow) return;
-      e.preventDefault();
-      e.stopPropagation();
+      if (e.preventDefault) e.preventDefault();
 
-      var touch = e.touches[0];
-      dragRow.style.top = (touch.clientY - offsetY) + 'px';
+      dragRow.style.top = (pos.y - offsetY) + 'px';
 
       var rows = getRows().filter(function(r) { return r !== dragRow; });
       var inserted = false;
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i].getBoundingClientRect();
-        if (touch.clientY < r.top + r.height / 2) {
+        if (pos.y < r.top + r.height / 2) {
           list.insertBefore(placeholder, rows[i]);
           inserted = true;
           break;
@@ -276,9 +288,13 @@
       }
     }
 
-    function onTouchEnd() {
+    function onPointerEnd() {
       clearTimeout(longPressTimer);
       longPressTimer = null;
+      isMouseDown = false;
+
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
 
       if (!isDragging || !dragRow) {
         window.__widgetDragActive = false;
@@ -312,9 +328,13 @@
       renderHome();
     }
 
-    function onTouchCancel() {
+    function onPointerCancel() {
       clearTimeout(longPressTimer);
       longPressTimer = null;
+      isMouseDown = false;
+
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
 
       if (isDragging && dragRow) {
         dragRow.classList.remove('home-edit-dragging');
@@ -336,10 +356,25 @@
       }
     }
 
-    list.addEventListener('touchstart', onTouchStart, { passive: true });
-    list.addEventListener('touchmove', onTouchMove, { passive: false });
-    list.addEventListener('touchend', onTouchEnd, { passive: true });
-    list.addEventListener('touchcancel', onTouchCancel, { passive: true });
+    /* Touch events */
+    list.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
+    list.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
+    list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
+    list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
+
+    /* Mouse events */
+    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', function(e) {
+      if (!isMouseDown && !isDragging) return;
+      onPointerMove(e);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!isMouseDown && !isDragging) return;
+      onPointerEnd();
+    });
+    list.addEventListener('contextmenu', function(e) {
+      if (isDragging) e.preventDefault();
+    });
   }
 
   /* DOMの順序からウィジェット配列を再構築 */
@@ -564,6 +599,9 @@
     var grid = document.getElementById('widget-grid');
     if (!grid) return;
     var timer = null;
+    var startX = 0, startY = 0;
+
+    /* Touch */
     grid.addEventListener('touchstart', function(e) {
       var widget = e.target.closest('.widget');
       if (!widget) return;
@@ -574,6 +612,28 @@
     }, { passive: true });
     grid.addEventListener('touchend', function() { clearTimeout(timer); }, { passive: true });
     grid.addEventListener('touchmove', function() { clearTimeout(timer); }, { passive: true });
+
+    /* Mouse */
+    grid.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      var widget = e.target.closest('.widget');
+      if (!widget) return;
+      startX = e.clientX;
+      startY = e.clientY;
+      timer = setTimeout(function() {
+        hp();
+        enterEditMode();
+      }, 600);
+    });
+    grid.addEventListener('mouseup', function() { clearTimeout(timer); });
+    grid.addEventListener('mousemove', function(e) {
+      if (timer) {
+        var dx = Math.abs(e.clientX - startX);
+        var dy = Math.abs(e.clientY - startY);
+        if (dx > 5 || dy > 5) clearTimeout(timer);
+      }
+    });
+    grid.addEventListener('mouseleave', function() { clearTimeout(timer); });
   }
 
   /* ========== Expose ========== */
