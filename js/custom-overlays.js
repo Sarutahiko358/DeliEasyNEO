@@ -724,11 +724,13 @@
         html += '<div class="co-empty-hint">下のボタンから新しいメモを作成しましょう</div>';
         html += '</div>';
       } else {
-        html += '<div class="co-memo-list">';
-        memos.forEach(function(memo) {
+        html += '<div class="co-memo-list" id="co-memo-overlay-list-' + escHtml(overlay.id) + '">';
+        memos.forEach(function(memo, idx) {
           var preview = (memo.text || '').substring(0, 60).replace(/\n/g, ' ') || '(空のメモ)';
           var dateStr = memo.updatedAt ? _formatMemoDate(memo.updatedAt) : '';
-          html += '<div class="co-memo-card" onclick="_memoOpen(\'' + escJs(overlay.id) + '\',\'' + escJs(memo.id) + '\')">';
+          html += '<div class="co-memo-card co-manage-item" data-memo-idx="' + idx + '" onclick="_memoOpen(\'' + escJs(overlay.id) + '\',\'' + escJs(memo.id) + '\')">'; 
+          html += '<span class="co-manage-handle" onclick="event.stopPropagation()" style="cursor:grab;opacity:.3;margin-right:6px;font-size:.75rem">☰</span>';
+          html += '<div style="flex:1;min-width:0">';
           html += '<div class="co-memo-card-title">' + escHtml(memo.title || '無題のメモ') + '</div>';
           html += '<div class="co-memo-card-preview">' + escHtml(preview) + '</div>';
           if (dateStr) html += '<div class="co-memo-card-date">' + escHtml(dateStr) + '</div>';
@@ -742,6 +744,13 @@
     }
 
     body.innerHTML = html;
+
+    /* メモ一覧の並び替え初期化 */
+    if (!activeMemo && memos.length > 1) {
+      requestAnimationFrame(function() {
+        _initOverlayListDrag(overlay.id, 'memo');
+      });
+    }
 
     /* テキストエリア自動リサイズ */
     if (activeMemo) {
@@ -979,9 +988,11 @@
         else pending.push({ item: item, idx: idx });
       });
 
+      html += '<div id="co-cl-overlay-list-' + escHtml(overlay.id) + '">';
       pending.forEach(function(entry) {
         html += _renderCheckItem(overlay.id, entry.item, entry.idx, false);
       });
+      html += '</div>';
 
       /* 完了済み（折り畳み可能） */
       if (done.length > 0) {
@@ -1007,10 +1018,17 @@
     html += '</div>'; /* co-section */
 
     body.innerHTML = html;
+
+    /* 未完了タスクの並び替え初期化 */
+    if (items.length > 1) {
+      requestAnimationFrame(function() {
+        _initOverlayListDrag(overlay.id, 'checklist');
+      });
+    }
   }
 
   function _renderCheckItem(overlayId, item, idx, isDone) {
-    var h = '<div class="co-cl-item' + (isDone ? ' co-cl-item-done' : '') + '">';
+    var h = '<div class="co-cl-item co-manage-item' + (isDone ? ' co-cl-item-done' : '') + '" data-cl-idx="' + idx + '">';
     h += '<label class="co-cl-checkbox-wrap">';
     h += '<input type="checkbox" class="co-cl-checkbox" ' + (isDone ? 'checked' : '') + ' onchange="_toggleChecklistItem(\'' + escJs(overlayId) + '\',' + idx + ',this.checked)">';
     h += '<span class="co-cl-checkmark"></span>';
@@ -1125,12 +1143,12 @@
       html += '<div class="co-empty-hint">よく使うURLを追加してすぐアクセス</div>';
       html += '</div>';
     } else {
-      html += '<div class="co-link-list">';
+      html += '<div class="co-link-list" id="co-link-overlay-list-' + escHtml(overlay.id) + '">';
       links.forEach(function(link, idx) {
         var displayName = link.name || _extractDomain(link.url);
         var favicon = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(_extractDomain(link.url)) + '&sz=32';
 
-        html += '<div class="co-link-item">';
+        html += '<div class="co-link-item co-manage-item" data-link-idx="' + idx + '">';
         html += '<a href="' + escHtml(link.url) + '" target="_blank" rel="noopener" class="co-link-anchor">';
         html += '<img class="co-link-favicon" src="' + escHtml(favicon) + '" alt="" onerror="this.style.display=\'none\'">';
         html += '<div class="co-link-info">';
@@ -1147,6 +1165,13 @@
     html += '</div>'; /* co-section */
 
     body.innerHTML = html;
+
+    /* リンクの並び替え初期化 */
+    if (links.length > 1) {
+      requestAnimationFrame(function() {
+        _initOverlayListDrag(overlay.id, 'links');
+      });
+    }
   }
 
   /* ドメイン抽出ヘルパー */
@@ -1325,6 +1350,12 @@
       h += '</div>';
       div.innerHTML = h;
 
+      /* confirm-box内のクリックが背景に伝搬しないようにする */
+      var box = div.querySelector('.confirm-box');
+      if (box) {
+        box.addEventListener('click', function(e) { e.stopPropagation(); });
+      }
+
       /* イベントバインド */
       var closeBtn = div.querySelector('#co-settings-close');
       if (closeBtn) closeBtn.onclick = function(e) { e.stopPropagation(); div.remove(); };
@@ -1397,17 +1428,9 @@
       }
     }
 
-    /* 背景タップで閉じる（内側のクリックはstopPropagation） */
+    /* 背景タップで閉じる */
     div.addEventListener('click', function(e) {
       if (e.target === div) div.remove();
-    });
-
-    /* 内側のconfirm-boxのクリックが背景に伝搬しないようにする */
-    div.addEventListener('click', function(e) {
-      var box = div.querySelector('.confirm-box');
-      if (box && box.contains(e.target)) {
-        /* 何もしない（伝搬させない） */
-      }
     });
 
     document.body.appendChild(div);
@@ -1545,6 +1568,209 @@
   }
 
   /* ============================================================
+     オーバーレイ本体内のドラッグ並び替え（メモ・チェックリスト・リンク）
+     ============================================================ */
+  function _initOverlayListDrag(overlayId, overlayType) {
+    var listId = null;
+    var dataAttr = null;
+    var dataKey = null;
+
+    switch (overlayType) {
+      case 'memo':
+        listId = 'co-memo-overlay-list-' + overlayId;
+        dataAttr = 'data-memo-idx';
+        dataKey = 'memos';
+        break;
+      case 'checklist':
+        listId = 'co-cl-overlay-list-' + overlayId;
+        dataAttr = 'data-cl-idx';
+        dataKey = 'items';
+        break;
+      case 'links':
+        listId = 'co-link-overlay-list-' + overlayId;
+        dataAttr = 'data-link-idx';
+        dataKey = 'links';
+        break;
+      default:
+        return;
+    }
+
+    var listEl = document.getElementById(listId);
+    if (!listEl) return;
+
+    var scrollContainer = listEl.closest('.overlay-body');
+
+    var LONG_PRESS_MS = 400;
+    var longPressTimer = null;
+    var dragItem = null;
+    var placeholder = null;
+    var startY = 0;
+    var startX = 0;
+    var offsetY = 0;
+    var isDragging = false;
+
+    function getItems() {
+      return Array.from(listEl.querySelectorAll('.co-manage-item'));
+    }
+
+    function onTouchStart(e) {
+      /* ハンドル以外からの開始でも長押しで反応（ただしボタンは除外） */
+      if (e.target.closest('.co-manage-btn') || e.target.closest('.co-cl-del') || e.target.closest('.co-link-del')) return;
+      var item = e.target.closest('.co-manage-item');
+      if (!item) return;
+
+      var touch = e.touches[0];
+      startY = touch.clientY;
+      startX = touch.clientX;
+
+      longPressTimer = setTimeout(function() {
+        isDragging = true;
+        dragItem = item;
+        var rect = dragItem.getBoundingClientRect();
+        offsetY = startY - rect.top;
+
+        if (scrollContainer) scrollContainer.style.overflowY = 'hidden';
+
+        placeholder = document.createElement('div');
+        placeholder.style.height = rect.height + 'px';
+        placeholder.style.background = 'var(--c-fill-quaternary)';
+        placeholder.style.borderRadius = '8px';
+        placeholder.style.margin = '2px 0';
+        dragItem.parentNode.insertBefore(placeholder, dragItem);
+
+        dragItem.style.position = 'fixed';
+        dragItem.style.left = rect.left + 'px';
+        dragItem.style.top = rect.top + 'px';
+        dragItem.style.width = rect.width + 'px';
+        dragItem.style.zIndex = '10001';
+        dragItem.style.pointerEvents = 'none';
+        dragItem.style.boxShadow = '0 4px 16px rgba(0,0,0,.18)';
+        dragItem.style.opacity = '0.92';
+        dragItem.style.transition = 'none';
+
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function onTouchMove(e) {
+      if (!isDragging && longPressTimer) {
+        var dx = Math.abs(e.touches[0].clientX - startX);
+        var dy = Math.abs(e.touches[0].clientY - startY);
+        if (dx > 8 || dy > 8) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        return;
+      }
+      if (!isDragging || !dragItem) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      var touch = e.touches[0];
+      dragItem.style.top = (touch.clientY - offsetY) + 'px';
+
+      var items = getItems().filter(function(el) { return el !== dragItem; });
+      var inserted = false;
+      for (var i = 0; i < items.length; i++) {
+        var r = items[i].getBoundingClientRect();
+        if (touch.clientY < r.top + r.height / 2) {
+          listEl.insertBefore(placeholder, items[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) listEl.appendChild(placeholder);
+    }
+
+    function onTouchEnd() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      if (!isDragging || !dragItem) { isDragging = false; return; }
+
+      dragItem.style.position = '';
+      dragItem.style.left = '';
+      dragItem.style.top = '';
+      dragItem.style.width = '';
+      dragItem.style.zIndex = '';
+      dragItem.style.pointerEvents = '';
+      dragItem.style.boxShadow = '';
+      dragItem.style.opacity = '';
+      dragItem.style.transition = '';
+
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragItem, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+      if (scrollContainer) scrollContainer.style.overflowY = '';
+
+      /* データ再構築 */
+      var freshList = getCustomOverlays();
+      var freshOverlay = null;
+      for (var oi = 0; oi < freshList.length; oi++) {
+        if (freshList[oi].id === overlayId) { freshOverlay = freshList[oi]; break; }
+      }
+      if (freshOverlay && freshOverlay.data[dataKey]) {
+        var oldData = freshOverlay.data[dataKey].slice();
+        var newData = [];
+        getItems().forEach(function(el) {
+          var idx = parseInt(el.getAttribute(dataAttr), 10);
+          if (!isNaN(idx) && idx >= 0 && idx < oldData.length) {
+            newData.push(oldData[idx]);
+          }
+        });
+        if (newData.length === oldData.length) {
+          freshOverlay.data[dataKey] = newData;
+          saveCustomOverlays(freshList);
+          toast('✅ 並び替えを保存しました');
+        }
+      }
+
+      var savedOverlayId = overlayId;
+      dragItem = null;
+      isDragging = false;
+
+      /* オーバーレイ本体を再描画 */
+      var body = document.getElementById('overlay-body-' + savedOverlayId);
+      if (body) {
+        var updatedList = getCustomOverlays();
+        for (var ri = 0; ri < updatedList.length; ri++) {
+          if (updatedList[ri].id === savedOverlayId) {
+            _renderCustomOverlayBody(body, updatedList[ri]);
+            break;
+          }
+        }
+      }
+    }
+
+    function onTouchCancel() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      if (dragItem) {
+        dragItem.style.position = '';
+        dragItem.style.left = '';
+        dragItem.style.top = '';
+        dragItem.style.width = '';
+        dragItem.style.zIndex = '';
+        dragItem.style.pointerEvents = '';
+        dragItem.style.boxShadow = '';
+        dragItem.style.opacity = '';
+        dragItem.style.transition = '';
+        if (placeholder) placeholder.remove();
+      }
+      dragItem = null;
+      placeholder = null;
+      isDragging = false;
+      if (scrollContainer) scrollContainer.style.overflowY = '';
+    }
+
+    listEl.addEventListener('touchstart', onTouchStart, { passive: true });
+    listEl.addEventListener('touchmove', onTouchMove, { passive: false });
+    listEl.addEventListener('touchend', onTouchEnd, { passive: true });
+    listEl.addEventListener('touchcancel', onTouchCancel, { passive: true });
+  }
+
+  /* ============================================================
      管理タブのドラッグ並び替え（メモ・チェックリスト・リンク共通）
      ============================================================ */
   function _initManageListDrag(overlayId, overlayType, onReorder) {
@@ -1575,6 +1801,9 @@
     var listEl = document.getElementById(listId);
     if (!listEl) return;
 
+    /* スクロールコンテナを特定（confirm-box or overlay-body） */
+    var scrollContainer = listEl.closest('.confirm-box') || listEl.closest('.overlay-body');
+
     var LONG_PRESS_MS = 400;
     var longPressTimer = null;
     var dragItem = null;
@@ -1582,13 +1811,13 @@
     var startY = 0;
     var startX = 0;
     var offsetY = 0;
+    var isDragging = false;
 
     function getItems() {
       return Array.from(listEl.querySelectorAll('.co-manage-item'));
     }
 
     function onTouchStart(e) {
-      /* ボタンからの開始は無視 */
       if (e.target.closest('.co-manage-btn')) return;
       var item = e.target.closest('.co-manage-item');
       if (!item) return;
@@ -1598,13 +1827,22 @@
       startX = touch.clientX;
 
       longPressTimer = setTimeout(function() {
+        isDragging = true;
         dragItem = item;
         var rect = dragItem.getBoundingClientRect();
         offsetY = startY - rect.top;
 
+        /* スクロールを停止 */
+        if (scrollContainer) {
+          scrollContainer.style.overflowY = 'hidden';
+        }
+
         placeholder = document.createElement('div');
         placeholder.className = 'co-manage-placeholder';
         placeholder.style.height = rect.height + 'px';
+        placeholder.style.background = 'var(--c-fill-quaternary)';
+        placeholder.style.borderRadius = '8px';
+        placeholder.style.margin = '2px 0';
         dragItem.parentNode.insertBefore(placeholder, dragItem);
 
         dragItem.classList.add('co-manage-dragging');
@@ -1614,13 +1852,15 @@
         dragItem.style.width = rect.width + 'px';
         dragItem.style.zIndex = '10001';
         dragItem.style.pointerEvents = 'none';
+        dragItem.style.boxShadow = '0 4px 16px rgba(0,0,0,.18)';
+        dragItem.style.opacity = '0.92';
 
         if (navigator.vibrate) navigator.vibrate(30);
       }, LONG_PRESS_MS);
     }
 
     function onTouchMove(e) {
-      if (!dragItem && longPressTimer) {
+      if (!isDragging && longPressTimer) {
         var dx = Math.abs(e.touches[0].clientX - startX);
         var dy = Math.abs(e.touches[0].clientY - startY);
         if (dx > 8 || dy > 8) {
@@ -1629,7 +1869,7 @@
         }
         return;
       }
-      if (!dragItem) return;
+      if (!isDragging || !dragItem) return;
       e.preventDefault();
       e.stopPropagation();
 
@@ -1651,10 +1891,41 @@
       }
     }
 
+    function cleanupDrag() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+
+      if (dragItem) {
+        dragItem.classList.remove('co-manage-dragging');
+        dragItem.style.position = '';
+        dragItem.style.left = '';
+        dragItem.style.top = '';
+        dragItem.style.width = '';
+        dragItem.style.zIndex = '';
+        dragItem.style.pointerEvents = '';
+        dragItem.style.boxShadow = '';
+        dragItem.style.opacity = '';
+      }
+      if (placeholder && placeholder.parentNode) {
+        placeholder.remove();
+      }
+      placeholder = null;
+      isDragging = false;
+
+      /* スクロールを復元 */
+      if (scrollContainer) {
+        scrollContainer.style.overflowY = '';
+      }
+    }
+
     function onTouchEnd() {
       clearTimeout(longPressTimer);
       longPressTimer = null;
-      if (!dragItem) return;
+
+      if (!isDragging || !dragItem) {
+        isDragging = false;
+        return;
+      }
 
       dragItem.classList.remove('co-manage-dragging');
       dragItem.style.position = '';
@@ -1663,12 +1934,19 @@
       dragItem.style.width = '';
       dragItem.style.zIndex = '';
       dragItem.style.pointerEvents = '';
+      dragItem.style.boxShadow = '';
+      dragItem.style.opacity = '';
 
       if (placeholder && placeholder.parentNode) {
         placeholder.parentNode.insertBefore(dragItem, placeholder);
         placeholder.remove();
       }
       placeholder = null;
+
+      /* スクロールを復元 */
+      if (scrollContainer) {
+        scrollContainer.style.overflowY = '';
+      }
 
       /* DOMの順序からデータを再構築 */
       var freshList = getCustomOverlays();
@@ -1692,25 +1970,14 @@
       }
 
       dragItem = null;
+      isDragging = false;
 
       if (typeof onReorder === 'function') onReorder();
     }
 
     function onTouchCancel() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      if (dragItem) {
-        dragItem.classList.remove('co-manage-dragging');
-        dragItem.style.position = '';
-        dragItem.style.left = '';
-        dragItem.style.top = '';
-        dragItem.style.width = '';
-        dragItem.style.zIndex = '';
-        dragItem.style.pointerEvents = '';
-        if (placeholder) placeholder.remove();
-        dragItem = null;
-        placeholder = null;
-      }
+      cleanupDrag();
+      dragItem = null;
     }
 
     listEl.addEventListener('touchstart', onTouchStart, { passive: true });
