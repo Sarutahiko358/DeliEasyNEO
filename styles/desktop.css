@@ -77,11 +77,8 @@
   /* --- メインコンテンツ --- */
   .main-content {
     flex: 1;
-    padding: 16px 32px 80px;
+    padding: 16px 24px 80px;
     min-height: 0;
-    max-width: 800px;
-    width: 100%;
-    margin: 0 auto;
   }
 
   /* --- トップバー --- */
@@ -160,8 +157,8 @@
   body.desktop-rp-visible .right-panel {
     position: static;
     transform: none;
-    width: 340px;
-    min-width: 340px;
+    width: 360px;
+    min-width: 360px;
     max-width: none;
     height: 100vh;
     height: 100dvh;
@@ -216,18 +213,20 @@
      ウィジェットグリッド — 3カラム
      ========================================================== */
   .widget-grid {
-    grid-template-columns: repeat(3, 1fr);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px;
+    max-width: 100%;
   }
   .widget-full { grid-column: 1 / -1; }
   .widget-half { grid-column: span 1; }
 
-  /* fullウィジェットの内部コンテンツ幅制限 */
+  /* fullウィジェット内部 — 幅が広がりすぎないよう制限 */
   .widget-full .widget-inner,
   .widget-full .widget-clock,
   .widget-full .widget-records,
   .widget-full .widget-mini-cal {
-    max-width: 100%;
+    max-width: 640px;
     margin: 0 auto;
   }
 
@@ -280,10 +279,6 @@
    ========================================================== */
 @media (min-width: 1440px) {
   .widget-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .main-content {
-    max-width: 1000px;
-    padding: 16px 40px 80px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 }
