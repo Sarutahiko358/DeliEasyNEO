@@ -875,7 +875,7 @@
         saveCustomOverlays(list);
         toast('✅ メモを追加しました');
         /* 設定ダイアログを更新 */
-        _editCustomOverlaySettings(overlayId);
+        _refreshManageDialog(overlayId);
         /* オーバーレイも更新 */
         var body = document.getElementById('overlay-body-' + overlayId);
         if (body) _renderMemoOverlay(body, list[i]);
@@ -892,7 +892,7 @@
           if (val && val.trim()) {
             list[i].data.memos[idx].title = val.trim();
             saveCustomOverlays(list);
-            _editCustomOverlaySettings(overlayId);
+            _refreshManageDialog(overlayId);
             var body = document.getElementById('overlay-body-' + overlayId);
             if (body) _renderMemoOverlay(body, list[i]);
           }
@@ -921,7 +921,7 @@
           list[i].data.memos.splice(idx, 1);
           saveCustomOverlays(list);
           toast('🗑 削除しました');
-          _editCustomOverlaySettings(overlayId);
+          _refreshManageDialog(overlayId);
           var body = document.getElementById('overlay-body-' + overlayId);
           if (body) _renderMemoOverlay(body, list[i]);
           return;
@@ -1229,7 +1229,7 @@
         list[i].data.items.splice(idx, 1);
         saveCustomOverlays(list);
         toast('🗑 削除しました');
-        _editCustomOverlaySettings(overlayId);
+        _refreshManageDialog(overlayId);
         var body = document.getElementById('overlay-body-' + overlayId);
         if (body) _renderChecklistOverlay(body, list[i]);
         return;
@@ -1272,7 +1272,7 @@
         list[i].data.links.splice(idx, 1);
         saveCustomOverlays(list);
         toast('🗑 削除しました');
-        _editCustomOverlaySettings(overlayId);
+        _refreshManageDialog(overlayId);
         var body = document.getElementById('overlay-body-' + overlayId);
         if (body) _renderLinksOverlay(body, list[i]);
         return;
@@ -1292,22 +1292,25 @@
     }
     if (!overlay) return;
 
-    var _settingsTab = 'manage'; /* 'manage' | 'info' */
+    var _settingsTab = 'manage';
+
+    /* 既存の設定ダイアログがあれば閉じる */
+    var existingDialog = document.getElementById('co-settings-dialog-' + id);
+    if (existingDialog) existingDialog.remove();
 
     var div = document.createElement('div');
     div.className = 'confirm-overlay';
+    div.id = 'co-settings-dialog-' + id;
     div.style.zIndex = '9500';
 
     function _renderSettingsDialog() {
       var h = '<div class="confirm-box" style="max-width:360px;max-height:85vh;overflow-y:auto;text-align:left;padding:20px 16px">';
 
-      /* ヘッダー */
       h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
       h += '<h3 style="font-size:.9375rem;font-weight:700;margin:0">' + escHtml(overlay.icon) + ' ' + escHtml(overlay.title) + '</h3>';
       h += '<button class="btn btn-ghost btn-xs" id="co-settings-close" style="font-size:1rem;padding:4px 8px">✕</button>';
       h += '</div>';
 
-      /* タブ */
       h += '<div class="segmented mb12">';
       h += '<button class="segmented-item' + (_settingsTab === 'manage' ? ' active' : '') + '" id="co-stab-manage">管理</button>';
       h += '<button class="segmented-item' + (_settingsTab === 'info' ? ' active' : '') + '" id="co-stab-info">設定</button>';
@@ -1324,32 +1327,41 @@
 
       /* イベントバインド */
       var closeBtn = div.querySelector('#co-settings-close');
-      if (closeBtn) closeBtn.onclick = function() { div.remove(); };
+      if (closeBtn) closeBtn.onclick = function(e) { e.stopPropagation(); div.remove(); };
 
       var tabManage = div.querySelector('#co-stab-manage');
       var tabInfo = div.querySelector('#co-stab-info');
-      if (tabManage) tabManage.onclick = function() { hp(); _settingsTab = 'manage'; _renderSettingsDialog(); };
-      if (tabInfo) tabInfo.onclick = function() { hp(); _settingsTab = 'info'; _renderSettingsDialog(); };
+      if (tabManage) tabManage.onclick = function(e) { e.stopPropagation(); hp(); _settingsTab = 'manage'; _renderSettingsDialog(); };
+      if (tabInfo) tabInfo.onclick = function(e) { e.stopPropagation(); hp(); _settingsTab = 'info'; _renderSettingsDialog(); };
 
-      /* 設定タブのイベント */
       if (_settingsTab === 'info') {
         var saveBtn = div.querySelector('#co-edit-save');
         var delBtn = div.querySelector('#co-edit-delete');
-        if (saveBtn) saveBtn.onclick = function() {
-          overlay.title = div.querySelector('#co-edit-title').value.trim() || 'カスタム';
-          overlay.icon = div.querySelector('#co-edit-icon').value.trim() || '📄';
-          saveCustomOverlays(list);
+        if (saveBtn) saveBtn.onclick = function(e) {
+          e.stopPropagation();
+          /* listを再取得（他の操作で変更されている可能性があるため） */
+          var freshList = getCustomOverlays();
+          var freshOverlay = null;
+          for (var fi = 0; fi < freshList.length; fi++) {
+            if (freshList[fi].id === id) { freshOverlay = freshList[fi]; break; }
+          }
+          if (!freshOverlay) return;
+          freshOverlay.title = div.querySelector('#co-edit-title').value.trim() || 'カスタム';
+          freshOverlay.icon = div.querySelector('#co-edit-icon').value.trim() || '📄';
+          overlay = freshOverlay; /* ローカル参照も更新 */
+          saveCustomOverlays(freshList);
           toast('✅ 設定を保存しました');
-          if (window.OVERLAYS) window.OVERLAYS[id] = { title: overlay.icon + ' ' + overlay.title };
+          if (window.OVERLAYS) window.OVERLAYS[id] = { title: freshOverlay.icon + ' ' + freshOverlay.title };
           var sheet = document.getElementById('overlay-sheet-' + id);
           if (sheet) {
             var titleEl = sheet.querySelector('.overlay-title');
-            if (titleEl) titleEl.textContent = overlay.icon + ' ' + overlay.title;
+            if (titleEl) titleEl.textContent = freshOverlay.icon + ' ' + freshOverlay.title;
           }
-          if (typeof renderSidebar === 'function') try { renderSidebar(); } catch(e) {}
+          if (typeof renderSidebar === 'function') try { renderSidebar(); } catch(e2) {}
           _renderSettingsDialog();
         };
-        if (delBtn) delBtn.onclick = function() {
+        if (delBtn) delBtn.onclick = function(e) {
+          e.stopPropagation();
           div.remove();
           customConfirm('このオーバーレイを削除しますか？', function() {
             if (typeof closeOverlay === 'function') closeOverlay();
@@ -1358,18 +1370,44 @@
               deleteCustomOverlay(id);
               toast('🗑 オーバーレイを削除しました');
               if (typeof refreshHome === 'function') refreshHome();
-              if (typeof renderSidebar === 'function') try { renderSidebar(); } catch(e) {}
+              if (typeof renderSidebar === 'function') try { renderSidebar(); } catch(e3) {}
             }, 150);
           }, function() {
+            /* キャンセル時: 設定ダイアログを再表示 */
             _editCustomOverlaySettings(id);
           });
         };
       }
+
+      /* 管理タブのドラッグ並び替え初期化 */
+      if (_settingsTab === 'manage') {
+        requestAnimationFrame(function() {
+          _initManageListDrag(id, overlay.type, function() {
+            /* ドラッグ完了後、overlayデータを再取得して再描画 */
+            var freshList2 = getCustomOverlays();
+            for (var fi2 = 0; fi2 < freshList2.length; fi2++) {
+              if (freshList2[fi2].id === id) { overlay = freshList2[fi2]; break; }
+            }
+            _renderSettingsDialog();
+            /* オーバーレイ本体も更新 */
+            var body = document.getElementById('overlay-body-' + id);
+            if (body) _renderCustomOverlayBody(body, overlay);
+          });
+        });
+      }
     }
 
-    /* 背景タップで閉じる */
+    /* 背景タップで閉じる（内側のクリックはstopPropagation） */
     div.addEventListener('click', function(e) {
       if (e.target === div) div.remove();
+    });
+
+    /* 内側のconfirm-boxのクリックが背景に伝搬しないようにする */
+    div.addEventListener('click', function(e) {
+      var box = div.querySelector('.confirm-box');
+      if (box && box.contains(e.target)) {
+        /* 何もしない（伝搬させない） */
+      }
     });
 
     document.body.appendChild(div);
@@ -1475,7 +1513,7 @@
     }
 
     if (doneCount > 0) {
-      h += '<button class="btn btn-ghost btn-xs btn-block mt8" onclick="_clearDoneItems(\'' + escJs(overlay.id) + '\');setTimeout(function(){_editCustomOverlaySettings(\'' + escJs(overlay.id) + '\')},200)">🗑 完了済みを一括削除</button>';
+      h += '<button class="btn btn-ghost btn-xs btn-block mt8" onclick="_clearDoneItems(\'' + escJs(overlay.id) + '\');setTimeout(function(){_refreshManageDialog(\'' + escJs(overlay.id) + '\')},200)">🗑 完了済みを一括削除</button>';
     }
     h += '<button class="btn btn-ghost btn-xs btn-block mt4" onclick="_coClCopyAll(\'' + escJs(overlay.id) + '\')">📋 全タスクをコピー</button>';
     return h;
@@ -1504,6 +1542,192 @@
       h += '</div>';
     }
     return h;
+  }
+
+  /* ============================================================
+     管理タブのドラッグ並び替え（メモ・チェックリスト・リンク共通）
+     ============================================================ */
+  function _initManageListDrag(overlayId, overlayType, onReorder) {
+    var listId = null;
+    var dataAttr = null;
+    var dataKey = null;
+
+    switch (overlayType) {
+      case 'memo':
+        listId = 'co-memo-manage-list';
+        dataAttr = 'data-memo-idx';
+        dataKey = 'memos';
+        break;
+      case 'checklist':
+        listId = 'co-cl-manage-list';
+        dataAttr = 'data-cl-idx';
+        dataKey = 'items';
+        break;
+      case 'links':
+        listId = 'co-link-manage-list';
+        dataAttr = 'data-link-idx';
+        dataKey = 'links';
+        break;
+      default:
+        return;
+    }
+
+    var listEl = document.getElementById(listId);
+    if (!listEl) return;
+
+    var LONG_PRESS_MS = 400;
+    var longPressTimer = null;
+    var dragItem = null;
+    var placeholder = null;
+    var startY = 0;
+    var startX = 0;
+    var offsetY = 0;
+
+    function getItems() {
+      return Array.from(listEl.querySelectorAll('.co-manage-item'));
+    }
+
+    function onTouchStart(e) {
+      /* ボタンからの開始は無視 */
+      if (e.target.closest('.co-manage-btn')) return;
+      var item = e.target.closest('.co-manage-item');
+      if (!item) return;
+
+      var touch = e.touches[0];
+      startY = touch.clientY;
+      startX = touch.clientX;
+
+      longPressTimer = setTimeout(function() {
+        dragItem = item;
+        var rect = dragItem.getBoundingClientRect();
+        offsetY = startY - rect.top;
+
+        placeholder = document.createElement('div');
+        placeholder.className = 'co-manage-placeholder';
+        placeholder.style.height = rect.height + 'px';
+        dragItem.parentNode.insertBefore(placeholder, dragItem);
+
+        dragItem.classList.add('co-manage-dragging');
+        dragItem.style.position = 'fixed';
+        dragItem.style.left = rect.left + 'px';
+        dragItem.style.top = rect.top + 'px';
+        dragItem.style.width = rect.width + 'px';
+        dragItem.style.zIndex = '10001';
+        dragItem.style.pointerEvents = 'none';
+
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function onTouchMove(e) {
+      if (!dragItem && longPressTimer) {
+        var dx = Math.abs(e.touches[0].clientX - startX);
+        var dy = Math.abs(e.touches[0].clientY - startY);
+        if (dx > 8 || dy > 8) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        return;
+      }
+      if (!dragItem) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      var touch = e.touches[0];
+      dragItem.style.top = (touch.clientY - offsetY) + 'px';
+
+      var items = getItems().filter(function(el) { return el !== dragItem; });
+      var inserted = false;
+      for (var i = 0; i < items.length; i++) {
+        var r = items[i].getBoundingClientRect();
+        if (touch.clientY < r.top + r.height / 2) {
+          listEl.insertBefore(placeholder, items[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) {
+        listEl.appendChild(placeholder);
+      }
+    }
+
+    function onTouchEnd() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      if (!dragItem) return;
+
+      dragItem.classList.remove('co-manage-dragging');
+      dragItem.style.position = '';
+      dragItem.style.left = '';
+      dragItem.style.top = '';
+      dragItem.style.width = '';
+      dragItem.style.zIndex = '';
+      dragItem.style.pointerEvents = '';
+
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragItem, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+
+      /* DOMの順序からデータを再構築 */
+      var freshList = getCustomOverlays();
+      var freshOverlay = null;
+      for (var oi = 0; oi < freshList.length; oi++) {
+        if (freshList[oi].id === overlayId) { freshOverlay = freshList[oi]; break; }
+      }
+      if (freshOverlay && freshOverlay.data[dataKey]) {
+        var oldData = freshOverlay.data[dataKey].slice();
+        var newData = [];
+        getItems().forEach(function(el) {
+          var idx = parseInt(el.getAttribute(dataAttr), 10);
+          if (!isNaN(idx) && idx >= 0 && idx < oldData.length) {
+            newData.push(oldData[idx]);
+          }
+        });
+        if (newData.length === oldData.length) {
+          freshOverlay.data[dataKey] = newData;
+          saveCustomOverlays(freshList);
+        }
+      }
+
+      dragItem = null;
+
+      if (typeof onReorder === 'function') onReorder();
+    }
+
+    function onTouchCancel() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      if (dragItem) {
+        dragItem.classList.remove('co-manage-dragging');
+        dragItem.style.position = '';
+        dragItem.style.left = '';
+        dragItem.style.top = '';
+        dragItem.style.width = '';
+        dragItem.style.zIndex = '';
+        dragItem.style.pointerEvents = '';
+        if (placeholder) placeholder.remove();
+        dragItem = null;
+        placeholder = null;
+      }
+    }
+
+    listEl.addEventListener('touchstart', onTouchStart, { passive: true });
+    listEl.addEventListener('touchmove', onTouchMove, { passive: false });
+    listEl.addEventListener('touchend', onTouchEnd, { passive: true });
+    listEl.addEventListener('touchcancel', onTouchCancel, { passive: true });
+  }
+
+  /* 管理タブの再描画（設定ダイアログを閉じずに中身だけ更新） */
+  function _refreshManageDialog(overlayId) {
+    /* 設定ダイアログが開いていれば再表示 */
+    var dialog = document.getElementById('co-settings-dialog-' + overlayId);
+    if (dialog) {
+      /* ダイアログを一度消して再作成 */
+      dialog.remove();
+    }
+    _editCustomOverlaySettings(overlayId);
   }
 
   /* --- ダッシュボード管理タブ --- */
@@ -1738,5 +1962,6 @@
   window.deleteCustomOverlay = deleteCustomOverlay;
   window.openCustomOverlay = openCustomOverlay;
   window.openCreateCustomOverlayDialog = openCreateCustomOverlayDialog;
+  window._refreshManageDialog = _refreshManageDialog;
 
 })();
