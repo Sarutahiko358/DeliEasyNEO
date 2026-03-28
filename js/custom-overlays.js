@@ -197,7 +197,7 @@
 
     var mode = _getDeviceMode();
     var isEditing = !!_dashEditMode[overlay.id];
-    var editMode = _dashEditCurrentMode[overlay.id] || mode;
+    var editMode = mode;
     var widgets = _getDashModeWidgets(overlay, isEditing ? editMode : mode);
 
     var html = '';
@@ -208,12 +208,6 @@
       html += '<button class="btn btn-ghost btn-sm" onclick="_dashExitEdit(\'' + escJs(overlay.id) + '\')">キャンセル</button>';
       html += '<span class="fw6 fz-s">ウィジェット編集</span>';
       html += '<button class="btn btn-primary btn-sm" onclick="_dashExitEdit(\'' + escJs(overlay.id) + '\')">完了</button>';
-      html += '</div>';
-
-      /* モバイル/デスクトップ切替タブ */
-      html += '<div class="segmented mb12">';
-      html += '<button class="segmented-item' + (editMode === 'mobile' ? ' active' : '') + '" onclick="_dashEditSetMode(\'' + escJs(overlay.id) + '\',\'mobile\')">📱 モバイル</button>';
-      html += '<button class="segmented-item' + (editMode === 'desktop' ? ' active' : '') + '" onclick="_dashEditSetMode(\'' + escJs(overlay.id) + '\',\'desktop\')">🖥️ デスクトップ</button>';
       html += '</div>';
     }
 
@@ -234,7 +228,11 @@
 
         html += '<div class="grid-editor-controls">';
         html += '<button class="grid-editor-btn grid-editor-btn-del" onclick="event.stopPropagation();_dashRemoveWidget(\'' + escJs(overlay.id) + '\',' + i + ')" title="削除">✕</button>';
-        if (def.sizeOptions && def.sizeOptions.length > 1) {
+        var _effectiveOptions = def.sizeOptions ? def.sizeOptions.slice() : [];
+        if (editMode === 'mobile') {
+          _effectiveOptions = _effectiveOptions.filter(function(s) { return s !== 'wide'; });
+        }
+        if (_effectiveOptions.length > 1) {
           html += '<button class="grid-editor-btn grid-editor-btn-size" onclick="event.stopPropagation();_dashCycleSize(\'' + escJs(overlay.id) + '\',' + i + ')" title="サイズ変更">↔</button>';
         }
         html += '</div>';
@@ -309,7 +307,7 @@
             var ol = getCustomOverlays();
             for (var i = 0; i < ol.length; i++) {
               if (ol[i].id === coId) {
-                var em = _dashEditCurrentMode[coId] || _getDeviceMode();
+                var em = _getDeviceMode();
                 return _getDashModeWidgets(ol[i], em).slice();
               }
             }
@@ -319,7 +317,7 @@
             var ol = getCustomOverlays();
             for (var i = 0; i < ol.length; i++) {
               if (ol[i].id === coId) {
-                var em = _dashEditCurrentMode[coId] || _getDeviceMode();
+                var em = _getDeviceMode();
                 if (em === 'desktop') {
                   ol[i].data.desktop.widgets = newWidgets;
                 } else {
@@ -356,15 +354,9 @@
     _refreshDashboard(coId);
   };
 
-  window._dashEditSetMode = function(coId, mode) {
-    hp();
-    _dashEditCurrentMode[coId] = mode;
-    _refreshDashboard(coId);
-  };
-
   window._dashRemoveWidget = function(coId, idx) {
     hp();
-    var editMode = _dashEditCurrentMode[coId] || _getDeviceMode();
+    var editMode = _getDeviceMode();
     var list = getCustomOverlays();
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === coId) {
@@ -382,7 +374,7 @@
 
   window._dashCycleSize = function(coId, idx) {
     hp();
-    var editMode = _dashEditCurrentMode[coId] || _getDeviceMode();
+    var editMode = _getDeviceMode();
     var list = getCustomOverlays();
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === coId) {
@@ -430,7 +422,7 @@
   };
 
   function _renderDashPickerContent(container, coId, cats, defs) {
-    var editMode = _dashEditCurrentMode[coId] || _getDeviceMode();
+    var editMode = _getDeviceMode();
     var overlayList = getCustomOverlays();
     var currentIds = [];
     for (var i = 0; i < overlayList.length; i++) {
@@ -475,7 +467,7 @@
     if (!def) return;
     hp();
 
-    var editMode = _dashEditCurrentMode[coId] || _getDeviceMode();
+    var editMode = _getDeviceMode();
     var list = getCustomOverlays();
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === coId) {
@@ -508,43 +500,33 @@
     var grid = document.getElementById('dash-widget-grid-' + coId);
     if (!grid) return;
     var timer = null;
-    var startX = 0, startY = 0;
+    var _lpActive = false;
 
     /* Touch */
     grid.addEventListener('touchstart', function(e) {
       var widget = e.target.closest('.widget');
       if (!widget) return;
+      _lpActive = true;
       timer = setTimeout(function() {
+        _lpActive = false;
         hp();
         _dashEditMode[coId] = true;
         _dashEditCurrentMode[coId] = null;
         _refreshDashboard(coId);
-      }, 600);
+      }, 500);
     }, { passive: true });
-    grid.addEventListener('touchend', function() { clearTimeout(timer); }, { passive: true });
-    grid.addEventListener('touchmove', function() { clearTimeout(timer); }, { passive: true });
-
-    /* Mouse */
-    grid.addEventListener('mousedown', function(e) {
-      if (e.button !== 0) return;
-      var widget = e.target.closest('.widget');
-      if (!widget) return;
-      startX = e.clientX;
-      startY = e.clientY;
-      timer = setTimeout(function() {
-        hp();
-        _dashEditMode[coId] = true;
-        _dashEditCurrentMode[coId] = null;
-        _refreshDashboard(coId);
-      }, 600);
-    });
-    grid.addEventListener('mouseup', function() { clearTimeout(timer); });
-    grid.addEventListener('mousemove', function(e) {
-      if (timer && (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5)) {
+    grid.addEventListener('touchend', function(e) {
+      clearTimeout(timer);
+      timer = null;
+      _lpActive = false;
+    }, { passive: true });
+    grid.addEventListener('touchmove', function(e) {
+      if (_lpActive) {
         clearTimeout(timer);
+        timer = null;
+        _lpActive = false;
       }
-    });
-    grid.addEventListener('mouseleave', function() { clearTimeout(timer); });
+    }, { passive: true });
   }
 
   /* --- Refresh dashboard content --- */

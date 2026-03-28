@@ -8,6 +8,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--ds-widget-gap, 12px);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .widget-grid-editing {
   padding: 4px;

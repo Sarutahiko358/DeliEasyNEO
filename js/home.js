@@ -58,7 +58,7 @@
   window._gridEditorRemove = function(idx) {
     hp();
     var rawPreset = getActivePresetRaw();
-    var editMode = _homeEditCurrentMode || _getDeviceMode();
+    var editMode = _getDeviceMode();
     var modeData = getPresetModeData(rawPreset, editMode);
     if (!modeData || !modeData.widgets[idx]) return;
     modeData.widgets.splice(idx, 1);
@@ -71,7 +71,7 @@
   window._gridEditorCycleSize = function(idx) {
     hp();
     var rawPreset = getActivePresetRaw();
-    var editMode = _homeEditCurrentMode || _getDeviceMode();
+    var editMode = _getDeviceMode();
     var modeData = getPresetModeData(rawPreset, editMode);
     if (!modeData || !modeData.widgets[idx]) return;
     var w = modeData.widgets[idx];
@@ -91,13 +91,6 @@
     var body = document.getElementById('overlay-body-homeEdit');
     if (body) renderOverlay_homeEdit(body);
     renderHome();
-  };
-
-  window._homeEditSetMode = function(mode) {
-    hp();
-    _homeEditCurrentMode = mode;
-    var body = document.getElementById('overlay-body-homeEdit');
-    if (body) renderOverlay_homeEdit(body);
   };
 
   window._homeEditCurrentMode = null;
@@ -440,7 +433,7 @@
   function openWidgetPicker() {
     hp();
     var rawPreset = getActivePresetRaw();
-    var editMode = _homeEditCurrentMode || _getDeviceMode();
+    var editMode = _getDeviceMode();
     var modeData = getPresetModeData(rawPreset, editMode);
     var currentWidgetIds = modeData && modeData.widgets ? modeData.widgets.map(function(w) { return w.id; }) : [];
     var div = document.createElement('div');
@@ -462,7 +455,7 @@
   function _renderWidgetPickerContent(container, currentWidgetIds) {
     if (!currentWidgetIds) {
       var rawPreset = getActivePresetRaw();
-      var editMode = _homeEditCurrentMode || _getDeviceMode();
+      var editMode = _getDeviceMode();
       var modeData = getPresetModeData(rawPreset, editMode);
       currentWidgetIds = modeData && modeData.widgets ? modeData.widgets.map(function(w) { return w.id; }) : [];
     }
@@ -518,39 +511,30 @@
     var grid = document.getElementById('widget-grid');
     if (!grid) return;
     var timer = null;
-    var startX = 0, startY = 0;
+    var _lpActive = false;
 
     grid.addEventListener('touchstart', function(e) {
       var widget = e.target.closest('.widget');
       if (!widget) return;
+      _lpActive = true;
       timer = setTimeout(function() {
+        _lpActive = false;
         hp();
         enterEditMode();
-      }, 600);
+      }, 500);
     }, { passive: true });
-    grid.addEventListener('touchend', function() { clearTimeout(timer); }, { passive: true });
-    grid.addEventListener('touchmove', function() { clearTimeout(timer); }, { passive: true });
-
-    grid.addEventListener('mousedown', function(e) {
-      if (e.button !== 0) return;
-      var widget = e.target.closest('.widget');
-      if (!widget) return;
-      startX = e.clientX;
-      startY = e.clientY;
-      timer = setTimeout(function() {
-        hp();
-        enterEditMode();
-      }, 600);
-    });
-    grid.addEventListener('mouseup', function() { clearTimeout(timer); });
-    grid.addEventListener('mousemove', function(e) {
-      if (timer) {
-        var dx = Math.abs(e.clientX - startX);
-        var dy = Math.abs(e.clientY - startY);
-        if (dx > 5 || dy > 5) clearTimeout(timer);
+    grid.addEventListener('touchend', function(e) {
+      clearTimeout(timer);
+      timer = null;
+      _lpActive = false;
+    }, { passive: true });
+    grid.addEventListener('touchmove', function(e) {
+      if (_lpActive) {
+        clearTimeout(timer);
+        timer = null;
+        _lpActive = false;
       }
-    });
-    grid.addEventListener('mouseleave', function() { clearTimeout(timer); });
+    }, { passive: true });
   }
 
   /* ========== ホーム編集オーバーレイ（グリッドベース） ========== */
@@ -574,13 +558,7 @@
       html += '</div></div>';
     }
 
-    /* モバイル/デスクトップ切替タブ */
-    html += '<div class="segmented mb12">';
-    html += '<button class="segmented-item' + ((_homeEditCurrentMode || mode) === 'mobile' ? ' active' : '') + '" onclick="_homeEditSetMode(\'mobile\')">📱 モバイル</button>';
-    html += '<button class="segmented-item' + ((_homeEditCurrentMode || mode) === 'desktop' ? ' active' : '') + '" onclick="_homeEditSetMode(\'desktop\')">🖥️ デスクトップ</button>';
-    html += '</div>';
-
-    var editMode = _homeEditCurrentMode || mode;
+    var editMode = mode;
     var modeData = getPresetModeData(rawPreset, editMode);
     if (!modeData) modeData = { widgets: [] };
     var widgets = modeData.widgets || [];
@@ -601,7 +579,11 @@
 
       html += '<div class="grid-editor-controls">';
       html += '<button class="grid-editor-btn grid-editor-btn-del" onclick="event.stopPropagation();_gridEditorRemove(' + i + ')" title="削除">✕</button>';
-      if (def.sizeOptions && def.sizeOptions.length > 1) {
+      var _effectiveOptions = def.sizeOptions ? def.sizeOptions.slice() : [];
+      if (editMode === 'mobile') {
+        _effectiveOptions = _effectiveOptions.filter(function(s) { return s !== 'wide'; });
+      }
+      if (_effectiveOptions.length > 1) {
         html += '<button class="grid-editor-btn grid-editor-btn-size" onclick="event.stopPropagation();_gridEditorCycleSize(' + i + ')" title="サイズ変更">↔</button>';
       }
       html += '</div>';
@@ -643,13 +625,13 @@
       gridId: 'grid-editor',
       getWidgets: function() {
         var rp = getActivePresetRaw();
-        var em = _homeEditCurrentMode || _getDeviceMode();
+        var em = _getDeviceMode();
         var md = getPresetModeData(rp, em);
         return md && md.widgets ? md.widgets.slice() : [];
       },
       onReorder: function(newWidgets) {
         var rp = getActivePresetRaw();
-        var em = _homeEditCurrentMode || _getDeviceMode();
+        var em = _getDeviceMode();
         var md = getPresetModeData(rp, em);
         if (md) {
           md.widgets = newWidgets;
