@@ -527,6 +527,36 @@
         _lpActive = false;
       }
     }, { passive: true });
+    grid.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      var widget = e.target.closest('.widget');
+      if (!widget) return;
+      var startX = e.clientX;
+      var startY = e.clientY;
+      timer = setTimeout(function() {
+        hp();
+        _dashEditMode[coId] = true;
+        _dashEditCurrentMode[coId] = null;
+        _refreshDashboard(coId);
+      }, 500);
+      grid.addEventListener('mouseup', function clearMouse() {
+        clearTimeout(timer);
+        grid.removeEventListener('mouseup', clearMouse);
+        grid.removeEventListener('mousemove', moveMouse);
+        grid.removeEventListener('mouseleave', clearMouse);
+      });
+      function moveMouse(ev) {
+        if (Math.abs(ev.clientX - startX) > 5 || Math.abs(ev.clientY - startY) > 5) {
+          clearTimeout(timer);
+        }
+      }
+      grid.addEventListener('mousemove', moveMouse);
+      grid.addEventListener('mouseleave', function clearMouse() {
+        clearTimeout(timer);
+        grid.removeEventListener('mouseleave', clearMouse);
+        grid.removeEventListener('mousemove', moveMouse);
+      });
+    });
   }
 
   /* --- Refresh dashboard content --- */
