@@ -63,7 +63,7 @@
       var def = WIDGET_DEFS[w.id];
       if (!def) return;
       var size = w.size || def.size || 'full';
-      html += '<div class="home-edit-item" data-widget-idx="' + i + '" data-widget-size="' + size + '">';
+      html += '<div class="home-edit-item" data-widget-idx="' + i + '" data-widget-id="' + escHtml(w.id) + '" data-widget-size="' + size + '">';
       html += _renderEditItemContent(w, def, i, size);
       html += '</div>';
     });
@@ -376,21 +376,32 @@
 
     var oldWidgets = preset.widgets.slice();
     var newWidgets = [];
+    var usedIdx = {};
 
-    /* フラットにアイテムを列挙 */
+    /* フラットにアイテムを列挙（DOM順 = 新しい並び順） */
     var items = list.querySelectorAll('.home-edit-item');
     items.forEach(function(item) {
       var idx = parseInt(item.getAttribute('data-widget-idx'), 10);
-      if (!isNaN(idx) && idx >= 0 && idx < oldWidgets.length) {
+      if (!isNaN(idx) && idx >= 0 && idx < oldWidgets.length && !usedIdx[idx]) {
         newWidgets.push(oldWidgets[idx]);
+        usedIdx[idx] = true;
       }
     });
 
-    /* 漏れがないかチェック */
-    if (newWidgets.length === oldWidgets.length) {
+    /* 1つ以上のウィジェットが取得できていれば保存（WIDGET_DEFSが欠けても保存する） */
+    if (newWidgets.length > 0) {
       preset.widgets = newWidgets;
       savePreset(preset);
     }
+  }
+
+  /* ウィジェット順序を更新して保存 */
+  function updateWidgetOrder(newWidgets) {
+    var preset = getActivePreset();
+    if (!preset) return;
+    preset.widgets = newWidgets;
+    savePreset(preset);
+    renderHome();
   }
 
   /* ========== プリセット切替 ========== */

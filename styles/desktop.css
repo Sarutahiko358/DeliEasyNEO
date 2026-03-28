@@ -24,14 +24,40 @@
   .ds-gbox .ds-gv {
     font-size: 1.25rem;
   }
-  /* タブレットのオーバーレイ: 幅80%・left/right autoで中央配置（transformなし） */
+  /* タブレット/デスクトップ共通: オーバーレイ中央配置（flexbox・transformなし）
+     transform を overlay-sheet に適用すると、子要素の position:fixed が
+     viewport基準ではなく transform親基準になり、ドラッグ座標がずれる。
+     そのため flexbox で中央配置し transform を完全に排除する。 */
+  .overlay-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay-backdrop {
+    position: fixed;
+    inset: 0;
+  }
   .overlay-sheet {
-    width: 80%;
-    max-width: 80vw;
-    left: 0;
-    right: 0;
-    margin-left: auto;
-    margin-right: auto;
+    position: relative;
+    bottom: auto;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 0;
+    transform: none !important;
+    width: min(560px, 90vw);
+    max-height: 85vh;
+    border-radius: var(--ds-radius-lg);
+    box-shadow: 0 24px 80px rgba(0,0,0,.25);
+    opacity: 0;
+    transition: opacity .2s ease;
+    z-index: 1;
+  }
+  .overlay-sheet.open {
+    opacity: 1;
+  }
+  .overlay-handle {
+    display: none;
   }
 }
 
@@ -150,52 +176,9 @@
     display: none !important;
   }
 
-  /* ==========================================================
-     オーバーレイ — 中央モーダル（flexbox配置・transformなし）
-
-     重要: transform を overlay-sheet に適用すると、
-     子要素の position:fixed がviewport基準ではなく
-     transform親基準になり、ドラッグ座標がずれる。
-     そのため flexbox で中央配置し transform を排除する。
-     ========================================================== */
-  .overlay-container.has-overlay {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* backdrop は fixed inset:0 のまま（flex itemにならないよう） */
-  .overlay-backdrop {
-    position: fixed;
-    inset: 0;
-  }
-
+  /* オーバーレイ — 768px の flexbox 中央配置を継承。幅のみ上書き */
   .overlay-sheet {
-    /* flexbox内の通常のitemとして中央配置される */
-    position: relative;
-    bottom: auto;
-    top: auto;
-    left: auto;
-    right: auto;
-    margin: 0;
-    transform: none;
-    width: 680px;
-    max-width: 90vw;
-    height: 80vh;
-    max-height: 80vh;
-    border-radius: var(--ds-radius-lg);
-    opacity: 0;
-    transition: opacity .3s cubic-bezier(.28,.11,.32,1);
-    z-index: 1; /* backdrop の上に */
-  }
-  .overlay-sheet.open {
-    transform: none;
-    opacity: 1;
-  }
-
-  /* ハンドルはデスクトップでは非表示 */
-  .overlay-handle {
-    display: none;
+    width: min(640px, 80vw);
   }
 
   /* ==========================================================
