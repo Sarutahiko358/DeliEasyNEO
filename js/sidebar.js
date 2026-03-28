@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/sidebar.js
-   左サイドバー — 感度改善版 + 設定対応
+   左サイドバー — デスクトップ対応修正版
    ========================================================== */
 (function(){
   'use strict';
@@ -27,7 +27,6 @@
   function getGestureConfig() {
     var saved = S.g('gesture_cfg', null);
     if (saved && typeof saved === 'object') {
-      /* 既存保存データにrightCloseThresholdがない場合のマイグレーション */
       if (saved.rightCloseThreshold === undefined) {
         saved.rightCloseThreshold = DEFAULT_GESTURE_CFG.rightCloseThreshold;
       }
@@ -43,6 +42,11 @@
   function _gc(key) {
     var cfg = getGestureConfig();
     return cfg[key] !== undefined ? cfg[key] : DEFAULT_GESTURE_CFG[key];
+  }
+
+  /* ---------- デスクトップ判定ヘルパー ---------- */
+  function _isSidebarDesktop() {
+    return typeof window._isDesktop === 'function' && window._isDesktop();
   }
 
   /* ---------- Menu definition ---------- */
@@ -130,23 +134,28 @@
       el.addEventListener('click', function() {
         var overlayId = el.getAttribute('data-overlay');
         var actionId = el.getAttribute('data-action');
-        closeSidebar();
+
+        /* デスクトップではサイドバーを閉じない（常時表示のため） */
+        if (!_isSidebarDesktop()) {
+          closeSidebar();
+        }
+
         if (overlayId && typeof window.openOverlay === 'function') {
           setTimeout(function() {
             window.openOverlay(overlayId);
-          }, 150);
+          }, _isSidebarDesktop() ? 0 : 150);
         } else if (actionId === 'openOverlayManager') {
           setTimeout(function() {
             if (typeof window.openOverlayManager === 'function') window.openOverlayManager();
-          }, 150);
+          }, _isSidebarDesktop() ? 0 : 150);
         } else if (actionId === 'enterEditMode') {
           setTimeout(function() {
             if (typeof window.enterEditMode === 'function') window.enterEditMode();
-          }, 150);
+          }, _isSidebarDesktop() ? 0 : 150);
         } else if (actionId === 'openEditAdvanced') {
           setTimeout(function() {
             if (typeof window.openEditAdvanced === 'function') window.openEditAdvanced();
-          }, 150);
+          }, _isSidebarDesktop() ? 0 : 150);
         }
       });
     });
@@ -155,8 +164,10 @@
     panel.querySelectorAll('.sidebar-item[data-custom-overlay]').forEach(function(el) {
       el.addEventListener('click', function() {
         var coId = el.getAttribute('data-custom-overlay');
-        closeSidebar();
-        setTimeout(function() { openCustomOverlay(coId); }, 150);
+        if (!_isSidebarDesktop()) {
+          closeSidebar();
+        }
+        setTimeout(function() { openCustomOverlay(coId); }, _isSidebarDesktop() ? 0 : 150);
       });
     });
 
@@ -164,13 +175,17 @@
     var addBtn = document.getElementById('sidebar-add-overlay');
     if (addBtn) {
       addBtn.addEventListener('click', function() {
-        closeSidebar();
-        setTimeout(function() { openCreateCustomOverlayDialog(); }, 200);
+        if (!_isSidebarDesktop()) {
+          closeSidebar();
+        }
+        setTimeout(function() { openCreateCustomOverlayDialog(); }, _isSidebarDesktop() ? 0 : 200);
       });
     }
 
-    /* サイドバー内スワイプで閉じる */
-    _initPanelSwipeToClose(panel);
+    /* サイドバー内スワイプで閉じる（モバイルのみ） */
+    if (!_isSidebarDesktop()) {
+      _initPanelSwipeToClose(panel);
+    }
   }
 
   /* ---------- パネル内スワイプで閉じる ---------- */
@@ -179,6 +194,7 @@
     panel._swipeCloseInit = true;
 
     panel.addEventListener('touchstart', function(e) {
+      if (_isSidebarDesktop()) return;
       if (!_isOpen) return;
       _panelTouchStartX = e.touches[0].clientX;
       _panelTouchStartY = e.touches[0].clientY;
@@ -188,11 +204,11 @@
     }, { passive: true });
 
     panel.addEventListener('touchmove', function(e) {
+      if (_isSidebarDesktop()) return;
       if (!_panelTracking) return;
       var dx = e.touches[0].clientX - _panelTouchStartX;
       var dy = Math.abs(e.touches[0].clientY - _panelTouchStartY);
 
-      /* 縦スクロールが主なら追跡をやめる */
       if (dy > Math.abs(dx) * 2 && Math.abs(dx) < 20) {
         _panelTracking = false;
         panel.style.transition = '';
@@ -200,7 +216,6 @@
         return;
       }
 
-      /* 左方向のみ（負の値） */
       if (dx < 0) {
         _panelTranslateX = dx;
         panel.style.transform = 'translateX(' + dx + 'px)';
@@ -213,6 +228,7 @@
     }, { passive: true });
 
     panel.addEventListener('touchend', function() {
+      if (_isSidebarDesktop()) return;
       if (!_panelTracking) return;
       _panelTracking = false;
       panel.style.transition = '';
@@ -231,6 +247,8 @@
 
   /* ---------- Open / Close ---------- */
   function openSidebar() {
+    /* デスクトップでは常時表示のためno-op */
+    if (_isSidebarDesktop()) return;
     if (_isOpen) return;
     _isOpen = true;
     hp();
@@ -242,6 +260,8 @@
   }
 
   function closeSidebar() {
+    /* デスクトップでは常時表示のためno-op */
+    if (_isSidebarDesktop()) return;
     if (!_isOpen) return;
     _isOpen = false;
     var overlay = document.getElementById('sidebar-overlay');
@@ -251,27 +271,36 @@
   }
 
   function toggleSidebar() {
+    /* デスクトップでは何もしない */
+    if (_isSidebarDesktop()) return;
     if (_isOpen) closeSidebar();
     else openSidebar();
   }
 
-  function isSidebarOpen() { return _isOpen; }
+  function isSidebarOpen() {
+    /* デスクトップでは常にtrue扱い */
+    if (_isSidebarDesktop()) return true;
+    return _isOpen;
+  }
 
   /* ---------- Edge swipe to open ---------- */
   function initSidebarGestures() {
     var _edgeTracking = false;
 
     document.addEventListener('touchstart', function(e) {
+      /* デスクトップではエッジスワイプ無効 */
+      if (_isSidebarDesktop()) return;
       _touchStartX = e.touches[0].clientX;
       _touchStartY = e.touches[0].clientY;
       _edgeTracking = (_touchStartX <= _gc('edgeWidth')) && !_isOpen;
     }, { passive: true });
 
     document.addEventListener('touchmove', function(e) {
+      /* デスクトップではエッジスワイプ無効 */
+      if (_isSidebarDesktop()) return;
       if (!_edgeTracking || _isOpen) return;
       var dx = e.touches[0].clientX - _touchStartX;
       var dy = Math.abs(e.touches[0].clientY - _touchStartY);
-      /* 水平方向が優勢で、しきい値を超えたら開く */
       if (dx > _gc('openThreshold') && dx > dy * 1.2) {
         _edgeTracking = false;
         openSidebar();
@@ -292,10 +321,8 @@
     html += '<div class="fz-s fw6 mb12">👆 ジェスチャー設定</div>';
     html += '<div class="fz-xs c-muted mb12">画面端からのスワイプでサイドバーや右パネルを開く操作を調整します。<br>端末のOS戻るジェスチャーと競合する場合は、検出幅を広めに設定してください。</div>';
 
-    /* --- 左サイドバー --- */
     html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">◀ 左サイドバー</div>';
 
-    /* 検出幅 */
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">検出幅: <span id="gesture-edge-val">' + cfg.edgeWidth + '</span>px</div>';
     html += '<input type="range" class="input-range" min="20" max="80" step="5" value="' + cfg.edgeWidth + '" ';
@@ -304,7 +331,6 @@
     html += '<div class="flex flex-between fz-xxs c-muted"><span>20px（狭い）</span><span>80px（広い）</span></div>';
     html += '</div>';
 
-    /* 開く距離 */
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">開く距離: <span id="gesture-open-val">' + cfg.openThreshold + '</span>px</div>';
     html += '<input type="range" class="input-range" min="20" max="80" step="5" value="' + cfg.openThreshold + '" ';
@@ -313,7 +339,6 @@
     html += '<div class="flex flex-between fz-xxs c-muted"><span>20px（敏感）</span><span>80px（鈍い）</span></div>';
     html += '</div>';
 
-    /* 閉じる距離 */
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">閉じる距離: <span id="gesture-close-val">' + cfg.closeThreshold + '</span>px</div>';
     html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.closeThreshold + '" ';
@@ -322,11 +347,9 @@
     html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
     html += '</div>';
 
-    /* --- 右パネル --- */
     html += '<div style="margin-top:16px;padding-top:12px;border-top:.5px solid var(--c-divider)"></div>';
     html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">▶ 右パネル</div>';
 
-    /* 検出幅 */
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">検出幅: <span id="gesture-redge-val">' + cfg.rightEdgeWidth + '</span>px</div>';
     html += '<input type="range" class="input-range" min="15" max="60" step="5" value="' + cfg.rightEdgeWidth + '" ';
@@ -335,7 +358,6 @@
     html += '<div class="flex flex-between fz-xxs c-muted"><span>15px（狭い）</span><span>60px（広い）</span></div>';
     html += '</div>';
 
-    /* 開く距離 */
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">開く距離: <span id="gesture-ropen-val">' + cfg.rightOpenThreshold + '</span>px</div>';
     html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.rightOpenThreshold + '" ';
@@ -344,7 +366,6 @@
     html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
     html += '</div>';
 
-    /* 閉じる距離 */
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">閉じる距離: <span id="gesture-rclose-val">' + cfg.rightCloseThreshold + '</span>px</div>';
     html += '<input type="range" class="input-range" min="30" max="100" step="5" value="' + cfg.rightCloseThreshold + '" ';
@@ -353,7 +374,6 @@
     html += '<div class="flex flex-between fz-xxs c-muted"><span>30px（敏感）</span><span>100px（鈍い）</span></div>';
     html += '</div>';
 
-    /* リセットボタン */
     html += '<button class="btn btn-secondary btn-sm btn-block" onclick="_gestureReset()">初期値に戻す</button>';
 
     html += '</div></div>';
@@ -372,7 +392,6 @@
     hp();
     saveGestureConfig(JSON.parse(JSON.stringify(DEFAULT_GESTURE_CFG)));
     toast('👆 ジェスチャー設定を初期値に戻しました');
-    /* 設定画面を再描画 */
     if (typeof window._refreshSettingsOverlay === 'function') {
       window._refreshSettingsOverlay();
     }

@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/app.js
-   アプリ初期化・テーマ管理・グローバル制御
+   アプリ初期化・テーマ管理・グローバル制御（デスクトップ対応修正版）
    ========================================================== */
 (function(){
   'use strict';
@@ -23,7 +23,6 @@
     var c = color || DEFAULT_COLOR;
     document.documentElement.setAttribute('data-style', s);
     document.documentElement.setAttribute('data-color', c);
-    /* 旧 data-theme 属性を削除（main.css の [data-theme="dark"] と競合防止） */
     document.documentElement.removeAttribute('data-theme');
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
@@ -43,6 +42,24 @@
     applyTheme(getThemeStyle(), color);
   }
 
+  /* ---------- デスクトップ判定 ---------- */
+  function _isDesktop() {
+    return window.innerWidth >= 1024;
+  }
+
+  /* ---------- デスクトップサイドバー初期化 ---------- */
+  function _initDesktopSidebar() {
+    if (!_isDesktop()) return;
+    var sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    /* デスクトップでは常時表示（CSSで制御） */
+    if (typeof renderSidebar === 'function') renderSidebar();
+
+    /* サイドバーを開いた状態にする（CSSのtransformが上書きされるため） */
+    sidebar.classList.add('open');
+  }
+
   /* ---------- Compatibility shims ---------- */
   window.refreshSettingsModalIfOpen = function() {
     if (typeof getTopOverlayId === 'function' && getTopOverlayId() === 'settings') {
@@ -56,11 +73,9 @@
   window.openStatDetail = window.openStatDetail || function() {};
   window.curPage = -1;
 
-  /* refreshHome — delegates to home.js renderHome if available */
   window.refreshHome = function() {
     if (typeof renderHome === 'function') renderHome();
   };
-  /* renderHomeWidgets is also used by home.js as an alias */
   window.renderHomeWidgets = function() {
     if (typeof renderHome === 'function') renderHome();
   };
@@ -102,7 +117,6 @@
       if (e.target === div) div.remove();
     });
 
-    /* PF選択のデフォルト値設定 */
     var pfSelect = document.getElementById('edit-earn-pf');
     if (pfSelect && pf) {
       for (var j = 0; j < pfSelect.options.length; j++) {
@@ -131,7 +145,6 @@
           toast('✅ 更新しました');
           div.remove();
           if (typeof refreshHome === 'function') refreshHome();
-          /* カレンダーやstatsが開いていれば再描画 */
           var topId = typeof getTopOverlayId === 'function' ? getTopOverlayId() : null;
           if (topId === 'calendar' && typeof renderCalendar === 'function') renderCalendar();
           if (topId === 'stats' && typeof renderStats === 'function') renderStats();
@@ -140,14 +153,11 @@
     };
   }
 
-  /* openEditEarn / openEditExpense グローバル関数 */
   window.openEditEarn = function(ts) {
     _openEarnEditDialog(ts);
   };
 
-  /* expense.js の openEditExpense を退避（expense.js は app.js より前にロードされる） */
   var _expenseEditFn = window.openEditExpense;
-
   window.openEditExpense = function(ts) {
     if (typeof _expenseEditFn === 'function') {
       _expenseEditFn(ts);
@@ -191,7 +201,6 @@
         }
       }).then(function() {
 
-        /* ホーム画面を先に表示（Firebase不要） */
         if (typeof renderHome === 'function') renderHome();
         if (typeof renderFab === 'function') renderFab();
         if (typeof initSidebarGestures === 'function') initSidebarGestures();
@@ -200,9 +209,9 @@
         if (typeof initRightPanelGestures === 'function') initRightPanelGestures();
         if (typeof startTopbarUpdater === 'function') startTopbarUpdater();
 
-        /* デスクトップ対応初期化 — モバイル修正のため一旦無効化 */
-        // if (typeof _initDesktopSidebar === 'function') _initDesktopSidebar();
-        // if (typeof _applyDesktopRightPanel === 'function') _applyDesktopRightPanel();
+        /* デスクトップ対応初期化（有効化） */
+        _initDesktopSidebar();
+        if (typeof _applyDesktopRightPanel === 'function') _applyDesktopRightPanel();
 
         /* Firebase SDK の読み込み完了を待ってから同期を初期化 */
         function initFirebase() {
@@ -219,15 +228,12 @@
         }
 
         if (window._firebaseSDKReady) {
-          /* 既に読み込み済み */
           initFirebase();
         } else {
-          /* まだ読み込み中 → コールバック登録 */
           window._onFirebaseSDKReady = function() {
             console.log('[App] Firebase SDK ready, initializing auth...');
             initFirebase();
           };
-          /* 10秒でタイムアウト（オフライン対策） */
           setTimeout(function() {
             if (!window._firebaseSDKReady) {
               console.warn('[App] Firebase SDK load timeout, skipping sync init');
@@ -257,12 +263,8 @@
 
     _initExitGuard();
 
-    /* Escape key handler for closing overlays/sidebars/panels/FAB */
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
-        /* Priority order: confirm dialog > FAB menu > overlay > right panel > sidebar */
-
-        /* 1. Confirm dialog */
         var confirmOverlay = document.querySelector('.confirm-overlay');
         if (confirmOverlay) {
           var cancelBtn = confirmOverlay.querySelector('#v2-cc-no') ||
@@ -272,27 +274,20 @@
           else confirmOverlay.remove();
           return;
         }
-
-        /* 2. FAB menu */
         if (typeof isFabOpen === 'function' && isFabOpen()) {
           closeFabMenu();
           return;
         }
-
-        /* 3. Overlay */
         if (typeof isOverlayOpen === 'function' && isOverlayOpen()) {
           closeOverlay();
           return;
         }
-
-        /* 4. Right panel */
         if (typeof isRightPanelOpen === 'function' && isRightPanelOpen()) {
           closeRightPanel();
           return;
         }
-
-        /* 5. Sidebar */
-        if (typeof isSidebarOpen === 'function' && isSidebarOpen()) {
+        /* デスクトップではサイドバーはEscapeで閉じない（常時表示のため） */
+        if (!_isDesktop() && typeof isSidebarOpen === 'function' && isSidebarOpen()) {
           closeSidebar();
           return;
         }
@@ -326,7 +321,7 @@
       if (_exitGuardActive) {
         history.pushState(null, '', location.href);
         if (typeof isOverlayOpen === 'function' && isOverlayOpen()) { closeOverlay(); return; }
-        if (typeof isSidebarOpen === 'function' && isSidebarOpen()) { closeSidebar(); return; }
+        if (!_isDesktop() && typeof isSidebarOpen === 'function' && isSidebarOpen()) { closeSidebar(); return; }
         if (typeof isRightPanelOpen === 'function' && isRightPanelOpen()) { closeRightPanel(); return; }
         _showExitConfirm();
       }
@@ -354,13 +349,23 @@
   window.setThemeColor = setThemeColor;
   window.isDarkPalette = isDarkPalette;
   window.updateSyncIndicator = updateSyncIndicator;
+  window._isDesktop = _isDesktop;
+  window._initDesktopSidebar = _initDesktopSidebar;
 
-  /* ---------- デスクトップ↔モバイル切替時のプリセット再適用 ---------- */
+  /* ---------- デスクトップ↔モバイル切替時の再適用 ---------- */
   var _lastIsDesktop = window.innerWidth >= 1024;
   window.addEventListener('resize', function() {
     var nowDesktop = window.innerWidth >= 1024;
     if (nowDesktop !== _lastIsDesktop) {
       _lastIsDesktop = nowDesktop;
+      if (nowDesktop) {
+        _initDesktopSidebar();
+        if (typeof _applyDesktopRightPanel === 'function') _applyDesktopRightPanel();
+      } else {
+        /* モバイルに戻った時、サイドバーを閉じる */
+        var sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.classList.remove('open');
+      }
       if (typeof renderHome === 'function') renderHome();
       if (typeof renderTopbar === 'function') renderTopbar();
       if (typeof renderBottombar === 'function') renderBottombar();

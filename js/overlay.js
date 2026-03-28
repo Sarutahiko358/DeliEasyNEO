@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/overlay.js
-   オーバーレイシステム — 編集モード＋基本操作対応
+   オーバーレイシステム — デスクトップ対応修正版
    ========================================================== */
 (function(){
   'use strict';
@@ -23,6 +23,11 @@
 
   /* ---------- State ---------- */
   var _stack = [];
+
+  /* ---------- デスクトップ判定 ---------- */
+  function _isDesktopMode() {
+    return window.innerWidth >= 1024;
+  }
 
   /* ---------- Pull-to-refresh 制御 ---------- */
   function _disablePullToRefresh() {
@@ -60,10 +65,15 @@
       actionsHtml = '<button class="overlay-back" onclick="openOverlayCustomizer(\'' + id + '\', function(){ var b=document.getElementById(\'overlay-body-' + id + '\'); if(b && typeof window[\'renderOverlay_' + id + '\']===\'function\') window[\'renderOverlay_' + id + '\'](b); })" style="font-size:.8rem" title="カスタマイズ">⚙️</button>';
     }
 
+    /* デスクトップではXボタン、モバイルでは←ボタン */
+    var closeButtonHtml = _isDesktopMode()
+      ? '<button class="overlay-back" onclick="closeOverlay()" title="閉じる" style="font-size:1rem">✕</button>'
+      : '<button class="overlay-back" onclick="closeOverlay()">←</button>';
+
     sheet.innerHTML =
       '<div class="overlay-handle"></div>' +
       '<div class="overlay-header">' +
-        '<button class="overlay-back" onclick="closeOverlay()">←</button>' +
+        closeButtonHtml +
         '<span class="overlay-title">' + escHtml(def.title) + '</span>' +
         '<div class="overlay-actions">' + actionsHtml + '</div>' +
       '</div>' +
@@ -75,7 +85,6 @@
     container.classList.add('has-overlay');
     if (backdrop) {
       backdrop.classList.add('visible');
-      /* デスクトップ: バックドロップクリックで閉じる */
       if (!backdrop._clickInit) {
         backdrop._clickInit = true;
         backdrop.addEventListener('click', function() {
@@ -84,7 +93,6 @@
       }
     }
 
-    /* pull-to-refresh を無効化 */
     _disablePullToRefresh();
 
     requestAnimationFrame(function() {
@@ -92,7 +100,12 @@
     });
 
     _stack.push({ id: id, level: level });
-    _initInteractiveSwipe(sheet);
+
+    /* モバイルのみスワイプで閉じるを有効化 */
+    if (!_isDesktopMode()) {
+      _initInteractiveSwipe(sheet);
+    }
+
     _renderOverlayContent(id);
 
     if (typeof window.hideFab === 'function') window.hideFab();
@@ -109,7 +122,6 @@
       if (backdrop) { backdrop.classList.remove('visible'); backdrop.style.opacity = ''; }
       if (typeof window.showFab === 'function') window.showFab();
       if (typeof window.refreshHome === 'function') window.refreshHome();
-      /* pull-to-refresh を復活 */
       _enablePullToRefresh();
     }
   }
@@ -137,7 +149,7 @@
   function isOverlayOpen() { return _stack.length > 0; }
   function getTopOverlayId() { return _stack.length > 0 ? _stack[_stack.length - 1].id : null; }
 
-  /* ---------- Interactive swipe down to close ---------- */
+  /* ---------- Interactive swipe down to close (モバイル専用) ---------- */
   function _initInteractiveSwipe(sheet) {
     var body = sheet.querySelector('.overlay-body');
     var handle = sheet.querySelector('.overlay-handle');
@@ -153,10 +165,12 @@
 
     function isOnHandleOrHeader(target) {
       return target === handle || target === header ||
-             handle.contains(target) || header.contains(target);
+             (handle && handle.contains(target)) || (header && header.contains(target));
     }
 
     function onTouchStart(e) {
+      /* デスクトップではスワイプ無効 */
+      if (_isDesktopMode()) { canDrag = false; return; }
       /* ウィジェット編集ドラッグ中はスワイプクローズを完全に無効化 */
       if (window.__widgetDragActive) { canDrag = false; return; }
 
@@ -165,7 +179,6 @@
       /* 編集モードのリスト内からのタッチはスワイプクローズを無効化 */
       if (target.closest && (
           target.closest('.home-edit-list') ||
-          target.closest('.home-edit-row') ||
           target.closest('.home-edit-item') ||
           target.closest('.edit-mode-header')
       )) {
@@ -173,11 +186,9 @@
         return;
       }
 
-      /* ハンドル/ヘッダーからは常にドラッグ可能 */
       if (isOnHandleOrHeader(target)) {
         canDrag = true;
       } else {
-        /* body内からはスクロール上端の時のみ */
         canDrag = body && body.scrollTop <= 2;
       }
       if (!canDrag) return;
@@ -189,6 +200,8 @@
     }
 
     function onTouchMove(e) {
+      /* デスクトップではスワイプ無効 */
+      if (_isDesktopMode()) { canDrag = false; isDragging = false; return; }
       /* ウィジェット編集ドラッグ中は何もしない */
       if (window.__widgetDragActive) { canDrag = false; isDragging = false; return; }
 
@@ -196,7 +209,6 @@
       currentY = e.touches[0].clientY;
       var dy = currentY - startY;
 
-      /* 上方向は無視 */
       if (dy <= 0) {
         if (isDragging) {
           sheet.style.transform = '';
@@ -207,18 +219,16 @@
         return;
       }
 
-      /* 5px以上動いたらドラッグ開始 */
       if (!isDragging && dy > 5) {
         if (body && body.scrollTop > 2 && !isOnHandleOrHeader(e.touches[0].target || e.target)) {
           canDrag = false;
           return;
         }
 
-        /* ドラッグ開始時点でも編集リスト内なら無効 */
         var moveTarget = e.touches[0].target || e.target;
         if (moveTarget.closest && (
             moveTarget.closest('.home-edit-list') ||
-            moveTarget.closest('.home-edit-row')
+            moveTarget.closest('.home-edit-item')
         )) {
           canDrag = false;
           return;
@@ -232,6 +242,7 @@
 
       e.preventDefault();
 
+      /* モバイル用 transform */
       sheet.style.transform = 'translateX(-50%) translateY(' + dy + 'px)';
 
       var backdrop = _getBackdrop();
@@ -427,7 +438,7 @@
     var activeColorName = currentColor;
     lightColors.concat(darkColors).forEach(function(c) { if (c.id === currentColor) activeColorName = c.name; });
     html += '<div class="fz-m fw7 mt4" style="color:var(--c-primary)">' + escHtml(activeStyleName) + ' × ' + escHtml(activeColorName) + '</div>';
-    html += '<div class="fz-xs c-muted mt8">10スタイル × 20カラー = 200通りの組み合わせ</div>';
+    html += '<div class="fz-xs c-muted mt8">18スタイル × 20カラー = 360通りの組み合わせ</div>';
     html += '</div></div>';
 
     body.innerHTML = html;
@@ -451,7 +462,6 @@
     h += '<h3 class="fz-s fw6 mb4 text-c">📐 オーバーレイ管理</h3>';
     h += '<div class="fz-xs c-muted mb12 text-c">ホーム画面のウィジェット編集のように、オーバーレイを管理できます</div>';
 
-    /* Built-in overlays — open/customize */
     h += '<div class="fz-xs fw6 c-secondary mb8">組み込みオーバーレイ</div>';
     var builtinIds = ['calendar', 'stats', 'tax', 'expenseManage', 'pfManage'];
     var customizableIds = ['calendar', 'stats', 'tax', 'expenseManage'];
@@ -468,7 +478,6 @@
       h += '</div>';
     });
 
-    /* Custom overlays — reorder, edit, delete */
     h += '<div class="fz-xs fw6 c-secondary mb8 mt12">カスタムオーバーレイ</div>';
     if (customOverlays.length === 0) {
       h += '<div class="fz-xs c-muted mb8" style="padding:8px">カスタムオーバーレイはまだありません</div>';
@@ -478,7 +487,6 @@
         h += '<div class="overlay-mgr-item overlay-mgr-wobble" data-co-idx="' + idx + '">';
         h += '<span style="font-size:1rem;flex-shrink:0">' + escHtml(co.icon) + '</span>';
         h += '<span class="fz-s" style="flex:1">' + escHtml(co.title) + '</span>';
-        /* Move buttons */
         if (idx > 0) h += '<button class="btn btn-ghost btn-xs" onclick="_ovmMoveCustom(' + idx + ',-1)" style="padding:2px 6px">▲</button>';
         if (idx < customOverlays.length - 1) h += '<button class="btn btn-ghost btn-xs" onclick="_ovmMoveCustom(' + idx + ',1)" style="padding:2px 6px">▼</button>';
         h += '<button class="btn btn-primary btn-xs" onclick="document.getElementById(\'overlay-manager-dialog\').remove();openCustomOverlay(\'' + escJs(co.id) + '\')">開く</button>';
@@ -489,7 +497,6 @@
       h += '</div>';
     }
 
-    /* Add new */
     h += '<button class="btn btn-primary btn-sm btn-block mt8" onclick="document.getElementById(\'overlay-manager-dialog\').remove();openCreateCustomOverlayDialog()">＋ 新しいオーバーレイを追加</button>';
 
     h += '<button class="btn btn-ghost btn-block mt12" onclick="this.closest(\'.confirm-overlay\').remove()">閉じる</button>';
@@ -502,7 +509,6 @@
     });
   }
 
-  /* Manager helpers */
   window._ovmMoveCustom = function(idx, dir) {
     hp();
     var list = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
@@ -512,7 +518,6 @@
     list[newIdx] = list[idx];
     list[idx] = tmp;
     if (typeof saveCustomOverlays === 'function') saveCustomOverlays(list);
-    /* Refresh dialog */
     var existing = document.getElementById('overlay-manager-dialog');
     if (existing) existing.remove();
     openOverlayManager();
@@ -520,22 +525,13 @@
 
   window._ovmDeleteCustom = function(coId) {
     customConfirm('このカスタムオーバーレイを削除しますか？', function() {
-      /* 1. データ削除 */
       if (typeof deleteCustomOverlay === 'function') deleteCustomOverlay(coId);
-
-      /* 2. フィードバック */
       toast('🗑 オーバーレイを削除しました');
-
-      /* 3. 全ての confirm-overlay と manager-dialog を除去してから再表示 */
       setTimeout(function() {
         document.querySelectorAll('.confirm-overlay').forEach(function(el) { el.remove(); });
         var existing = document.getElementById('overlay-manager-dialog');
         if (existing) existing.remove();
-
-        /* 4. マネージャーを再表示 */
         openOverlayManager();
-
-        /* 5. サイドバーとホーム画面も更新 */
         if (typeof renderSidebar === 'function') {
           try { renderSidebar(); } catch(e) {}
         }

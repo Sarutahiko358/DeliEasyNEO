@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/bottombar.js
-   ボトムバー（デフォルト非表示・有効化可能）
+   ボトムバー（デフォルト非表示・有効化可能）— デスクトップ対応修正版
    ========================================================== */
 (function(){
   'use strict';
@@ -28,6 +28,11 @@
     items: ['earnInput', 'calendar', 'stats', 'expense', 'settings', 'none']
   };
 
+  /* ---------- デスクトップ判定 ---------- */
+  function _isBottombarDesktop() {
+    return window.innerWidth >= 1024;
+  }
+
   /* ---------- 設定取得/保存 ---------- */
   function getBottombarConfig() {
     var preset = typeof getActivePreset === 'function' ? getActivePreset() : null;
@@ -51,6 +56,12 @@
     /* 既存のボトムバーを削除 */
     var existing = document.getElementById('bottombar');
     if (existing) existing.remove();
+
+    /* デスクトップでは常にボトムバーを表示しない（CSSでも非表示だがDOM上も作らない） */
+    if (_isBottombarDesktop()) {
+      _adjustMainPadding(false);
+      return;
+    }
 
     if (!cfg.show) {
       _adjustMainPadding(false);
@@ -103,7 +114,6 @@
     for (var i = 0; i < BOTTOMBAR_ACTIONS.length; i++) {
       if (BOTTOMBAR_ACTIONS[i].id === id) return BOTTOMBAR_ACTIONS[i];
     }
-    /* カスタムオーバーレイをチェック */
     if (id && id.indexOf('custom_') === 0) {
       var custom = typeof getCustomOverlays === 'function' ? getCustomOverlays() : [];
       for (var j = 0; j < custom.length; j++) {
@@ -133,14 +143,14 @@
     var main = document.getElementById('main-content');
     if (!main) return;
     /* デスクトップではボトムバーが非表示なのでpadding不要 */
-    if (window.innerWidth >= 1024) {
+    if (_isBottombarDesktop()) {
       main.style.paddingBottom = '';
       return;
     }
     if (hasBottombar) {
-      main.style.paddingBottom = '140px'; /* 84px bar + 56px extra */
+      main.style.paddingBottom = '140px';
     } else {
-      main.style.paddingBottom = ''; /* CSSデフォルトに戻す */
+      main.style.paddingBottom = '';
     }
   }
 
@@ -167,6 +177,11 @@
     html += '<div class="card mb12"><div class="card-body">';
     html += '<div class="fz-s fw6 mb12">📱 ボトムバー設定</div>';
 
+    /* デスクトップでは非表示であることを通知 */
+    if (_isBottombarDesktop()) {
+      html += '<div class="fz-xs c-muted mb8" style="padding:8px;background:var(--c-fill-quaternary);border-radius:var(--ds-radius-sm)">🖥️ デスクトップ (1024px以上) ではボトムバーは自動的に非表示になります。サイドバーをご利用ください。</div>';
+    }
+
     /* 有効/無効 */
     html += '<div class="flex flex-between items-center mb12">';
     html += '<span class="fz-s">ボトムバーを有効化</span>';
@@ -180,7 +195,6 @@
       var slotCount = cfg.slotCount || 5;
       var items = cfg.items || DEFAULT_BOTTOMBAR_CFG.items;
 
-      /* 表示数選択 */
       html += '<div class="flex flex-between items-center mb12">';
       html += '<span class="fz-s">表示アイコン数</span>';
       html += '<select class="input" style="width:80px" onchange="setBottombarSlotCount(Number(this.value))">';
@@ -253,6 +267,7 @@
 
   /* ---------- 表示/非表示 ---------- */
   function showBottombar() {
+    if (_isBottombarDesktop()) return;
     var bar = document.getElementById('bottombar');
     if (bar) bar.classList.remove('bottombar-hidden');
   }

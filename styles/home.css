@@ -1,6 +1,7 @@
 /* ==========================================================
    DeliEasy v2 — styles/home.css
-   ホーム画面固有のスタイル（リッチリスト編集対応版）
+   ホーム画面固有のスタイル（修正版：フラットアイテム + ドラッグ改善）
+   custom-overlays.js ダッシュボード編集互換を含む
    ========================================================== */
 
 /* 編集モード時のウィジェットにシェイクアニメ（iOS風） */
@@ -44,37 +45,13 @@
   margin-top: 0;
 }
 
-/* ========== 編集モード: リッチリスト ========== */
+/* ========== 編集モード: フラットアイテムリスト ========== */
 
 .home-edit-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-bottom: 16px;
-}
-
-/* --- 行コンテナ --- */
-.home-edit-row {
-  display: flex;
-  gap: 6px;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: opacity .15s;
-}
-
-/* full幅の行 */
-.home-edit-row-full .home-edit-item {
-  flex: 1;
-}
-
-/* halfペアの行 */
-.home-edit-row-pair .home-edit-item {
-  flex: 1;
-}
-
-/* halfが1個だけの行（次がfullや末尾） */
-.home-edit-row-single-half .home-edit-item {
-  flex: 0 0 calc(50% - 3px);
 }
 
 /* --- 個別アイテム --- */
@@ -89,6 +66,8 @@
   box-shadow: var(--ds-shadow-card);
   min-height: 48px;
   transition: background .12s, box-shadow .12s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* --- ハンドル --- */
@@ -157,16 +136,13 @@
   color: var(--c-danger);
 }
 
-/* --- ドラッグ中の行 --- */
-.home-edit-row.home-edit-dragging {
+/* --- ドラッグ中のアイテム --- */
+.home-edit-item.home-edit-dragging {
   background: var(--c-card);
   box-shadow: 0 8px 32px rgba(0,0,0,.18);
   opacity: .9;
   border-radius: var(--ds-radius-sm);
   z-index: 10000;
-}
-.home-edit-row.home-edit-dragging .home-edit-item {
-  box-shadow: none;
 }
 
 /* --- プレースホルダー --- */
@@ -213,3 +189,8 @@
     font-size: .6rem;
   }
 }
+
+/* ==========================================================
+   custom-overlays.js ダッシュボード編集 互換スタイル
+   home.js はフラットアイテム方式に移行したが、
+   custom-overlays.js のダッシュボード編集は

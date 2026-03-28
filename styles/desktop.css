@@ -1,36 +1,28 @@
 /* ==========================================================
    DeliEasy v2 — styles/desktop.css
-   デスクトップ＋タブレット レスポンシブ対応
-   Phase 3: ワイドレイアウト
+   デスクトップ＋タブレット レスポンシブ対応（修正版）
    ========================================================== */
 
 /* ==========================================================
    タブレット (768px〜1023px)
    ========================================================== */
 @media (min-width: 768px) {
-  /* --- ウィジェット --- */
   .widget-grid {
     max-width: 600px;
     margin: 0 auto;
   }
-
-  /* --- カレンダーセル拡大 --- */
   .cal-c {
     min-height: 48px;
   }
   .cal-c .cal-am {
     font-size: .55rem;
   }
-
-  /* --- 統計グリッド --- */
   .ds-grid {
     gap: 14px;
   }
   .ds-gbox .ds-gv {
     font-size: 1.25rem;
   }
-
-  /* --- オーバーレイ幅80% --- */
   .overlay-sheet {
     width: 80%;
     max-width: 80vw;
@@ -74,7 +66,7 @@
     height: 100dvh;
   }
 
-  /* --- メインコンテンツ --- max-width なし、幅いっぱいに使う */
+  /* --- メインコンテンツ --- */
   .main-content {
     flex: 1;
     padding: 16px 24px 80px;
@@ -89,16 +81,21 @@
     padding: 0 24px;
   }
 
+  /* ☰ボタンを非表示（デスクトップではサイドバー常時表示のため不要） */
+  .topbar .topbar-left .topbar-btn:first-child {
+    display: none;
+  }
+
   /* ==========================================================
      サイドバー — 常時固定表示
      ========================================================== */
   .sidebar-overlay {
-    display: none;
+    display: none !important;
   }
 
   .sidebar {
-    position: static;
-    transform: none;
+    position: static !important;
+    transform: none !important;
     width: 240px;
     min-width: 240px;
     max-width: none;
@@ -118,12 +115,12 @@
      右パネル — 常時表示オプション
      ========================================================== */
   .right-panel-overlay {
-    display: none;
+    display: none !important;
   }
 
   body.desktop-rp-visible .right-panel {
-    position: static;
-    transform: none;
+    position: static !important;
+    transform: none !important;
     width: 360px;
     min-width: 360px;
     max-width: none;
@@ -139,14 +136,17 @@
 
   /* 常時表示が無効の場合 — モバイルと同じ挙動を維持 */
   body:not(.desktop-rp-visible) .right-panel-overlay {
-    display: block;
+    display: block !important;
+  }
+  body:not(.desktop-rp-visible) .right-panel {
+    position: fixed;
   }
 
   /* ==========================================================
      ボトムバー — 非表示
      ========================================================== */
   .bottombar {
-    display: none;
+    display: none !important;
   }
 
   /* ==========================================================
@@ -177,15 +177,16 @@
   }
 
   /* ==========================================================
-     ウィジェットグリッド — 4カラム固定
+     ウィジェットグリッド — 最大4カラム
      ========================================================== */
   .widget-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
+    max-width: none;
   }
-  .widget-full { grid-column: 1 / -1; }  /* 4列全幅 */
-  .widget-wide { grid-column: span 2; }   /* 2列 */
-  .widget-half { grid-column: span 1; }   /* 1列 */
+  .widget-full { grid-column: 1 / -1; }
+  .widget-wide { grid-column: span 2; }
+  .widget-half { grid-column: span 1; }
 
   /* fullウィジェット内部 — 広がりすぎ防止 */
   .widget-full .widget-inner,
@@ -200,7 +201,6 @@
      FAB — デスクトップ調整
      ========================================================== */
   .fab-container {
-    /* サイドバー分の最小left確保（JSクランプはPhase Eで対応） */
     min-height: 0;
   }
 
@@ -237,5 +237,51 @@
   /* --- sync-popup位置調整 --- */
   .sync-popup {
     right: 24px;
+  }
+
+  /* --- フローティングハンバーガーはデスクトップで非表示 --- */
+  .floating-hamburger {
+    display: none !important;
+  }
+
+  /* --- 編集リストのデスクトップ幅制限 --- */
+  .home-edit-list {
+    max-width: 600px;
+  }
+
+  /* --- オーバーレイ内の編集リスト幅制限 --- */
+  .overlay-body .home-edit-list {
+    max-width: 100%;
+  }
+
+  /* --- 統計/カレンダーのコンテンツ幅 --- */
+  .overlay-body #pg1,
+  .overlay-body #pg2,
+  .overlay-body #pg3,
+  .overlay-body #pg4 {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+}
+
+/* ==========================================================
+   ワイドデスクトップ (1440px以上)
+   ========================================================== */
+@media (min-width: 1440px) {
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+  }
+
+  .widget-grid {
+    gap: 20px;
+  }
+
+  .main-content {
+    padding: 20px 32px 80px;
+  }
+
+  .overlay-sheet {
+    width: 780px;
   }
 }
