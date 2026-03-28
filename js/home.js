@@ -174,8 +174,16 @@
     var isDragging = false;
     var isMouseDown = false;
 
+    /* listの直接の子である .home-edit-row だけを返す */
     function getRows() {
-      return Array.from(list.querySelectorAll('.home-edit-row'));
+      var all = [];
+      var children = list.children;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].classList && children[i].classList.contains('home-edit-row')) {
+          all.push(children[i]);
+        }
+      }
+      return all;
     }
 
     function _getXY(e) {
@@ -189,6 +197,8 @@
       if (e.target.closest('.home-edit-btn')) return;
       var row = e.target.closest('.home-edit-row');
       if (!row) return;
+      /* rowがlistの直接の子であることを確認 */
+      if (row.parentNode !== list) return;
       if (isMouse && e.button !== 0) return;
 
       var pos = _getXY(e);
@@ -197,6 +207,12 @@
       if (isMouse) isMouseDown = true;
 
       longPressTimer = setTimeout(function() {
+        /* ドラッグ開始時に再度rowの存在確認 */
+        if (!row.parentNode || row.parentNode !== list) {
+          isMouseDown = false;
+          return;
+        }
+
         isDragging = true;
         dragRow = row;
 
@@ -215,7 +231,7 @@
         placeholder = document.createElement('div');
         placeholder.className = 'home-edit-placeholder';
         placeholder.style.height = rect.height + 'px';
-        dragRow.parentNode.insertBefore(placeholder, dragRow);
+        list.insertBefore(placeholder, dragRow);
 
         dragRow.classList.add('home-edit-dragging');
         dragRow.style.position = 'fixed';
@@ -242,14 +258,19 @@
         return;
       }
 
-      if (!isDragging || !dragRow) return;
+      if (!isDragging || !dragRow || !placeholder) return;
       if (e.preventDefault) e.preventDefault();
 
       dragRow.style.top = (pos.y - offsetY) + 'px';
 
+      /* placeholderがlistの子であることを確認 */
+      if (placeholder.parentNode !== list) return;
+
       var rows = getRows().filter(function(r) { return r !== dragRow; });
       var inserted = false;
       for (var i = 0; i < rows.length; i++) {
+        /* rows[i]がlistの子であることを確認 */
+        if (rows[i].parentNode !== list) continue;
         var r = rows[i].getBoundingClientRect();
         if (pos.y < r.top + r.height / 2) {
           list.insertBefore(placeholder, rows[i]);
@@ -259,8 +280,9 @@
       }
       if (!inserted) {
         var addBtn = list.querySelector('.home-edit-add');
-        if (addBtn) list.insertBefore(placeholder, addBtn);
-        else list.appendChild(placeholder);
+        if (addBtn && addBtn.parentNode === list) {
+          list.insertBefore(placeholder, addBtn);
+        }
       }
     }
 
@@ -285,8 +307,10 @@
       dragRow.style.zIndex = '';
       dragRow.style.pointerEvents = '';
 
-      if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.insertBefore(dragRow, placeholder);
+      if (placeholder && placeholder.parentNode === list) {
+        list.insertBefore(dragRow, placeholder);
+        placeholder.remove();
+      } else if (placeholder && placeholder.parentNode) {
         placeholder.remove();
       }
       placeholder = null;
@@ -321,7 +345,7 @@
         dragRow.style.width = '';
         dragRow.style.zIndex = '';
         dragRow.style.pointerEvents = '';
-        if (placeholder) placeholder.remove();
+        if (placeholder && placeholder.parentNode) placeholder.remove();
         placeholder = null;
         dragRow = null;
       }
@@ -572,7 +596,6 @@
       _renderWidgetPickerContent(dialog);
     }
 
-    /* 編集モードのリストも裏で更新（見えてはいないがデータは最新に） */
   };
 
   /* ピッカーを閉じて編集画面を更新 */
