@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/widgets.js
-   ウィジェット定義 + 描画エンジン（修正版）
+   ウィジェット定義 + 描画エンジン（v2.5 — ショートカット拡充 + 税金ウィジェット + ミニカレンダー文字拡大）
    ========================================================== */
 (function(){
   'use strict';
@@ -12,6 +12,7 @@
     { id: 'summary', icon: '📊', name: '集計' },
     { id: 'goal',    icon: '🎯', name: '目標' },
     { id: 'detail',  icon: '📋', name: '詳細' },
+    { id: 'tax',     icon: '🧾', name: '税金' },
     { id: 'other',   icon: '⚙️', name: 'その他' }
   ];
 
@@ -43,7 +44,7 @@
       id: 'todaySales', name: '今日の売上', icon: '💰', category: 'today',
       size: 'half', sizeOptions: ['half','wide','full'],
       desc: '今日の合計売上',
-      tappable: true, tapAction: 'earn',
+      tappable: true, tapAction: 'earnInput',
       render: function(w) {
         var tot = typeof tdTot === 'function' ? tdTot() : 0;
         return _statBox('今日の売上', '¥' + fmt(tot), null, w);
@@ -53,7 +54,7 @@
       id: 'todayCount', name: '今日の件数', icon: '📦', category: 'today',
       size: 'half', sizeOptions: ['half','wide','full'],
       desc: '今日の配達件数',
-      tappable: true, tapAction: 'earn',
+      tappable: true, tapAction: 'earnInput',
       render: function(w) {
         var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
         return _statBox('今日の件数', cnt + '件', null, w);
@@ -63,6 +64,7 @@
       id: 'todayUnit', name: '今日の単価', icon: '📈', category: 'today',
       size: 'half', sizeOptions: ['half','wide','full'],
       desc: '今日の平均単価',
+      tappable: true, tapAction: 'stats',
       render: function(w) {
         var tot = typeof tdTot === 'function' ? tdTot() : 0;
         var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
@@ -74,6 +76,7 @@
       id: 'todayProfit', name: '今日の利益', icon: '✨', category: 'today',
       size: 'half', sizeOptions: ['half','wide','full'],
       desc: '売上 − 経費の概算',
+      tappable: true, tapAction: 'stats',
       render: function(w) {
         var tot = typeof tdTot === 'function' ? tdTot() : 0;
         var exps = S.g('exps', []);
@@ -84,12 +87,24 @@
         return _statBox('今日の利益', '<span class="' + cls + '">¥' + fmt(profit) + '</span>', null, w);
       }
     },
+    todayExpense: {
+      id: 'todayExpense', name: '今日の経費', icon: '💸', category: 'today',
+      size: 'half', sizeOptions: ['half','wide','full'],
+      desc: '今日の経費合計',
+      tappable: true, tapAction: 'expenseInput',
+      render: function(w) {
+        var exps = S.g('exps', []);
+        var expTot = 0;
+        exps.forEach(function(e) { if (e.date === TD) expTot += (Number(e.amount) || 0); });
+        return _statBox('今日の経費', '<span class="c-danger">¥' + fmt(expTot) + '</span>', null, w);
+      }
+    },
 
     todaySummary: {
       id: 'todaySummary', name: '今日のまとめ', icon: '📋', category: 'summary',
       size: 'full', sizeOptions: ['full','wide'],
       desc: '売上・件数・単価・利益を一覧',
-      tappable: true, tapAction: 'earn',
+      tappable: true, tapAction: 'stats',
       render: function() {
         var tot = typeof tdTot === 'function' ? tdTot() : 0;
         var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
@@ -111,6 +126,7 @@
       id: 'weekSummary', name: '今週のまとめ', icon: '📆', category: 'summary',
       size: 'full', sizeOptions: ['full','wide'],
       desc: '今週（月〜日）の合計',
+      tappable: true, tapAction: 'stats',
       render: function() {
         var data = typeof wkData === 'function' ? wkData() : { tot: 0, cnt: 0, days: 0 };
         var unit = data.cnt > 0 ? Math.round(data.tot / data.cnt) : 0;
@@ -127,6 +143,7 @@
       id: 'monthSummary', name: '今月のまとめ', icon: '📊', category: 'summary',
       size: 'full', sizeOptions: ['full','wide'],
       desc: '今月の合計',
+      tappable: true, tapAction: 'stats',
       render: function() {
         var tot = typeof moTot === 'function' ? moTot() : 0;
         var cnt = typeof moCnt === 'function' ? moCnt() : 0;
@@ -145,7 +162,7 @@
       id: 'todayPfBreakdown', name: 'PF別内訳', icon: '🍕', category: 'detail',
       size: 'full', sizeOptions: ['full','wide'],
       desc: '今日のプラットフォーム別内訳',
-      tappable: true, tapAction: 'earn',
+      tappable: true, tapAction: 'stats',
       render: function() {
         var records = typeof eByDate === 'function' ? eByDate(TD) : [];
         var pfMap = {};
@@ -180,12 +197,13 @@
       id: 'goalProgress', name: '月間目標', icon: '🎯', category: 'goal',
       size: 'full', sizeOptions: ['full','wide','half'],
       desc: '月間売上目標に対する進捗',
+      tappable: true, tapAction: 'goalSetting',
       render: function(w) {
         var goal = S.g('monthlyGoal', 0);
         var tot = typeof moTot === 'function' ? moTot() : 0;
         if (!goal || goal <= 0) {
           return '<div class="widget-inner"><div class="widget-goal-value">目標未設定</div>' +
-            '<div class="widget-progress-label" style="cursor:pointer" onclick="openGoalSetting()">タップして設定</div></div>';
+            '<div class="widget-progress-label" style="cursor:pointer" onclick="event.stopPropagation();openGoalSetting()">タップして設定</div></div>';
         }
         var pct = Math.min(Math.round(tot / goal * 100), 100);
         return '<div class="widget-inner">' +
@@ -199,6 +217,7 @@
       id: 'monthPace', name: '月間ペース', icon: '📐', category: 'goal',
       size: 'full', sizeOptions: ['full','wide'],
       desc: '月末着地予測',
+      tappable: true, tapAction: 'stats',
       render: function() {
         var now = new Date();
         var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
@@ -221,7 +240,7 @@
       id: 'recentRecords', name: '最近の記録', icon: '📝', category: 'detail',
       size: 'full', sizeOptions: ['full','wide'],
       desc: '直近5件の売上記録',
-      tappable: true, tapAction: 'earn',
+      tappable: true, tapAction: 'earnInput',
       render: function() {
         var all = typeof getE === 'function' ? getE() : [];
         var recent = all.slice(-5).reverse();
@@ -319,7 +338,7 @@
           html += '<span>' + d + '</span>';
           if (sales > 0) {
             var displayAmt = sales >= 10000 ? Math.round(sales / 1000) + 'k' : (sales >= 1000 ? (sales / 1000).toFixed(1) + 'k' : sales);
-            html += '<span style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:.35rem;font-weight:600;line-height:1;white-space:nowrap;color:' + (isToday ? 'rgba(255,255,255,.85)' : 'var(--c-tx-muted)') + ';font-variant-numeric:tabular-nums">' + displayAmt + '</span>';
+            html += '<span style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);font-size:.45rem;font-weight:700;line-height:1;white-space:nowrap;color:' + (isToday ? 'rgba(255,255,255,.9)' : 'var(--c-tx-secondary)') + ';font-variant-numeric:tabular-nums">' + displayAmt + '</span>';
           }
           html += '</div>';
         }
@@ -335,10 +354,109 @@
       }
     },
 
+    /* ========== 税金ウィジェット ========== */
+    taxSummary: {
+      id: 'taxSummary', name: '税金概算', icon: '🧾', category: 'tax',
+      size: 'full', sizeOptions: ['full','wide'],
+      desc: '年間の所得税・住民税・国保の概算',
+      tappable: true, tapAction: 'tax',
+      render: function() {
+        /* 年間データを集計 */
+        var now = new Date();
+        var yr = now.getFullYear();
+        var from = yr + '-01-01';
+        var to = yr + '-12-31';
+        var earns = typeof getE === 'function' ? getE() : [];
+        var yEarns = earns.filter(function(r) { return r.d >= from && r.d <= to; });
+        var revenue = 0;
+        yEarns.forEach(function(r) { revenue += (Number(r.a) || 0); });
+
+        var allExps = S.g('exps', []);
+        var yExps = allExps.filter(function(e) { return e.date >= from && e.date <= to; });
+        var expense = 0;
+        yExps.forEach(function(e) { expense += (Number(e.amount) || 0); });
+
+        var blueDeduction = 650000; /* デフォルト: 65万円 */
+        var income = Math.max(0, revenue - expense - blueDeduction);
+        var taxableIncome = Math.max(0, income - 480000); /* 基礎控除 */
+
+        /* 簡易税額計算 */
+        var BRACKETS = [
+          { limit: 1950000, rate: 0.05, deduction: 0 },
+          { limit: 3300000, rate: 0.10, deduction: 97500 },
+          { limit: 6950000, rate: 0.20, deduction: 427500 },
+          { limit: 9000000, rate: 0.23, deduction: 636000 },
+          { limit: 18000000, rate: 0.33, deduction: 1536000 },
+          { limit: 40000000, rate: 0.40, deduction: 2796000 },
+          { limit: Infinity, rate: 0.45, deduction: 4796000 }
+        ];
+        var incomeTax = 0;
+        for (var i = 0; i < BRACKETS.length; i++) {
+          if (taxableIncome <= BRACKETS[i].limit) {
+            incomeTax = Math.floor(taxableIncome * BRACKETS[i].rate - BRACKETS[i].deduction);
+            break;
+          }
+        }
+        incomeTax = Math.max(0, incomeTax);
+        var reconstructionTax = Math.floor(incomeTax * 0.021);
+        var residentTax = Math.floor(taxableIncome * 0.10);
+        var healthIns = Math.floor(taxableIncome * 0.10);
+        var totalTax = incomeTax + reconstructionTax + residentTax + healthIns;
+        var takeHome = revenue - expense - totalTax;
+
+        var html = '<div class="widget-inner">';
+        html += '<div class="fz-xs c-muted mb4 text-c">' + yr + '年（青色65万円控除・簡易計算）</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+        html += _miniStat('年間売上', '¥' + fmt(revenue));
+        html += _miniStat('年間経費', '¥' + fmt(expense));
+        html += _miniStat('所得税+復興税', '¥' + fmt(incomeTax + reconstructionTax));
+        html += _miniStat('住民税', '¥' + fmt(residentTax));
+        html += _miniStat('国保概算', '¥' + fmt(healthIns));
+        html += _miniStat('税金合計', '<span class="c-danger">¥' + fmt(totalTax) + '</span>');
+        html += '</div>';
+        html += '<div style="text-align:center;margin-top:8px;padding-top:8px;border-top:.5px solid var(--c-divider)">';
+        html += '<div class="fz-xs c-muted">手取り概算</div>';
+        html += '<div class="fw7 fz-l' + (takeHome < 0 ? ' c-danger' : ' c-success') + '" style="font-variant-numeric:tabular-nums">¥' + fmt(takeHome) + '</div>';
+        html += '</div>';
+        html += '</div>';
+        return html;
+      }
+    },
+
+    furusatoLimit: {
+      id: 'furusatoLimit', name: 'ふるさと納税上限', icon: '🎁', category: 'tax',
+      size: 'half', sizeOptions: ['half','wide','full'],
+      desc: 'ふるさと納税の上限目安',
+      tappable: true, tapAction: 'tax',
+      render: function(w) {
+        var now = new Date();
+        var yr = now.getFullYear();
+        var from = yr + '-01-01';
+        var to = yr + '-12-31';
+        var earns = typeof getE === 'function' ? getE() : [];
+        var yEarns = earns.filter(function(r) { return r.d >= from && r.d <= to; });
+        var revenue = 0;
+        yEarns.forEach(function(r) { revenue += (Number(r.a) || 0); });
+
+        var allExps = S.g('exps', []);
+        var yExps = allExps.filter(function(e) { return e.date >= from && e.date <= to; });
+        var expense = 0;
+        yExps.forEach(function(e) { expense += (Number(e.amount) || 0); });
+
+        var income = Math.max(0, revenue - expense - 650000);
+        var taxable = Math.max(0, income - 480000);
+        var residentIncomeRate = taxable * 0.10;
+        var limit = Math.floor(residentIncomeRate * 0.20) + 2000;
+
+        return _statBox('ふるさと納税上限', '¥' + fmt(Math.max(0, limit)), null, w);
+      }
+    },
+
     themeInfo: {
       id: 'themeInfo', name: 'テーマ情報', icon: '🎨', category: 'other',
       size: 'half', sizeOptions: ['half','wide','full'],
       desc: '現在のテーマ設定',
+      tappable: true, tapAction: 'theme',
       render: function(w) {
         var style = typeof getThemeStyle === 'function' ? getThemeStyle() : '?';
         var color = typeof getThemeColor === 'function' ? getThemeColor() : '?';
@@ -356,6 +474,34 @@
           'oninput="S.s(\'quickMemo\',this.value)" style="width:100%;min-height:60px;border:none;' +
           'background:transparent;font-size:.8125rem;color:var(--c-tx);resize:vertical;outline:none;' +
           'font-family:inherit">' + escHtml(memo) + '</textarea></div>';
+      }
+    },
+
+    /* ========== 連続稼働日数 ========== */
+    streak: {
+      id: 'streak', name: '連続稼働', icon: '🔥', category: 'goal',
+      size: 'half', sizeOptions: ['half','wide','full'],
+      desc: '連続稼働日数',
+      tappable: true, tapAction: 'calendar',
+      render: function(w) {
+        var streakDays = 0;
+        var d = new Date();
+        /* 今日にデータがなければ昨日から開始 */
+        var todayRecs = typeof eByDate === 'function' ? eByDate(dateKey(d)) : [];
+        if (todayRecs.length === 0) {
+          d.setDate(d.getDate() - 1);
+        }
+        for (var i = 0; i < 365; i++) {
+          var dk = dateKey(d);
+          var recs = typeof eByDate === 'function' ? eByDate(dk) : [];
+          if (recs.length > 0) {
+            streakDays++;
+            d.setDate(d.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+        return _statBox('連続稼働', streakDays + '日' + (streakDays >= 7 ? ' 🔥' : ''), null, w);
       }
     }
   };
@@ -383,7 +529,7 @@
     var tappable = !editMode && def.tappable ? ' widget-tappable' : '';
     var tapAttr = '';
     if (!editMode && def.tappable && def.tapAction) {
-      tapAttr = ' onclick="widgetTap(\'' + def.tapAction + '\')"';
+      tapAttr = ' onclick="widgetTap(\'' + escJs(def.tapAction) + '\')"';
     }
     var html = '<div class="widget ' + sizeClass + tappable + '"' + tapAttr + '>';
 
@@ -428,8 +574,35 @@
   /* ========== ウィジェットタップ ========== */
   function widgetTap(action) {
     if (typeof hp === 'function') hp();
-    if (action === 'earn') {
-      if (typeof openOverlay === 'function') openOverlay('earnInput');
+    switch (action) {
+      case 'earnInput':
+        if (typeof openOverlay === 'function') openOverlay('earnInput');
+        break;
+      case 'expenseInput':
+        if (typeof openOverlay === 'function') openOverlay('expenseInput');
+        break;
+      case 'stats':
+        if (typeof openOverlay === 'function') openOverlay('stats');
+        break;
+      case 'calendar':
+        if (typeof openOverlay === 'function') openOverlay('calendar');
+        break;
+      case 'tax':
+        if (typeof openOverlay === 'function') openOverlay('tax');
+        break;
+      case 'theme':
+        if (typeof openOverlay === 'function') openOverlay('theme');
+        break;
+      case 'goalSetting':
+        openGoalSetting();
+        break;
+      /* 旧互換 */
+      case 'earn':
+        if (typeof openOverlay === 'function') openOverlay('earnInput');
+        break;
+      default:
+        if (typeof openOverlay === 'function') openOverlay(action);
+        break;
     }
   }
 
@@ -449,18 +622,9 @@
   /* ========== Expose ========== */
   function openCalendarAtDate(dk) {
     if (typeof hp === 'function') hp();
-    /* calendar.js のグローバル変数を設定 */
     if (typeof window.initCalendar === 'function') window.initCalendar();
-    var parts = dk.split('-');
-    if (typeof window.calSel === 'function') {
-      /* calSel は calSelDate を設定し renderCalendar を呼ぶが、
-         オーバーレイが開いていない状態では #pg1 が無いので何も起きない。
-         先に年月をセットするため、calPrev/calNext 相当の処理が必要 */
-    }
-    /* カレンダーオーバーレイを開いてから日付を選択 */
     if (typeof openOverlay === 'function') {
       openOverlay('calendar');
-      /* オーバーレイのレンダリング後に日付を選択 */
       setTimeout(function() {
         if (typeof window.calSel === 'function') {
           window.calSel(dk);
