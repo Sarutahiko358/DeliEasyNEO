@@ -4,7 +4,9 @@
    custom-overlays.js ダッシュボード編集互換を含む
    ========================================================== */
 
-/* 編集モード時のウィジェットにシェイクアニメ（iOS風） */
+/* ──────────────────────────────────────────────
+   1. 編集モード時のウィジェット・シェイクアニメ（iOS風）
+   ────────────────────────────────────────────── */
 .widget-grid-editing .widget {
   animation: widget-wobble 0.3s ease-in-out infinite alternate;
 }
@@ -16,17 +18,21 @@
 }
 @keyframes widget-wobble {
   from { transform: rotate(-0.5deg); }
-  to { transform: rotate(0.5deg); }
+  to   { transform: rotate(0.5deg); }
 }
 
-/* ウィジェットドラッグ中 */
+/* ──────────────────────────────────────────────
+   2. ウィジェット・ドラッグ中
+   ────────────────────────────────────────────── */
 .widget.dragging {
   opacity: 0.5;
   transform: scale(1.03);
   box-shadow: 0 12px 40px var(--c-shadow-color);
 }
 
-/* 編集モードヘッダーを画面上部に固定 */
+/* ──────────────────────────────────────────────
+   3. 編集モードヘッダー（画面上部に固定）
+   ────────────────────────────────────────────── */
 .edit-mode-header {
   position: sticky;
   top: 44px;
@@ -45,7 +51,10 @@
   margin-top: 0;
 }
 
-/* ========== 編集モード: フラットアイテムリスト ========== */
+/* ──────────────────────────────────────────────
+   4. 編集モード: フラットアイテムリスト
+      home.js で使用（アイテム単位のフラット並び替え）
+   ────────────────────────────────────────────── */
 
 .home-edit-list {
   display: flex;
@@ -111,7 +120,7 @@
   text-transform: uppercase;
 }
 
-/* --- ボタン --- */
+/* --- ボタン共通 --- */
 .home-edit-btn {
   width: 28px;
   height: 28px;
@@ -128,12 +137,20 @@
   transition: all .12s;
   -webkit-tap-highlight-color: transparent;
 }
+.home-edit-btn:hover {
+  background: var(--c-fill-tertiary, var(--c-fill-quaternary));
+}
 .home-edit-btn:active {
   transform: scale(.85);
 }
+
+/* --- 削除ボタン --- */
 .home-edit-btn-del {
   background: var(--c-danger-light);
   color: var(--c-danger);
+}
+.home-edit-btn-del:hover {
+  opacity: .85;
 }
 
 /* --- ドラッグ中のアイテム --- */
@@ -169,12 +186,19 @@
   transition: all .15s;
   -webkit-tap-highlight-color: transparent;
 }
-.home-edit-add:active {
+.home-edit-add:hover {
   border-color: var(--c-primary);
   background: var(--c-primary-light);
 }
+.home-edit-add:active {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+  transform: scale(.97);
+}
 
-/* --- レスポンシブ: 狭い画面 --- */
+/* ──────────────────────────────────────────────
+   5. レスポンシブ: 狭い画面
+   ────────────────────────────────────────────── */
 @media (max-width: 340px) {
   .home-edit-item {
     padding: 10px 8px;
@@ -191,6 +215,48 @@
 }
 
 /* ==========================================================
-   custom-overlays.js ダッシュボード編集 互換スタイル
+   6. custom-overlays.js ダッシュボード編集 互換スタイル
+
    home.js はフラットアイテム方式に移行したが、
-   custom-overlays.js のダッシュボード編集は
+   custom-overlays.js のダッシュボード編集は .home-edit-row
+   による行グループ化を使用する。以下のスタイルは
+   custom-overlays.js のダッシュボードが正常にレンダリング
+   されるために必要。
+   ========================================================== */
+
+/* --- 行コンテナ共通 --- */
+.home-edit-row {
+  display: flex;
+  gap: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* --- サイズバリエーション --- */
+.home-edit-row-full .home-edit-item {
+  flex: 1;
+}
+
+.home-edit-row-pair .home-edit-item {
+  flex: 1;
+}
+
+.home-edit-row-single-half .home-edit-item {
+  flex: 0 0 calc(50% - 3px);
+}
+
+.home-edit-row-wide .home-edit-item {
+  flex: 1;
+}
+
+/* --- 行ドラッグ中（custom-overlays.js 用） --- */
+.home-edit-row.home-edit-dragging {
+  background: var(--c-card);
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  opacity: .9;
+  border-radius: var(--ds-radius-sm);
+  z-index: 10000;
+}
+.home-edit-row.home-edit-dragging .home-edit-item {
+  box-shadow: none;
+}
