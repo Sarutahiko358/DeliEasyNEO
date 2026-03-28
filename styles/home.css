@@ -260,3 +260,133 @@
 .home-edit-row.home-edit-dragging .home-edit-item {
   box-shadow: none;
 }
+
+/* ──────────────────────────────────────────────
+   7. グリッドベース編集UI
+   ────────────────────────────────────────────── */
+
+.grid-editor {
+  position: relative;
+}
+
+/* デスクトップ編集モード: 4列固定 */
+.grid-editor-desktop {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* 各ウィジェットの編集アイテム */
+.grid-editor-item {
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  min-height: 80px;
+}
+
+/* 編集コントロール（右上に重ねて表示） */
+.grid-editor-controls {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.grid-editor-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  font-size: .7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .12s;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.grid-editor-btn:active { transform: scale(.85); }
+
+.grid-editor-btn-del {
+  background: var(--c-danger);
+  color: #fff;
+}
+.grid-editor-btn-size {
+  background: var(--c-primary);
+  color: #fff;
+}
+
+/* サイズラベル（左上に表示） */
+.grid-editor-size-label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: .55rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-pill);
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  z-index: 10;
+  text-transform: uppercase;
+}
+
+/* プレビュー領域 */
+.grid-editor-preview {
+  pointer-events: none;
+  opacity: .7;
+  overflow: hidden;
+  max-height: 150px;
+}
+
+/* ドラッグ中のアイテム */
+.grid-editor-item.grid-editor-dragging {
+  opacity: .85;
+  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+  z-index: 10000;
+  cursor: grabbing;
+}
+
+/* プレースホルダー */
+.grid-editor-placeholder {
+  background: var(--c-primary-light);
+  border: 2px dashed var(--c-primary);
+  border-radius: var(--ds-radius);
+  min-height: 80px;
+}
+
+/* セグメンテッドコントロール（モバイル/デスクトップ切替） */
+.segmented {
+  display: flex;
+  background: var(--c-fill-quaternary);
+  border-radius: var(--ds-radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+.segmented-item {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--c-tx-muted);
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: calc(var(--ds-radius-sm) - 2px);
+  cursor: pointer;
+  transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.segmented-item.active {
+  background: var(--c-card);
+  color: var(--c-tx);
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+/* ===== デスクトップ: hover ===== */
+@media (hover: hover) {
+  .grid-editor-btn:hover { transform: scale(1.1); }
+  .grid-editor-item:hover { box-shadow: 0 4px 16px var(--c-shadow-color); }
+}

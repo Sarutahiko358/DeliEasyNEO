@@ -1,11 +1,12 @@
 /* ==========================================================
    DeliEasy v2 — js/home.js
-   ホーム画面描画 + 編集モード（リッチリスト並び替え版 — 修正版）
+   ホーム画面描画 + グリッドベース編集UI（モバイル/デスクトップ個別管理版）
    ========================================================== */
 (function(){
   'use strict';
 
   var _editMode = false;
+  var _homeEditCurrentMode = null; // null = 自動検出
 
   /* ========== メイン描画 ========== */
   function renderHome() {
@@ -53,83 +54,69 @@
     _initLongPress();
   }
 
-  /* ========== 編集モード: リッチリスト描画 ========== */
-  function _renderEditList(preset) {
-    var widgets = preset.widgets;
-    var html = '<div class="home-edit-list" id="home-edit-list">';
-
-    /* ウィジェットを個別アイテムとしてフラットに表示（行グループ化はCSSで対応） */
-    widgets.forEach(function(w, i) {
-      var def = WIDGET_DEFS[w.id];
-      if (!def) return;
-      var size = w.size || def.size || 'full';
-      html += '<div class="home-edit-item" data-widget-idx="' + i + '" data-widget-id="' + escHtml(w.id) + '" data-widget-size="' + size + '">';
-      html += _renderEditItemContent(w, def, i, size);
-      html += '</div>';
-    });
-
-    /* 追加ボタン */
-    html += '<div class="home-edit-add" onclick="openWidgetPicker()">';
-    html += '<span style="font-size:1.2rem">＋</span> ウィジェットを追加';
-    html += '</div>';
-
-    html += '</div>';
-    return html;
-  }
-
-  function _renderEditItemContent(w, def, index, size) {
-    var sizeLabel = size === 'full' ? 'FULL' : (size === 'compact' ? 'SM' : 'HALF');
-    var sizeColor = size === 'full' ? 'var(--c-primary)' : 'var(--c-info)';
-
-    var html = '';
-    html += '<span class="home-edit-handle">☰</span>';
-    html += '<span class="home-edit-icon">' + def.icon + '</span>';
-    html += '<span class="home-edit-name">' + escHtml(def.name) + '</span>';
-    html += '<span class="home-edit-size" style="color:' + sizeColor + '">' + sizeLabel + '</span>';
-
-    /* サイズ変更ボタン */
-    if (def.sizeOptions && def.sizeOptions.length > 1) {
-      html += '<button class="home-edit-btn" onclick="event.stopPropagation();_homeEditCycleSize(' + index + ')" title="サイズ変更">↔</button>';
-    }
-
-    /* 削除ボタン */
-    html += '<button class="home-edit-btn home-edit-btn-del" onclick="event.stopPropagation();_homeEditRemove(' + index + ')" title="削除">✕</button>';
-    return html;
-  }
-
-  /* ========== 編集操作 ========== */
-  window._homeEditCycleSize = function(idx) {
+  /* ========== 編集操作（グリッドベース） ========== */
+  window._gridEditorRemove = function(idx) {
     hp();
-    var preset = getActivePreset();
-    if (!preset || !preset.widgets[idx]) return;
-    var w = preset.widgets[idx];
+    var rawPreset = getActivePresetRaw();
+    var editMode = _homeEditCurrentMode || _getDeviceMode();
+    var modeData = getPresetModeData(rawPreset, editMode);
+    if (!modeData || !modeData.widgets[idx]) return;
+    modeData.widgets.splice(idx, 1);
+    savePresetModeData(rawPreset, editMode, modeData);
+    var body = document.getElementById('overlay-body-homeEdit');
+    if (body) renderOverlay_homeEdit(body);
+    renderHome();
+  };
+
+  window._gridEditorCycleSize = function(idx) {
+    hp();
+    var rawPreset = getActivePresetRaw();
+    var editMode = _homeEditCurrentMode || _getDeviceMode();
+    var modeData = getPresetModeData(rawPreset, editMode);
+    if (!modeData || !modeData.widgets[idx]) return;
+    var w = modeData.widgets[idx];
     var def = WIDGET_DEFS[w.id];
     if (!def || !def.sizeOptions || def.sizeOptions.length < 2) return;
-    var curSize = w.size || def.size;
-    var curIdx = def.sizeOptions.indexOf(curSize);
-    var nextIdx = (curIdx + 1) % def.sizeOptions.length;
-    preset.widgets[idx].size = def.sizeOptions[nextIdx];
-    savePreset(preset);
+
+    var options = def.sizeOptions;
+    if (editMode === 'mobile') {
+      options = options.filter(function(s) { return s !== 'wide'; });
+    }
+    if (options.length < 2) return;
+
+    var curIdx = options.indexOf(w.size || def.size);
+    var nextIdx = (curIdx + 1) % options.length;
+    modeData.widgets[idx].size = options[nextIdx];
+    savePresetModeData(rawPreset, editMode, modeData);
     var body = document.getElementById('overlay-body-homeEdit');
     if (body) renderOverlay_homeEdit(body);
+    renderHome();
   };
 
-  window._homeEditRemove = function(idx) {
+  window._homeEditSetMode = function(mode) {
     hp();
-    var preset = getActivePreset();
-    if (!preset || !preset.widgets[idx]) return;
-    preset.widgets.splice(idx, 1);
-    savePreset(preset);
+    _homeEditCurrentMode = mode;
     var body = document.getElementById('overlay-body-homeEdit');
     if (body) renderOverlay_homeEdit(body);
   };
 
-  /* ========== ドラッグ並び替え（修正版：アイテム単位でドラッグ） ========== */
-  function _initEditDrag() {
-    var list = document.getElementById('home-edit-list');
-    if (!list) return;
+  window._homeEditCurrentMode = null;
 
-    /* transform親がある場合のfixed座標補正 */
+  /* ========== グリッドエディタのドラッグ&ドロップ ========== */
+  function _initGridEditorDrag(options) {
+    var grid = document.getElementById(options.gridId);
+    if (!grid) return;
+
+    var scrollContainer = grid.closest('.overlay-body');
+    var LONG_PRESS_MS = 400;
+    var longPressTimer = null;
+    var dragItem = null;
+    var placeholder = null;
+    var startY = 0, startX = 0;
+    var offsetX = 0, offsetY = 0;
+    var isDragging = false;
+    var isMouseDown = false;
+
     function _getFixedOffset(el) {
       var p = el.parentElement;
       while (p && p !== document.body && p !== document.documentElement) {
@@ -144,76 +131,51 @@
     }
     var _txOff = { x: 0, y: 0 };
 
-    var scrollContainer = list.closest('.overlay-body') || document.getElementById('main-content');
-
-    var LONG_PRESS_MS = 350;
-    var longPressTimer = null;
-    var dragItem = null;
-    var placeholder = null;
-    var startY = 0;
-    var startX = 0;
-    var offsetY = 0;
-    var isDragging = false;
-    var isMouseDown = false;
-
     function getItems() {
-      return Array.from(list.querySelectorAll('.home-edit-item'));
+      return Array.from(grid.querySelectorAll('.grid-editor-item'));
     }
 
     function _getXY(e) {
-      if (e.touches && e.touches.length > 0) {
-        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      }
+      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
       return { x: e.clientX, y: e.clientY };
     }
 
     function onPointerDown(e, isMouse) {
-      /* ボタンクリックはドラッグ開始しない */
-      if (e.target.closest('.home-edit-btn')) return;
-      var item = e.target.closest('.home-edit-item');
+      if (e.target.closest('.grid-editor-btn')) return;
+      var item = e.target.closest('.grid-editor-item');
       if (!item) return;
-      /* itemがlistの直接の子であることを確認 */
-      if (item.parentNode !== list) return;
       if (isMouse && e.button !== 0) return;
 
       var pos = _getXY(e);
-      startY = pos.y;
       startX = pos.x;
+      startY = pos.y;
       if (isMouse) isMouseDown = true;
 
       longPressTimer = setTimeout(function() {
-        /* ドラッグ開始時に再度itemの存在確認 */
-        if (!item.parentNode || item.parentNode !== list) {
-          isMouseDown = false;
-          return;
-        }
-
         isDragging = true;
         dragItem = item;
-
         window.__widgetDragActive = true;
 
-        if (scrollContainer) {
-          scrollContainer.style.overflowY = 'hidden';
-        }
-
+        if (scrollContainer) scrollContainer.style.overflowY = 'hidden';
         document.body.style.userSelect = 'none';
         document.body.style.webkitUserSelect = 'none';
 
         var rect = dragItem.getBoundingClientRect();
         _txOff = _getFixedOffset(dragItem);
+        offsetX = startX - rect.left;
         offsetY = startY - rect.top;
 
         placeholder = document.createElement('div');
-        placeholder.className = 'home-edit-placeholder';
+        placeholder.className = 'grid-editor-placeholder ' + dragItem.className.replace('grid-editor-item', '').replace('grid-editor-dragging', '').trim();
         placeholder.style.height = rect.height + 'px';
-        list.insertBefore(placeholder, dragItem);
+        grid.insertBefore(placeholder, dragItem);
 
-        dragItem.classList.add('home-edit-dragging');
+        dragItem.classList.add('grid-editor-dragging');
         dragItem.style.position = 'fixed';
         dragItem.style.left = (rect.left - _txOff.x) + 'px';
         dragItem.style.top = (rect.top - _txOff.y) + 'px';
         dragItem.style.width = rect.width + 'px';
+        dragItem.style.height = rect.height + 'px';
         dragItem.style.zIndex = '10000';
         dragItem.style.pointerEvents = 'none';
 
@@ -223,42 +185,36 @@
 
     function onPointerMove(e) {
       var pos = _getXY(e);
-
       if (!isDragging && longPressTimer) {
-        var dy = Math.abs(pos.y - startY);
-        var dx = Math.abs(pos.x - startX);
-        if (dy > 8 || dx > 8) {
+        if (Math.abs(pos.x - startX) > 8 || Math.abs(pos.y - startY) > 8) {
           clearTimeout(longPressTimer);
           longPressTimer = null;
         }
         return;
       }
-
-      if (!isDragging || !dragItem || !placeholder) return;
+      if (!isDragging || !dragItem) return;
       if (e.preventDefault) e.preventDefault();
 
+      dragItem.style.left = (pos.x - offsetX - _txOff.x) + 'px';
       dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
 
-      /* placeholderがlistの子であることを確認 */
-      if (placeholder.parentNode !== list) return;
-
       var items = getItems().filter(function(el) { return el !== dragItem; });
+      var addBtn = grid.querySelector('.widget-add');
       var inserted = false;
+
       for (var i = 0; i < items.length; i++) {
-        /* items[i]がlistの子であることを確認 */
-        if (items[i].parentNode !== list) continue;
         var r = items[i].getBoundingClientRect();
-        if (pos.y < r.top + r.height / 2) {
-          list.insertBefore(placeholder, items[i]);
+        var centerX = r.left + r.width / 2;
+        var centerY = r.top + r.height / 2;
+
+        if (pos.y < centerY && pos.x < centerX + r.width) {
+          grid.insertBefore(placeholder, items[i]);
           inserted = true;
           break;
         }
       }
       if (!inserted) {
-        var addBtn = list.querySelector('.home-edit-add');
-        if (addBtn && addBtn.parentNode === list) {
-          list.insertBefore(placeholder, addBtn);
-        }
+        if (addBtn) grid.insertBefore(placeholder, addBtn);
       }
     }
 
@@ -266,143 +222,97 @@
       clearTimeout(longPressTimer);
       longPressTimer = null;
       isMouseDown = false;
-
       document.body.style.userSelect = '';
       document.body.style.webkitUserSelect = '';
 
       if (!isDragging || !dragItem) {
+        isDragging = false;
         window.__widgetDragActive = false;
         return;
       }
 
-      dragItem.classList.remove('home-edit-dragging');
+      dragItem.classList.remove('grid-editor-dragging');
       dragItem.style.position = '';
       dragItem.style.left = '';
       dragItem.style.top = '';
       dragItem.style.width = '';
+      dragItem.style.height = '';
       dragItem.style.zIndex = '';
       dragItem.style.pointerEvents = '';
 
-      if (placeholder && placeholder.parentNode === list) {
-        list.insertBefore(dragItem, placeholder);
-        placeholder.remove();
-      } else if (placeholder && placeholder.parentNode) {
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragItem, placeholder);
         placeholder.remove();
       }
       placeholder = null;
 
-      if (scrollContainer) {
-        scrollContainer.style.overflowY = '';
-      }
+      if (scrollContainer) scrollContainer.style.overflowY = '';
 
       /* DOMの順序からウィジェット配列を再構築 */
-      _rebuildWidgetOrderFromDOM();
+      if (typeof options.onReorder === 'function') {
+        var oldWidgets = options.getWidgets();
+        var newWidgets = [];
+        getItems().forEach(function(el) {
+          var idx = parseInt(el.getAttribute('data-widget-idx'), 10);
+          if (!isNaN(idx) && idx >= 0 && idx < oldWidgets.length) {
+            newWidgets.push(oldWidgets[idx]);
+          }
+        });
+        if (newWidgets.length === oldWidgets.length) {
+          options.onReorder(newWidgets);
+        }
+      }
 
       dragItem = null;
       isDragging = false;
       window.__widgetDragActive = false;
 
-      /* 再描画 */
-      var body = document.getElementById('overlay-body-homeEdit');
-      if (body) renderOverlay_homeEdit(body);
+      if (typeof options.onDragEnd === 'function') options.onDragEnd();
     }
 
     function onPointerCancel() {
       clearTimeout(longPressTimer);
       longPressTimer = null;
       isMouseDown = false;
-
       document.body.style.userSelect = '';
       document.body.style.webkitUserSelect = '';
-
-      if (isDragging && dragItem) {
-        dragItem.classList.remove('home-edit-dragging');
+      if (dragItem) {
+        dragItem.classList.remove('grid-editor-dragging');
         dragItem.style.position = '';
         dragItem.style.left = '';
         dragItem.style.top = '';
         dragItem.style.width = '';
+        dragItem.style.height = '';
         dragItem.style.zIndex = '';
         dragItem.style.pointerEvents = '';
-        if (placeholder && placeholder.parentNode) placeholder.remove();
-        placeholder = null;
-        dragItem = null;
+        if (placeholder) placeholder.remove();
       }
+      dragItem = null;
+      placeholder = null;
       isDragging = false;
       window.__widgetDragActive = false;
-
-      if (scrollContainer) {
-        scrollContainer.style.overflowY = '';
-      }
+      if (scrollContainer) scrollContainer.style.overflowY = '';
     }
 
-    /* Touch events */
-    list.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
-    list.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
-    list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
-    list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
+    grid.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
+    grid.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
+    grid.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
+    grid.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
 
-    /* Mouse events — documentに登録するため重複防止 */
-    if (window.__homeEditMouseMove) {
-      document.removeEventListener('mousemove', window.__homeEditMouseMove);
-    }
-    if (window.__homeEditMouseUp) {
-      document.removeEventListener('mouseup', window.__homeEditMouseUp);
-    }
-
-    window.__homeEditMouseMove = function(e) {
+    grid.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', function(e) {
       if (!isMouseDown && !isDragging) return;
       onPointerMove(e);
-    };
-    window.__homeEditMouseUp = function() {
+    });
+    document.addEventListener('mouseup', function() {
       if (!isMouseDown && !isDragging) return;
       onPointerEnd();
-    };
-
-    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
-    document.addEventListener('mousemove', window.__homeEditMouseMove);
-    document.addEventListener('mouseup', window.__homeEditMouseUp);
-    list.addEventListener('contextmenu', function(e) {
+    });
+    grid.addEventListener('contextmenu', function(e) {
       if (isDragging) e.preventDefault();
     });
   }
-
-  /* DOMの順序からウィジェット配列を再構築（修正版：アイテム単位） */
-  function _rebuildWidgetOrderFromDOM() {
-    var list = document.getElementById('home-edit-list');
-    if (!list) return;
-
-    var preset = getActivePreset();
-    if (!preset) return;
-
-    var oldWidgets = preset.widgets.slice();
-    var newWidgets = [];
-    var usedIdx = {};
-
-    /* フラットにアイテムを列挙（DOM順 = 新しい並び順） */
-    var items = list.querySelectorAll('.home-edit-item');
-    items.forEach(function(item) {
-      var idx = parseInt(item.getAttribute('data-widget-idx'), 10);
-      if (!isNaN(idx) && idx >= 0 && idx < oldWidgets.length && !usedIdx[idx]) {
-        newWidgets.push(oldWidgets[idx]);
-        usedIdx[idx] = true;
-      }
-    });
-
-    /* 1つ以上のウィジェットが取得できていれば保存（WIDGET_DEFSが欠けても保存する） */
-    if (newWidgets.length > 0) {
-      preset.widgets = newWidgets;
-      savePreset(preset);
-    }
-  }
-
-  /* ウィジェット順序を更新して保存 */
-  function updateWidgetOrder(newWidgets) {
-    var preset = getActivePreset();
-    if (!preset) return;
-    preset.widgets = newWidgets;
-    savePreset(preset);
-    renderHome();
-  }
+  window._initGridEditorDrag = _initGridEditorDrag;
 
   /* ========== プリセット切替 ========== */
   function switchPreset(id) {
@@ -504,6 +414,7 @@
     if (typeof closeOverlay === 'function') {
       closeOverlay();
     }
+    _homeEditCurrentMode = null;
     renderHome();
     if (typeof renderTopbar === 'function') renderTopbar();
     if (typeof renderBottombar === 'function') renderBottombar();
@@ -528,8 +439,10 @@
   /* ========== ウィジェット追加ピッカー ========== */
   function openWidgetPicker() {
     hp();
-    var preset = getActivePreset();
-    var currentWidgetIds = preset ? preset.widgets.map(function(w) { return w.id; }) : [];
+    var rawPreset = getActivePresetRaw();
+    var editMode = _homeEditCurrentMode || _getDeviceMode();
+    var modeData = getPresetModeData(rawPreset, editMode);
+    var currentWidgetIds = modeData && modeData.widgets ? modeData.widgets.map(function(w) { return w.id; }) : [];
     var div = document.createElement('div');
     div.className = 'confirm-overlay';
     div.id = 'widget-picker-dialog';
@@ -539,7 +452,6 @@
     div.addEventListener('click', function(e) {
       if (e.target === div) {
         div.remove();
-        /* 編集画面を更新 */
         var body = document.getElementById('overlay-body-homeEdit');
         if (body) renderOverlay_homeEdit(body);
         renderHome();
@@ -549,8 +461,10 @@
 
   function _renderWidgetPickerContent(container, currentWidgetIds) {
     if (!currentWidgetIds) {
-      var preset = getActivePreset();
-      currentWidgetIds = preset ? preset.widgets.map(function(w) { return w.id; }) : [];
+      var rawPreset = getActivePresetRaw();
+      var editMode = _homeEditCurrentMode || _getDeviceMode();
+      var modeData = getPresetModeData(rawPreset, editMode);
+      currentWidgetIds = modeData && modeData.widgets ? modeData.widgets.map(function(w) { return w.id; }) : [];
     }
 
     var h = '<div class="confirm-box" style="width:340px;max-height:80vh;overflow-y:auto;text-align:left">';
@@ -639,28 +553,78 @@
     grid.addEventListener('mouseleave', function() { clearTimeout(timer); });
   }
 
-  /* ========== ホーム編集オーバーレイ ========== */
+  /* ========== ホーム編集オーバーレイ（グリッドベース） ========== */
   function renderOverlay_homeEdit(body) {
     if (!body) return;
-    var preset = getActivePreset();
-    if (!preset) { body.innerHTML = '<div class="text-c c-muted fz-s" style="padding:60px">プリセットがありません</div>'; return; }
+    var rawPreset = getActivePresetRaw();
+    if (!rawPreset) { body.innerHTML = '<div class="text-c c-muted fz-s" style="padding:60px">プリセットがありません</div>'; return; }
+
+    var mode = _getDeviceMode();
     var presets = getPresets();
     var html = '';
 
+    /* プリセット切替バー */
     if (presets.length > 1) {
-      html += '<div class="preset-bar">';
-      html += '<div class="preset-bar-scroll">';
+      html += '<div class="preset-bar"><div class="preset-bar-scroll">';
       presets.forEach(function(p) {
-        var isActive = preset.id === p.id;
+        var isActive = rawPreset.id === p.id;
         html += '<button class="preset-tab' + (isActive ? ' active' : '') + '" onclick="_homeEditSwitchPreset(\'' + escJs(p.id) + '\')">' + escHtml(p.name) + '</button>';
       });
       html += '<button class="preset-tab preset-tab-add" onclick="openPresetMenu()">+</button>';
-      html += '</div>';
-      html += '</div>';
+      html += '</div></div>';
     }
 
-    html += _renderEditList(preset);
+    /* モバイル/デスクトップ切替タブ */
+    html += '<div class="segmented mb12">';
+    html += '<button class="segmented-item' + ((_homeEditCurrentMode || mode) === 'mobile' ? ' active' : '') + '" onclick="_homeEditSetMode(\'mobile\')">📱 モバイル</button>';
+    html += '<button class="segmented-item' + ((_homeEditCurrentMode || mode) === 'desktop' ? ' active' : '') + '" onclick="_homeEditSetMode(\'desktop\')">🖥️ デスクトップ</button>';
+    html += '</div>';
 
+    var editMode = _homeEditCurrentMode || mode;
+    var modeData = getPresetModeData(rawPreset, editMode);
+    if (!modeData) modeData = { widgets: [] };
+    var widgets = modeData.widgets || [];
+
+    var columns = editMode === 'desktop' ? 4 : 2;
+
+    /* グリッドベース編集UI */
+    html += '<div class="grid-editor widget-grid' + (editMode === 'desktop' ? ' grid-editor-desktop' : '') + ' widget-grid-editing" ';
+    html += 'id="grid-editor" data-columns="' + columns + '" data-mode="' + editMode + '">';
+
+    widgets.forEach(function(w, i) {
+      var def = WIDGET_DEFS[w.id];
+      if (!def) return;
+      var size = w.size || def.size || 'full';
+      var sizeClass = 'widget-' + size;
+
+      html += '<div class="widget ' + sizeClass + ' grid-editor-item" data-widget-idx="' + i + '" data-widget-size="' + size + '">';
+
+      html += '<div class="grid-editor-controls">';
+      html += '<button class="grid-editor-btn grid-editor-btn-del" onclick="event.stopPropagation();_gridEditorRemove(' + i + ')" title="削除">✕</button>';
+      if (def.sizeOptions && def.sizeOptions.length > 1) {
+        html += '<button class="grid-editor-btn grid-editor-btn-size" onclick="event.stopPropagation();_gridEditorCycleSize(' + i + ')" title="サイズ変更">↔</button>';
+      }
+      html += '</div>';
+
+      var sizeLabel = size === 'full' ? 'FULL' : (size === 'wide' ? 'WIDE' : 'HALF');
+      html += '<div class="grid-editor-size-label">' + sizeLabel + '</div>';
+
+      html += '<div class="widget-title"><span>' + def.icon + ' ' + escHtml(def.name) + '</span></div>';
+      html += '<div class="grid-editor-preview">';
+      try { html += def.render(w); } catch(e) { html += '<div class="widget-empty">プレビュー</div>'; }
+      html += '</div>';
+
+      html += '</div>';
+    });
+
+    /* 追加ボタン */
+    html += '<div class="widget widget-add widget-full" onclick="openWidgetPicker()">';
+    html += '<div class="widget-add-inner"><span style="font-size:1.2rem">＋</span> ウィジェットを追加</div>';
+    html += '</div>';
+
+    html += '</div>';
+
+    /* 詳細設定 */
     html += '<div class="card mb12">';
     html += '<div class="card-header" onclick="this.classList.toggle(\'open\');var b=document.getElementById(\'edit-advanced-body\');b.style.display=b.style.display===\'none\'?\'\':\'none\'">';
     html += '<span>⚙️ 詳細設定</span><span class="card-arrow">▼</span>';
@@ -673,13 +637,42 @@
     html += '</div></div>';
 
     body.innerHTML = html;
-    _initEditDrag();
+
+    /* ドラッグ初期化 */
+    _initGridEditorDrag({
+      gridId: 'grid-editor',
+      getWidgets: function() {
+        var rp = getActivePresetRaw();
+        var em = _homeEditCurrentMode || _getDeviceMode();
+        var md = getPresetModeData(rp, em);
+        return md && md.widgets ? md.widgets.slice() : [];
+      },
+      onReorder: function(newWidgets) {
+        var rp = getActivePresetRaw();
+        var em = _homeEditCurrentMode || _getDeviceMode();
+        var md = getPresetModeData(rp, em);
+        if (md) {
+          md.widgets = newWidgets;
+          savePresetModeData(rp, em, md);
+        }
+      },
+      onDragEnd: function() {
+        var b = document.getElementById('overlay-body-homeEdit');
+        if (b) renderOverlay_homeEdit(b);
+        renderHome();
+      }
+    });
+
+    if (widgets.some(function(w) { return w.id === 'clock'; })) {
+      startWidgetClock();
+    }
   }
   window.renderOverlay_homeEdit = renderOverlay_homeEdit;
 
   window._homeEditSwitchPreset = function(id) {
     hp();
     setActivePreset(id);
+    _homeEditCurrentMode = null;
     var body = document.getElementById('overlay-body-homeEdit');
     if (body) renderOverlay_homeEdit(body);
     renderHome();

@@ -1,83 +1,156 @@
 /* ==========================================================
    DeliEasy v2 — js/presets.js
-   プリセット管理・テンプレート
+   プリセット管理・テンプレート（モバイル/デスクトップ個別管理版）
    ========================================================== */
 (function(){
   'use strict';
 
+  /* ========== デバイスモード判定 ========== */
+  function _getDeviceMode() {
+    return window.innerWidth >= 1024 ? 'desktop' : 'mobile';
+  }
+
+  /* ========== テンプレート（新構造: mobile/desktop個別） ========== */
   var PRESET_TEMPLATES = [
     {
       name: '🚴 稼働中',
       desc: '配達中にサッと確認',
-      widgets: [
-        { id: 'clock', size: 'full' },
-        { id: 'todaySales', size: 'half' },
-        { id: 'todayCount', size: 'half' },
-        { id: 'todayUnit', size: 'half' },
-        { id: 'todayProfit', size: 'half' },
-        { id: 'todayPfBreakdown', size: 'full' }
-      ]
+      mobile: {
+        widgets: [
+          { id: 'clock', size: 'full' },
+          { id: 'todaySales', size: 'half' },
+          { id: 'todayCount', size: 'half' },
+          { id: 'todayUnit', size: 'half' },
+          { id: 'todayProfit', size: 'half' },
+          { id: 'todayPfBreakdown', size: 'full' }
+        ]
+      },
+      desktop: {
+        widgets: [
+          { id: 'clock', size: 'half' },
+          { id: 'todaySales', size: 'half' },
+          { id: 'todayCount', size: 'half' },
+          { id: 'todayUnit', size: 'half' },
+          { id: 'todayProfit', size: 'half' },
+          { id: 'todayPfBreakdown', size: 'wide' },
+          { id: 'miniCalendar', size: 'wide' }
+        ]
+      }
     },
     {
       name: '📊 振り返り',
       desc: '1日の終わりに振り返る',
-      widgets: [
-        { id: 'todaySummary', size: 'full' },
-        { id: 'todayPfBreakdown', size: 'full' },
-        { id: 'recentRecords', size: 'full' }
-      ]
+      mobile: {
+        widgets: [
+          { id: 'todaySummary', size: 'full' },
+          { id: 'todayPfBreakdown', size: 'full' },
+          { id: 'recentRecords', size: 'full' }
+        ]
+      },
+      desktop: {
+        widgets: [
+          { id: 'todaySummary', size: 'wide' },
+          { id: 'todayPfBreakdown', size: 'wide' },
+          { id: 'recentRecords', size: 'full' }
+        ]
+      }
     },
     {
       name: '📆 月次レポート',
       desc: '月単位の分析',
-      widgets: [
-        { id: 'monthSummary', size: 'full' },
-        { id: 'monthPace', size: 'full' },
-        { id: 'miniCalendar', size: 'full' },
-        { id: 'goalProgress', size: 'full' }
-      ]
+      mobile: {
+        widgets: [
+          { id: 'monthSummary', size: 'full' },
+          { id: 'monthPace', size: 'full' },
+          { id: 'miniCalendar', size: 'full' },
+          { id: 'goalProgress', size: 'full' }
+        ]
+      },
+      desktop: {
+        widgets: [
+          { id: 'monthSummary', size: 'wide' },
+          { id: 'monthPace', size: 'wide' },
+          { id: 'miniCalendar', size: 'wide' },
+          { id: 'goalProgress', size: 'wide' }
+        ]
+      }
     },
     {
       name: '💰 収支管理',
       desc: 'お金の流れに特化',
-      widgets: [
-        { id: 'todaySummary', size: 'full' },
-        { id: 'weekSummary', size: 'full' },
-        { id: 'monthPace', size: 'full' },
-        { id: 'goalProgress', size: 'full' }
-      ]
+      mobile: {
+        widgets: [
+          { id: 'todaySummary', size: 'full' },
+          { id: 'weekSummary', size: 'full' },
+          { id: 'monthPace', size: 'full' },
+          { id: 'goalProgress', size: 'full' }
+        ]
+      },
+      desktop: {
+        widgets: [
+          { id: 'todaySummary', size: 'wide' },
+          { id: 'weekSummary', size: 'wide' },
+          { id: 'monthPace', size: 'wide' },
+          { id: 'goalProgress', size: 'wide' }
+        ]
+      }
     },
     {
       name: '⚡ シンプル',
       desc: '最小限の情報だけ',
-      widgets: [
-        { id: 'todaySales', size: 'half' },
-        { id: 'todayCount', size: 'half' },
-        { id: 'todayProfit', size: 'half' }
-      ]
+      mobile: {
+        widgets: [
+          { id: 'todaySales', size: 'half' },
+          { id: 'todayCount', size: 'half' },
+          { id: 'todayProfit', size: 'half' }
+        ]
+      },
+      desktop: {
+        widgets: [
+          { id: 'todaySales', size: 'half' },
+          { id: 'todayCount', size: 'half' },
+          { id: 'todayProfit', size: 'half' },
+          { id: 'todayUnit', size: 'half' }
+        ]
+      }
     }
   ];
 
-  /* ========== wide→fullマイグレーション ========== */
-  function _migrateWideSizes(presets) {
+  /* ========== 旧構造→新構造マイグレーション ========== */
+  function _migrateToDeviceMode(presets) {
     var changed = false;
     presets.forEach(function(p) {
-      if (p.widgets && Array.isArray(p.widgets)) {
-        p.widgets.forEach(function(w) {
-          if (w.size === 'wide') {
-            w.size = 'full';
-            changed = true;
-          }
-        });
-      }
+      if (p.mobile && p.desktop) return;
+
+      var mobileData = {
+        widgets: JSON.parse(JSON.stringify(p.widgets || [])),
+        topBar: JSON.parse(JSON.stringify(p.topBar || { show: true, leftCustom: 'appName', center: 'none', rightCustom: 'none' })),
+        bottomBar: JSON.parse(JSON.stringify(p.bottomBar || { show: false, slotCount: 5, items: [] })),
+        fab: JSON.parse(JSON.stringify(p.fab || { show: true, position: 'right', posX: null, posY: null, items: ['earnInput','expenseInput'] })),
+        rightSidebar: JSON.parse(JSON.stringify(p.rightSidebar || { sections: ['todaySummary','recentRecords'] }))
+      };
+
+      var desktopData = JSON.parse(JSON.stringify(mobileData));
+
+      p.mobile = mobileData;
+      p.desktop = desktopData;
+
+      delete p.widgets;
+      delete p.topBar;
+      delete p.bottomBar;
+      delete p.fab;
+      delete p.rightSidebar;
+
+      changed = true;
     });
     return changed;
   }
 
+  /* ========== getPresets ========== */
   function getPresets() {
     var saved = S.g('presets', null);
     if (saved && Array.isArray(saved) && saved.length > 0) {
-      if (_migrateWideSizes(saved)) {
+      if (_migrateToDeviceMode(saved)) {
         S.s('presets', saved);
       }
       return saved;
@@ -88,7 +161,41 @@
     return [def];
   }
 
+  /* ========== getActivePreset (デバイスモード自動展開) ========== */
   function getActivePreset() {
+    var presets = getPresets();
+    var activeId = S.g('activePreset', null);
+    var preset = null;
+    if (activeId) {
+      for (var i = 0; i < presets.length; i++) {
+        if (presets[i].id === activeId) { preset = presets[i]; break; }
+      }
+    }
+    if (!preset) preset = presets[0];
+    if (!preset) return null;
+
+    var mode = _getDeviceMode();
+
+    if (preset.mobile && preset.desktop) {
+      var modeData = preset[mode];
+      return {
+        id: preset.id,
+        name: preset.name,
+        _mode: mode,
+        _raw: preset,
+        widgets: modeData.widgets,
+        topBar: modeData.topBar,
+        bottomBar: modeData.bottomBar,
+        fab: modeData.fab,
+        rightSidebar: modeData.rightSidebar
+      };
+    }
+
+    return preset;
+  }
+
+  /* ========== getActivePresetRaw (生データアクセス) ========== */
+  function getActivePresetRaw() {
     var presets = getPresets();
     var activeId = S.g('activePreset', null);
     if (activeId) {
@@ -99,12 +206,41 @@
     return presets[0] || null;
   }
 
+  function getPresetModeData(preset, mode) {
+    if (!preset) return null;
+    if (preset.mobile && preset.desktop) return preset[mode];
+    return { widgets: preset.widgets, topBar: preset.topBar, bottomBar: preset.bottomBar, fab: preset.fab, rightSidebar: preset.rightSidebar };
+  }
+
+  function savePresetModeData(preset, mode, data) {
+    if (!preset) return;
+    if (!preset.mobile) preset.mobile = {};
+    if (!preset.desktop) preset.desktop = {};
+    preset[mode] = data;
+    savePreset(preset);
+  }
+
   function setActivePreset(id) {
     S.si('activePreset', id);
   }
 
+  /* ========== savePreset (展開済みオブジェクト対応) ========== */
   function savePreset(preset) {
     var presets = getPresets();
+
+    if (preset._raw) {
+      var raw = preset._raw;
+      var mode = preset._mode;
+      raw[mode] = {
+        widgets: preset.widgets,
+        topBar: preset.topBar,
+        bottomBar: preset.bottomBar,
+        fab: preset.fab,
+        rightSidebar: preset.rightSidebar
+      };
+      preset = raw;
+    }
+
     var idx = -1;
     for (var i = 0; i < presets.length; i++) {
       if (presets[i].id === preset.id) { idx = i; break; }
@@ -151,17 +287,22 @@
     return {
       id: 'preset_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
       name: tpl.name,
-      widgets: JSON.parse(JSON.stringify(tpl.widgets))
+      mobile: JSON.parse(JSON.stringify(tpl.mobile)),
+      desktop: JSON.parse(JSON.stringify(tpl.desktop))
     };
   }
 
   function addWidgetToPreset(widgetId, size) {
-    var preset = getActivePreset();
-    if (!preset) return;
+    var rawPreset = getActivePresetRaw();
+    if (!rawPreset) return;
+    var editMode = (window._homeEditCurrentMode) || _getDeviceMode();
+    var modeData = getPresetModeData(rawPreset, editMode);
+    if (!modeData) return;
     var def = WIDGET_DEFS[widgetId];
     if (!def) return;
-    preset.widgets.push({ id: widgetId, size: size || def.size });
-    savePreset(preset);
+    if (!modeData.widgets) modeData.widgets = [];
+    modeData.widgets.push({ id: widgetId, size: size || def.size });
+    savePresetModeData(rawPreset, editMode, modeData);
   }
 
   function removeWidgetFromPreset(widgetId) {
@@ -184,8 +325,8 @@
     for (var i = preset.widgets.length - 1; i >= 0; i--) {
       if (preset.widgets[i].id === widgetId) {
         var curSize = preset.widgets[i].size || def.size;
-        var idx = def.sizeOptions.indexOf(curSize);
-        var nextIdx = (idx + 1) % def.sizeOptions.length;
+        var curIdx = def.sizeOptions.indexOf(curSize);
+        var nextIdx = (curIdx + 1) % def.sizeOptions.length;
         preset.widgets[i].size = def.sizeOptions[nextIdx];
         break;
       }
@@ -206,6 +347,10 @@
   window.PRESET_TEMPLATES = PRESET_TEMPLATES;
   window.getPresets = getPresets;
   window.getActivePreset = getActivePreset;
+  window.getActivePresetRaw = getActivePresetRaw;
+  window.getPresetModeData = getPresetModeData;
+  window.savePresetModeData = savePresetModeData;
+  window._getDeviceMode = _getDeviceMode;
   window.setActivePreset = setActivePreset;
   window.savePreset = savePreset;
   window.deletePreset = deletePreset;
