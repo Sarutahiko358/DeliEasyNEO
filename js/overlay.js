@@ -169,8 +169,8 @@
     }
 
     function onTouchStart(e) {
-      /* デスクトップではスワイプ無効 */
-      if (_isDesktopMode()) { canDrag = false; return; }
+      /* 768px以上（タブレット含む）ではスワイプ無効 */
+      if (window.innerWidth >= 768) { canDrag = false; return; }
       /* ウィジェット編集ドラッグ中はスワイプクローズを完全に無効化 */
       if (window.__widgetDragActive) { canDrag = false; return; }
 
@@ -200,8 +200,8 @@
     }
 
     function onTouchMove(e) {
-      /* デスクトップではスワイプ無効 */
-      if (_isDesktopMode()) { canDrag = false; isDragging = false; return; }
+      /* 768px以上（タブレット含む）ではスワイプ無効 */
+      if (window.innerWidth >= 768) { canDrag = false; isDragging = false; return; }
       /* ウィジェット編集ドラッグ中は何もしない */
       if (window.__widgetDragActive) { canDrag = false; isDragging = false; return; }
 
