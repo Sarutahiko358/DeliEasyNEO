@@ -49,6 +49,32 @@
 }
 .preset-tab-add:active { border-color: var(--c-primary); background: var(--c-primary-light); }
 
+/* ---------- Preset tab drag ---------- */
+.preset-tab-dragging {
+  opacity: .85;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  z-index: 10000;
+  cursor: grabbing;
+}
+
+.preset-tab-placeholder {
+  flex-shrink: 0;
+  background: var(--c-primary-light);
+  border: 2px dashed var(--c-primary);
+  border-radius: var(--ds-radius-pill);
+  transition: width .15s;
+}
+
+/* Desktop hover hint */
+@media (hover: hover) {
+  .preset-tab[data-preset-id] {
+    cursor: grab;
+  }
+  .preset-tab[data-preset-id]:active {
+    cursor: grabbing;
+  }
+}
+
 /* ---------- Edit Mode Header ---------- */
 .edit-mode-header {
   display: flex;
