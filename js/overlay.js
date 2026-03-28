@@ -157,8 +157,6 @@
     }
 
     function onTouchStart(e) {
-      /* デスクトップではスワイプダウン閉じを無効化 */
-      if (window.innerWidth >= 1024) { canDrag = false; return; }
       /* ウィジェット編集ドラッグ中はスワイプクローズを完全に無効化 */
       if (window.__widgetDragActive) { canDrag = false; return; }
 

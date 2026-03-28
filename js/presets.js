@@ -5,18 +5,17 @@
 (function(){
   'use strict';
 
-  /* ========== テンプレート定義 ========== */
   var PRESET_TEMPLATES = [
     {
       name: '🚴 稼働中',
       desc: '配達中にサッと確認',
       widgets: [
-        { id: 'clock', size: 'wide' },
+        { id: 'clock', size: 'full' },
         { id: 'todaySales', size: 'half' },
         { id: 'todayCount', size: 'half' },
         { id: 'todayUnit', size: 'half' },
         { id: 'todayProfit', size: 'half' },
-        { id: 'todayPfBreakdown', size: 'wide' }
+        { id: 'todayPfBreakdown', size: 'full' }
       ]
     },
     {
@@ -59,16 +58,30 @@
     }
   ];
 
-  /* ========== デバイス判定 ========== */
-  function _isDesktop() {
-    return window.innerWidth >= 1024;
+  /* ========== wide→fullマイグレーション ========== */
+  function _migrateWideSizes(presets) {
+    var changed = false;
+    presets.forEach(function(p) {
+      if (p.widgets && Array.isArray(p.widgets)) {
+        p.widgets.forEach(function(w) {
+          if (w.size === 'wide') {
+            w.size = 'full';
+            changed = true;
+          }
+        });
+      }
+    });
+    return changed;
   }
 
-  /* ========== プリセット操作 ========== */
   function getPresets() {
     var saved = S.g('presets', null);
-    if (saved && Array.isArray(saved) && saved.length > 0) return saved;
-    /* 初回: デフォルトプリセットを生成 */
+    if (saved && Array.isArray(saved) && saved.length > 0) {
+      if (_migrateWideSizes(saved)) {
+        S.s('presets', saved);
+      }
+      return saved;
+    }
     var def = _createPresetFromTemplate(PRESET_TEMPLATES[0]);
     S.s('presets', [def]);
     S.si('activePreset', def.id);
@@ -77,12 +90,7 @@
 
   function getActivePreset() {
     var presets = getPresets();
-    var key = _isDesktop() ? 'activePresetDesktop' : 'activePreset';
-    var activeId = S.g(key, null);
-    // フォールバック: デスクトップキーが未設定ならモバイルのを使う
-    if (!activeId && _isDesktop()) {
-      activeId = S.g('activePreset', null);
-    }
+    var activeId = S.g('activePreset', null);
     if (activeId) {
       for (var i = 0; i < presets.length; i++) {
         if (presets[i].id === activeId) return presets[i];
@@ -92,8 +100,7 @@
   }
 
   function setActivePreset(id) {
-    var key = _isDesktop() ? 'activePresetDesktop' : 'activePreset';
-    S.si(key, id);
+    S.si('activePreset', id);
   }
 
   function savePreset(preset) {
@@ -113,7 +120,6 @@
       presets.push(_createPresetFromTemplate(PRESET_TEMPLATES[0]));
     }
     S.s('presets', presets);
-    /* アクティブが消えたら先頭に */
     var activeId = S.g('activePreset', null);
     if (activeId === id) S.si('activePreset', presets[0].id);
   }
@@ -149,7 +155,6 @@
     };
   }
 
-  /* ========== ウィジェット操作（アクティブプリセットに対して） ========== */
   function addWidgetToPreset(widgetId, size) {
     var preset = getActivePreset();
     if (!preset) return;
@@ -162,7 +167,6 @@
   function removeWidgetFromPreset(widgetId) {
     var preset = getActivePreset();
     if (!preset) return;
-    /* 最後に出現するものを削除 */
     for (var i = preset.widgets.length - 1; i >= 0; i--) {
       if (preset.widgets[i].id === widgetId) {
         preset.widgets.splice(i, 1);
@@ -199,7 +203,6 @@
     savePreset(preset);
   }
 
-  /* ========== Expose ========== */
   window.PRESET_TEMPLATES = PRESET_TEMPLATES;
   window.getPresets = getPresets;
   window.getActivePreset = getActivePreset;

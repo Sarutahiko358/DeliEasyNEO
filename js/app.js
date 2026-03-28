@@ -200,9 +200,9 @@
         if (typeof initRightPanelGestures === 'function') initRightPanelGestures();
         if (typeof startTopbarUpdater === 'function') startTopbarUpdater();
 
-        /* デスクトップ対応初期化 */
-        if (typeof _initDesktopSidebar === 'function') _initDesktopSidebar();
-        if (typeof _applyDesktopRightPanel === 'function') _applyDesktopRightPanel();
+        /* デスクトップ対応初期化 — モバイル修正のため一旦無効化 */
+        // if (typeof _initDesktopSidebar === 'function') _initDesktopSidebar();
+        // if (typeof _applyDesktopRightPanel === 'function') _applyDesktopRightPanel();
 
         /* Firebase SDK の読み込み完了を待ってから同期を初期化 */
         function initFirebase() {

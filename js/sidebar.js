@@ -13,11 +13,6 @@
   var _panelTracking = false;
   var _panelTranslateX = 0;
 
-  /* ---------- デスクトップ判定 ---------- */
-  function _isDesktop() {
-    return window.innerWidth >= 1024;
-  }
-
   /* ---------- デフォルト感度設定 ---------- */
   var DEFAULT_GESTURE_CFG = {
     edgeWidth: 45,
@@ -236,7 +231,6 @@
 
   /* ---------- Open / Close ---------- */
   function openSidebar() {
-    if (_isDesktop()) return; /* デスクトップでは常時表示 */
     if (_isOpen) return;
     _isOpen = true;
     hp();
@@ -248,7 +242,6 @@
   }
 
   function closeSidebar() {
-    if (_isDesktop()) return; /* デスクトップでは常時表示 */
     if (!_isOpen) return;
     _isOpen = false;
     var overlay = document.getElementById('sidebar-overlay');
@@ -258,84 +251,17 @@
   }
 
   function toggleSidebar() {
-    if (_isDesktop()) {
-      toggleSidebarCollapse();
-    } else {
-      if (_isOpen) closeSidebar();
-      else openSidebar();
-    }
+    if (_isOpen) closeSidebar();
+    else openSidebar();
   }
 
   function isSidebarOpen() { return _isOpen; }
-
-  /* ---------- サイドバー折り畳み (デスクトップ) ---------- */
-  function _isSidebarCollapsed() {
-    return !!S.g('sidebarCollapsed', false);
-  }
-
-  function toggleSidebarCollapse() {
-    var panel = document.getElementById('sidebar');
-    if (!panel) return;
-    var collapsed = !_isSidebarCollapsed();
-    S.s('sidebarCollapsed', collapsed);
-    if (collapsed) {
-      panel.classList.add('sidebar-collapsed');
-    } else {
-      panel.classList.remove('sidebar-collapsed');
-    }
-  }
-
-  function _applySidebarCollapse() {
-    if (!_isDesktop()) return;
-    var panel = document.getElementById('sidebar');
-    if (!panel) return;
-    if (_isSidebarCollapsed()) {
-      panel.classList.add('sidebar-collapsed');
-    } else {
-      panel.classList.remove('sidebar-collapsed');
-    }
-  }
-
-  /* ---------- デスクトップ初期化 ---------- */
-  function _initDesktopSidebar() {
-    if (_isDesktop()) {
-      var panel = document.getElementById('sidebar');
-      if (panel) {
-        panel.classList.remove('open');
-        panel.style.transform = '';
-      }
-      renderSidebar();
-      _applySidebarCollapse();
-    }
-  }
-
-  /* リサイズ対応 */
-  var _resizeTimer = null;
-  window.addEventListener('resize', function() {
-    clearTimeout(_resizeTimer);
-    _resizeTimer = setTimeout(function() {
-      if (_isDesktop()) {
-        /* デスクトップ切替: サイドバーオーバーレイを閉じ、パネルを表示 */
-        _isOpen = false;
-        var overlay = document.getElementById('sidebar-overlay');
-        var panel = document.getElementById('sidebar');
-        if (overlay) { overlay.classList.remove('open'); overlay.style.opacity = ''; }
-        if (panel) { panel.classList.remove('open'); panel.style.transform = ''; }
-        _applySidebarCollapse();
-      } else {
-        /* モバイル切替: 折り畳みクラスを除去 */
-        var panel = document.getElementById('sidebar');
-        if (panel) panel.classList.remove('sidebar-collapsed');
-      }
-    }, 150);
-  });
 
   /* ---------- Edge swipe to open ---------- */
   function initSidebarGestures() {
     var _edgeTracking = false;
 
     document.addEventListener('touchstart', function(e) {
-      if (_isDesktop()) return; /* デスクトップではエッジスワイプ無効 */
       _touchStartX = e.touches[0].clientX;
       _touchStartY = e.touches[0].clientY;
       _edgeTracking = (_touchStartX <= _gc('edgeWidth')) && !_isOpen;
@@ -462,6 +388,5 @@
   window.getGestureConfig = getGestureConfig;
   window.saveGestureConfig = saveGestureConfig;
   window.renderGestureSettings = renderGestureSettings;
-  window._initDesktopSidebar = _initDesktopSidebar;
 
 })();
