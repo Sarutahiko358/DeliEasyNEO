@@ -368,33 +368,50 @@
     }, { passive: true });
   }
 
-  /* ---------- 設定UI ---------- */
+  /* ---------- 設定UI（並び替え対応版） ---------- */
   function renderRightPanelSettings() {
     var cfg = getRightPanelConfig();
     var activeSections = cfg.sections || DEFAULT_RIGHT_PANEL_CFG.sections;
+    var allIds = RIGHT_PANEL_SECTIONS.map(function(s) { return s.id; });
+
+    /* 表示順序: まずcfg.sectionsの順、次に未含有のもの */
+    var ordered = [];
+    activeSections.forEach(function(id) {
+      if (allIds.indexOf(id) >= 0 && ordered.indexOf(id) < 0) ordered.push(id);
+    });
+    allIds.forEach(function(id) {
+      if (ordered.indexOf(id) < 0) ordered.push(id);
+    });
 
     var html = '';
     html += '<div id="right-panel-settings-container">';
     html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="fz-s fw6 mb12">📊 右パネル設定</div>';
-    html += '<div class="fz-xs c-muted mb8">表示するセクションを選択してください。</div>';
+    html += '<div class="fz-s fw6 mb8">\uD83D\uDCCA 右パネル設定</div>';
+    html += '<div class="fz-xs c-muted mb12">表示/非表示の切替。長押しでドラッグして並び替えできます。</div>';
 
-    RIGHT_PANEL_SECTIONS.forEach(function(sec) {
-      var isActive = activeSections.indexOf(sec.id) >= 0;
-      html += '<div class="flex flex-between items-center mb8">';
-      html += '<span class="fz-s">' + sec.icon + ' ' + escHtml(sec.name) + '</span>';
-      html += '<label class="topbar-toggle">';
-      html += '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="toggleRightPanelSection(\'' + escJs(sec.id) + '\',this.checked)">';
+    html += '<div id="rp-sort-list">';
+    ordered.forEach(function(secId) {
+      var secDef = _findSection(secId);
+      if (!secDef) return;
+      var isActive = activeSections.indexOf(secId) >= 0;
+      var style = isActive ? '' : ' style="opacity:.4;text-decoration:line-through"';
+      html += '<div class="ovc-drag-item" data-rp-sec-id="' + escHtml(secId) + '"' + style + '>';
+      html += '<span class="ovc-drag-handle">\u2630</span>';
+      html += '<label class="topbar-toggle" style="flex-shrink:0">';
+      html += '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="_rpToggleSection(\'' + escJs(secId) + '\',this.checked)">';
       html += '<span class="topbar-toggle-slider"></span>';
       html += '</label>';
+      html += '<span class="fz-s">' + secDef.icon + ' ' + escHtml(secDef.name) + '</span>';
       html += '</div>';
     });
+    html += '</div>';
 
+    html += '<button class="btn btn-secondary btn-sm btn-block mt12" onclick="_rpResetOrder()">初期設定に戻す</button>';
     html += '</div></div>';
 
     /* デスクトップ常時表示トグル */
     html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="fz-s fw6 mb12">🖥️ デスクトップ表示</div>';
+    html += '<div class="fz-s fw6 mb12">\uD83D\uDDA5\uFE0F デスクトップ表示</div>';
     html += '<div class="flex flex-between items-center mb8">';
     html += '<span class="fz-s">右パネルを常時表示 (1024px以上)</span>';
     html += '<label class="topbar-toggle">';
@@ -406,10 +423,222 @@
     html += '</div></div>';
 
     html += '</div>';
+
+    setTimeout(function() { _initRpSortDrag(); }, 50);
+
     return html;
   }
 
-  function toggleRightPanelSection(secId, show) {
+  /* ---------- 右パネル並び替えドラッグ ---------- */
+  function _initRpSortDrag() {
+    var list = document.getElementById('rp-sort-list');
+    if (!list) return;
+
+    function _getFixedOffset(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body && p !== document.documentElement) {
+        var cs = window.getComputedStyle(p);
+        if (cs.transform && cs.transform !== 'none') {
+          var r = p.getBoundingClientRect();
+          return { x: r.left, y: r.top };
+        }
+        p = p.parentElement;
+      }
+      return { x: 0, y: 0 };
+    }
+    var _txOff = { x: 0, y: 0 };
+
+    var LONG_PRESS_MS = 400;
+    var longPressTimer = null;
+    var dragItem = null;
+    var placeholder = null;
+    var startY = 0;
+    var startX = 0;
+    var offsetY = 0;
+    var isDragging = false;
+    var isMouseDown = false;
+    var _scrollContainer = null;
+    var _prevOverflow = '';
+
+    function getItems() {
+      return Array.from(list.querySelectorAll('.ovc-drag-item'));
+    }
+
+    function _getXY(e) {
+      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function _findScrollParent(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body) {
+        var cs = window.getComputedStyle(p);
+        if (cs.overflowY === 'auto' || cs.overflowY === 'scroll') return p;
+        p = p.parentElement;
+      }
+      return null;
+    }
+
+    function onPointerDown(e, isMouse) {
+      var target = e.target.closest('.ovc-drag-item');
+      if (!target) return;
+      if (isMouse && e.button !== 0) return;
+      if (e.target.closest('.topbar-toggle')) return;
+
+      var pos = _getXY(e);
+      startY = pos.y;
+      startX = pos.x;
+      if (isMouse) isMouseDown = true;
+
+      longPressTimer = setTimeout(function() {
+        isDragging = true;
+        dragItem = target;
+        var rect = dragItem.getBoundingClientRect();
+        _txOff = _getFixedOffset(dragItem);
+        offsetY = startY - rect.top;
+
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+
+        _scrollContainer = _findScrollParent(list);
+        if (_scrollContainer) {
+          _prevOverflow = _scrollContainer.style.overflowY;
+          _scrollContainer.style.overflowY = 'hidden';
+        }
+
+        placeholder = document.createElement('div');
+        placeholder.className = 'ovc-drag-placeholder';
+        placeholder.style.height = rect.height + 'px';
+        dragItem.parentNode.insertBefore(placeholder, dragItem);
+
+        dragItem.classList.add('ovc-dragging');
+        dragItem.style.position = 'fixed';
+        dragItem.style.left = (rect.left - _txOff.x) + 'px';
+        dragItem.style.top = (rect.top - _txOff.y) + 'px';
+        dragItem.style.width = rect.width + 'px';
+        dragItem.style.zIndex = '10000';
+
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function onPointerMove(e) {
+      var pos = _getXY(e);
+      if (!isDragging && longPressTimer) {
+        if (Math.abs(pos.y - startY) > 8 || Math.abs(pos.x - startX) > 8) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        return;
+      }
+      if (!isDragging || !dragItem) return;
+      if (e.preventDefault) e.preventDefault();
+
+      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
+
+      var currentItems = getItems().filter(function(el) { return el !== dragItem; });
+      var inserted = false;
+      for (var i = 0; i < currentItems.length; i++) {
+        var r = currentItems[i].getBoundingClientRect();
+        if (pos.y < r.top + r.height / 2) {
+          list.insertBefore(placeholder, currentItems[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) list.appendChild(placeholder);
+    }
+
+    function onPointerEnd() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+
+      if (_scrollContainer) {
+        _scrollContainer.style.overflowY = _prevOverflow;
+        _scrollContainer = null;
+      }
+
+      if (!isDragging || !dragItem) return;
+
+      dragItem.classList.remove('ovc-dragging');
+      dragItem.style.position = '';
+      dragItem.style.left = '';
+      dragItem.style.top = '';
+      dragItem.style.width = '';
+      dragItem.style.zIndex = '';
+
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragItem, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+      dragItem = null;
+      isDragging = false;
+
+      /* DOM順を読み取り、チェックONの項目だけをsectionsに */
+      var newSections = [];
+      getItems().forEach(function(el) {
+        var secId = el.getAttribute('data-rp-sec-id');
+        if (!secId) return;
+        var cb = el.querySelector('input[type="checkbox"]');
+        if (cb && cb.checked) newSections.push(secId);
+      });
+      var cfg = getRightPanelConfig();
+      cfg.sections = newSections;
+      saveRightPanelConfig(cfg);
+      renderRightPanel();
+    }
+
+    function onPointerCancel() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+      if (_scrollContainer) {
+        _scrollContainer.style.overflowY = _prevOverflow;
+        _scrollContainer = null;
+      }
+      if (dragItem) {
+        dragItem.classList.remove('ovc-dragging');
+        dragItem.style.position = '';
+        dragItem.style.left = '';
+        dragItem.style.top = '';
+        dragItem.style.width = '';
+        dragItem.style.zIndex = '';
+        if (placeholder) placeholder.remove();
+        dragItem = null;
+        placeholder = null;
+      }
+      isDragging = false;
+    }
+
+    /* Touch */
+    list.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
+    list.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
+    list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
+    list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
+
+    /* Mouse */
+    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', function(e) {
+      if (!isMouseDown && !isDragging) return;
+      onPointerMove(e);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!isMouseDown && !isDragging) return;
+      onPointerEnd();
+    });
+    list.addEventListener('contextmenu', function(e) {
+      if (isDragging) e.preventDefault();
+    });
+  }
+
+  /* ---------- 右パネルセクショントグル ---------- */
+  function _rpToggleSection(secId, show) {
     hp();
     var cfg = getRightPanelConfig();
     var sections = cfg.sections || DEFAULT_RIGHT_PANEL_CFG.sections.slice();
@@ -420,7 +649,20 @@
     }
     cfg.sections = sections;
     saveRightPanelConfig(cfg);
+    renderRightPanel();
     _refreshRightPanelSettingsUI();
+  }
+
+  function _rpResetOrder() {
+    hp();
+    saveRightPanelConfig(JSON.parse(JSON.stringify(DEFAULT_RIGHT_PANEL_CFG)));
+    toast('\uD83D\uDCCA 右パネル設定を初期値に戻しました');
+    renderRightPanel();
+    _refreshRightPanelSettingsUI();
+  }
+
+  function toggleRightPanelSection(secId, show) {
+    _rpToggleSection(secId, show);
   }
 
   function _refreshRightPanelSettingsUI() {
@@ -443,5 +685,8 @@
   window.RIGHT_PANEL_SECTIONS = RIGHT_PANEL_SECTIONS;
   window.setDesktopRightPanelVisible = setDesktopRightPanelVisible;
   window._applyDesktopRightPanel = _applyDesktopRightPanel;
+  window._rpToggleSection = _rpToggleSection;
+  window._rpResetOrder = _rpResetOrder;
+  window._initRpSortDrag = _initRpSortDrag;
 
 })();

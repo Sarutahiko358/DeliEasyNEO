@@ -636,10 +636,11 @@
 
     /* 詳細設定 */
     html += '<div class="card mb12">';
-    html += '<div class="card-header" onclick="this.classList.toggle(\'open\');var b=document.getElementById(\'edit-advanced-body\');b.style.display=b.style.display===\'none\'?\'\':\'none\'">';
+    html += '<div class="card-header" onclick="this.classList.toggle(\'open\');var b=document.getElementById(\'edit-advanced-body\');b.style.display=b.style.display===\'none\'?\'\':\'none\';if(b.style.display!==\'none\'){if(typeof _initSidebarSortDrag===\'function\')setTimeout(_initSidebarSortDrag,100)}">';
     html += '<span>⚙️ 詳細設定</span><span class="card-arrow">▼</span>';
     html += '</div>';
     html += '<div class="card-body" id="edit-advanced-body" style="display:none">';
+    if (typeof renderSidebarSettings === 'function') html += renderSidebarSettings();
     if (typeof renderTopbarSettings === 'function') html += renderTopbarSettings();
     if (typeof renderBottombarSettings === 'function') html += renderBottombarSettings();
     if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
@@ -711,12 +712,17 @@
     if (!body) return;
     var html = '';
     html += '<div style="margin-bottom:16px">';
+    if (typeof renderSidebarSettings === 'function') html += renderSidebarSettings();
     if (typeof renderTopbarSettings === 'function') html += renderTopbarSettings();
     if (typeof renderBottombarSettings === 'function') html += renderBottombarSettings();
     if (typeof renderRightPanelSettings === 'function') html += renderRightPanelSettings();
     if (typeof renderFabSettings === 'function') html += renderFabSettings();
     html += '</div>';
     body.innerHTML = html;
+
+    requestAnimationFrame(function() {
+      if (typeof _initSidebarSortDrag === 'function') _initSidebarSortDrag();
+    });
   }
   window.renderOverlay_detailSettings = renderOverlay_detailSettings;
 

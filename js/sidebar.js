@@ -1,6 +1,6 @@
 /* ==========================================================
    DeliEasy v2 — js/sidebar.js
-   左サイドバー — デスクトップ対応修正版
+   左サイドバー — 並び替え・表示/非表示対応版
    ========================================================== */
 (function(){
   'use strict';
@@ -49,31 +49,64 @@
     return typeof window._isDesktop === 'function' && window._isDesktop();
   }
 
-  /* ---------- Menu definition ---------- */
-  var MENU = [
-    { type: 'divider' },
-    { id: 'earn-input',    icon: '✏️', label: '売上入力',     overlay: 'earnInput' },
-    { id: 'expense-input', icon: '💸', label: '経費入力',     overlay: 'expenseInput' },
-    { type: 'divider' },
-    { id: 'calendar',      icon: '📅', label: 'カレンダー',   overlay: 'calendar' },
-    { id: 'stats',         icon: '📊', label: '統計',         overlay: 'stats' },
-    { id: 'tax',           icon: '🧾', label: '税金',         overlay: 'tax' },
-    { id: 'expense-mgmt',  icon: '💰', label: '経費管理',     overlay: 'expenseManage' },
-    { type: 'divider' },
-    { id: 'pf-manage',     icon: '📦', label: 'PF・カテゴリ', overlay: 'pfManage' },
-    { id: 'theme',         icon: '🎨', label: 'テーマ',       overlay: 'theme' },
-    { id: 'overlay-mgr',   icon: '📐', label: 'オーバーレイ管理', action: 'openOverlayManager' },
-    { id: 'home-edit',     icon: '🏠', label: 'ホーム編集',   action: 'enterEditMode' },
-    { id: 'edit-advanced', icon: '🔧', label: '詳細設定',   overlay: 'detailSettings' },
-    { id: 'settings',      icon: '⚙️', label: '設定',         overlay: 'settings' },
-    { id: 'help',          icon: '❓', label: 'ヘルプ',       overlay: 'help' }
+  /* ---------- メニュー項目マスター定義 ---------- */
+  var SIDEBAR_MENU_ITEMS = [
+    { id: 'earn-input',    icon: '\u270F\uFE0F', label: '売上入力',       overlay: 'earnInput',       group: 'quick' },
+    { id: 'expense-input', icon: '\uD83D\uDCB8', label: '経費入力',       overlay: 'expenseInput',    group: 'quick' },
+    { id: 'calendar',      icon: '\uD83D\uDCC5', label: 'カレンダー',     overlay: 'calendar',        group: 'main' },
+    { id: 'stats',         icon: '\uD83D\uDCCA', label: '統計',           overlay: 'stats',           group: 'main' },
+    { id: 'tax',           icon: '\uD83E\uDDFE', label: '税金',           overlay: 'tax',             group: 'main' },
+    { id: 'expense-mgmt',  icon: '\uD83D\uDCB0', label: '経費管理',       overlay: 'expenseManage',   group: 'main' },
+    { id: 'pf-manage',     icon: '\uD83D\uDCE6', label: 'PF・カテゴリ',   overlay: 'pfManage',        group: 'manage' },
+    { id: 'theme',         icon: '\uD83C\uDFA8', label: 'テーマ',         overlay: 'theme',           group: 'manage' },
+    { id: 'overlay-mgr',   icon: '\uD83D\uDCD0', label: 'オーバーレイ管理', action: 'openOverlayManager', group: 'manage' },
+    { id: 'home-edit',     icon: '\uD83C\uDFE0', label: 'ホーム編集',     action: 'enterEditMode',    group: 'manage' },
+    { id: 'edit-advanced', icon: '\uD83D\uDD27', label: '詳細設定',       overlay: 'detailSettings',  group: 'manage' },
+    { id: 'settings',      icon: '\u2699\uFE0F', label: '設定',           overlay: 'settings',        group: 'system' },
+    { id: 'help',          icon: '\u2753',        label: 'ヘルプ',         overlay: 'help',            group: 'system' }
   ];
+
+  /* ---------- サイドバー設定データ ---------- */
+  var DEFAULT_SIDEBAR_CFG = {
+    order: ['earn-input','expense-input','calendar','stats','tax','expense-mgmt','pf-manage','theme','overlay-mgr','home-edit','edit-advanced','settings','help'],
+    hidden: {}
+  };
+
+  function getSidebarConfig() {
+    var saved = S.g('sidebar_cfg', null);
+    if (!saved || typeof saved !== 'object') {
+      saved = JSON.parse(JSON.stringify(DEFAULT_SIDEBAR_CFG));
+    }
+    var masterIds = SIDEBAR_MENU_ITEMS.map(function(m) { return m.id; });
+    /* マスターに新項目が追加された場合、orderの末尾に自動追加 */
+    masterIds.forEach(function(id) {
+      if (saved.order.indexOf(id) < 0) saved.order.push(id);
+    });
+    /* マスターから削除された項目はorderから除去 */
+    saved.order = saved.order.filter(function(id) {
+      return masterIds.indexOf(id) >= 0;
+    });
+    if (!saved.hidden) saved.hidden = {};
+    return saved;
+  }
+
+  function saveSidebarConfig(cfg) {
+    S.s('sidebar_cfg', cfg);
+  }
+
+  function _findMenuItem(id) {
+    for (var i = 0; i < SIDEBAR_MENU_ITEMS.length; i++) {
+      if (SIDEBAR_MENU_ITEMS[i].id === id) return SIDEBAR_MENU_ITEMS[i];
+    }
+    return null;
+  }
 
   /* ---------- Render ---------- */
   function renderSidebar() {
     var panel = document.getElementById('sidebar');
     if (!panel) return;
 
+    var cfg = getSidebarConfig();
     var html = '';
 
     /* User info */
@@ -88,17 +121,21 @@
       html += '<div class="sidebar-user-name">' + escHtml(name) + '</div>';
       html += '<div class="sidebar-user-email">' + escHtml(email) + '</div>';
     } else {
-      html += '<div class="sidebar-user-login">☁️ 同期するにはログイン</div>';
+      html += '<div class="sidebar-user-login">\u2601\uFE0F 同期するにはログイン</div>';
     }
     html += '</div>';
 
-    /* Menu items */
+    /* Menu items — order順に描画、hiddenはスキップ、グループ変更時にdivider */
     html += '<div class="sidebar-section">';
-    MENU.forEach(function(item) {
-      if (item.type === 'divider') {
+    var lastGroup = null;
+    cfg.order.forEach(function(id) {
+      if (cfg.hidden[id]) return;
+      var item = _findMenuItem(id);
+      if (!item) return;
+      if (lastGroup !== null && item.group !== lastGroup) {
         html += '<hr class="sidebar-divider">';
-        return;
       }
+      lastGroup = item.group;
       html += '<button class="sidebar-item" data-overlay="' + (item.overlay || '') + '" data-action="' + (item.action || '') + '">';
       html += '<span class="sidebar-item-icon">' + item.icon + '</span>';
       html += '<span class="sidebar-item-label">' + escHtml(item.label) + '</span>';
@@ -119,7 +156,7 @@
     }
     /* オーバーレイ追加ボタン */
     html += '<button class="sidebar-item" id="sidebar-add-overlay">';
-    html += '<span class="sidebar-item-icon">＋</span>';
+    html += '<span class="sidebar-item-icon">\uFF0B</span>';
     html += '<span class="sidebar-item-label" style="color:var(--c-primary)">オーバーレイ追加</span>';
     html += '</button>';
 
@@ -187,6 +224,278 @@
       _initPanelSwipeToClose(panel);
     }
   }
+
+  /* ---------- サイドバー設定UI ---------- */
+  function renderSidebarSettings() {
+    var cfg = getSidebarConfig();
+    var html = '';
+    html += '<div id="sidebar-settings-container">';
+    html += '<div class="card mb12"><div class="card-body">';
+    html += '<div class="fz-s fw6 mb8">\u2630 サイドバー設定</div>';
+    html += '<div class="fz-xs c-muted mb12">表示/非表示の切替。長押しでドラッグして並び替えできます。</div>';
+
+    html += '<div id="sidebar-sort-list">';
+    cfg.order.forEach(function(id) {
+      var item = _findMenuItem(id);
+      if (!item) return;
+      var isHidden = !!cfg.hidden[id];
+      var style = isHidden ? ' style="opacity:.4;text-decoration:line-through"' : '';
+      html += '<div class="ovc-drag-item" data-sidebar-id="' + escHtml(id) + '"' + style + '>';
+      html += '<span class="ovc-drag-handle">\u2630</span>';
+      html += '<label class="topbar-toggle" style="flex-shrink:0">';
+      html += '<input type="checkbox" ' + (isHidden ? '' : 'checked') + ' onchange="_sidebarToggleItem(\'' + escJs(id) + '\',!this.checked)">';
+      html += '<span class="topbar-toggle-slider"></span>';
+      html += '</label>';
+      html += '<span class="fz-s">' + item.icon + ' ' + escHtml(item.label) + '</span>';
+      html += '<span class="fz-xxs c-muted" style="margin-left:auto">' + escHtml(item.group) + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    html += '<button class="btn btn-secondary btn-sm btn-block mt12" onclick="_sidebarResetOrder()">初期設定に戻す</button>';
+    html += '</div></div>';
+    html += '</div>';
+    return html;
+  }
+
+  /* ---------- サイドバー並び替えドラッグ ---------- */
+  function _initSidebarSortDrag() {
+    var list = document.getElementById('sidebar-sort-list');
+    if (!list) return;
+
+    function _getFixedOffset(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body && p !== document.documentElement) {
+        var cs = window.getComputedStyle(p);
+        if (cs.transform && cs.transform !== 'none') {
+          var r = p.getBoundingClientRect();
+          return { x: r.left, y: r.top };
+        }
+        p = p.parentElement;
+      }
+      return { x: 0, y: 0 };
+    }
+    var _txOff = { x: 0, y: 0 };
+
+    var LONG_PRESS_MS = 400;
+    var longPressTimer = null;
+    var dragItem = null;
+    var placeholder = null;
+    var startY = 0;
+    var startX = 0;
+    var offsetY = 0;
+    var isDragging = false;
+    var isMouseDown = false;
+    var _scrollContainer = null;
+    var _prevOverflow = '';
+
+    function getItems() {
+      return Array.from(list.querySelectorAll('.ovc-drag-item'));
+    }
+
+    function _getXY(e) {
+      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function _findScrollParent(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body) {
+        var cs = window.getComputedStyle(p);
+        if (cs.overflowY === 'auto' || cs.overflowY === 'scroll') return p;
+        p = p.parentElement;
+      }
+      return null;
+    }
+
+    function onPointerDown(e, isMouse) {
+      var target = e.target.closest('.ovc-drag-item');
+      if (!target) return;
+      if (isMouse && e.button !== 0) return;
+      /* トグルクリック時はドラッグ開始しない */
+      if (e.target.closest('.topbar-toggle')) return;
+
+      var pos = _getXY(e);
+      startY = pos.y;
+      startX = pos.x;
+      if (isMouse) isMouseDown = true;
+
+      longPressTimer = setTimeout(function() {
+        isDragging = true;
+        dragItem = target;
+        var rect = dragItem.getBoundingClientRect();
+        _txOff = _getFixedOffset(dragItem);
+        offsetY = startY - rect.top;
+
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+
+        _scrollContainer = _findScrollParent(list);
+        if (_scrollContainer) {
+          _prevOverflow = _scrollContainer.style.overflowY;
+          _scrollContainer.style.overflowY = 'hidden';
+        }
+
+        placeholder = document.createElement('div');
+        placeholder.className = 'ovc-drag-placeholder';
+        placeholder.style.height = rect.height + 'px';
+        dragItem.parentNode.insertBefore(placeholder, dragItem);
+
+        dragItem.classList.add('ovc-dragging');
+        dragItem.style.position = 'fixed';
+        dragItem.style.left = (rect.left - _txOff.x) + 'px';
+        dragItem.style.top = (rect.top - _txOff.y) + 'px';
+        dragItem.style.width = rect.width + 'px';
+        dragItem.style.zIndex = '10000';
+
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function onPointerMove(e) {
+      var pos = _getXY(e);
+      if (!isDragging && longPressTimer) {
+        if (Math.abs(pos.y - startY) > 8 || Math.abs(pos.x - startX) > 8) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        return;
+      }
+      if (!isDragging || !dragItem) return;
+      if (e.preventDefault) e.preventDefault();
+
+      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
+
+      var currentItems = getItems().filter(function(el) { return el !== dragItem; });
+      var inserted = false;
+      for (var i = 0; i < currentItems.length; i++) {
+        var r = currentItems[i].getBoundingClientRect();
+        if (pos.y < r.top + r.height / 2) {
+          list.insertBefore(placeholder, currentItems[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) list.appendChild(placeholder);
+    }
+
+    function onPointerEnd() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+
+      if (_scrollContainer) {
+        _scrollContainer.style.overflowY = _prevOverflow;
+        _scrollContainer = null;
+      }
+
+      if (!isDragging || !dragItem) return;
+
+      dragItem.classList.remove('ovc-dragging');
+      dragItem.style.position = '';
+      dragItem.style.left = '';
+      dragItem.style.top = '';
+      dragItem.style.width = '';
+      dragItem.style.zIndex = '';
+
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragItem, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+      dragItem = null;
+      isDragging = false;
+
+      /* 新しい順序を保存 */
+      var newOrder = [];
+      getItems().forEach(function(el) {
+        var sid = el.getAttribute('data-sidebar-id');
+        if (sid) newOrder.push(sid);
+      });
+      var cfg = getSidebarConfig();
+      cfg.order = newOrder;
+      saveSidebarConfig(cfg);
+      renderSidebar();
+    }
+
+    function onPointerCancel() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+      if (_scrollContainer) {
+        _scrollContainer.style.overflowY = _prevOverflow;
+        _scrollContainer = null;
+      }
+      if (dragItem) {
+        dragItem.classList.remove('ovc-dragging');
+        dragItem.style.position = '';
+        dragItem.style.left = '';
+        dragItem.style.top = '';
+        dragItem.style.width = '';
+        dragItem.style.zIndex = '';
+        if (placeholder) placeholder.remove();
+        dragItem = null;
+        placeholder = null;
+      }
+      isDragging = false;
+    }
+
+    /* Touch */
+    list.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
+    list.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
+    list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
+    list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
+
+    /* Mouse */
+    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', function(e) {
+      if (!isMouseDown && !isDragging) return;
+      onPointerMove(e);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!isMouseDown && !isDragging) return;
+      onPointerEnd();
+    });
+    list.addEventListener('contextmenu', function(e) {
+      if (isDragging) e.preventDefault();
+    });
+  }
+
+  /* ---------- サイドバー項目トグル ---------- */
+  window._sidebarToggleItem = function(itemId, hide) {
+    hp();
+    var cfg = getSidebarConfig();
+    if (hide) {
+      cfg.hidden[itemId] = true;
+    } else {
+      delete cfg.hidden[itemId];
+    }
+    saveSidebarConfig(cfg);
+    renderSidebar();
+    /* 設定UIを再描画 */
+    var container = document.getElementById('sidebar-settings-container');
+    if (container) {
+      container.outerHTML = renderSidebarSettings();
+      setTimeout(function() { _initSidebarSortDrag(); }, 50);
+    }
+  };
+
+  /* ---------- サイドバー順序リセット ---------- */
+  window._sidebarResetOrder = function() {
+    hp();
+    saveSidebarConfig(JSON.parse(JSON.stringify(DEFAULT_SIDEBAR_CFG)));
+    toast('\u2630 サイドバー設定を初期値に戻しました');
+    renderSidebar();
+    var container = document.getElementById('sidebar-settings-container');
+    if (container) {
+      container.outerHTML = renderSidebarSettings();
+      setTimeout(function() { _initSidebarSortDrag(); }, 50);
+    }
+  };
 
   /* ---------- パネル内スワイプで閉じる ---------- */
   function _initPanelSwipeToClose(panel) {
@@ -318,10 +627,10 @@
     var html = '';
 
     html += '<div class="card mb12"><div class="card-body">';
-    html += '<div class="fz-s fw6 mb12">👆 ジェスチャー設定</div>';
+    html += '<div class="fz-s fw6 mb12">\uD83D\uDC46 ジェスチャー設定</div>';
     html += '<div class="fz-xs c-muted mb12">画面端からのスワイプでサイドバーや右パネルを開く操作を調整します。<br>端末のOS戻るジェスチャーと競合する場合は、検出幅を広めに設定してください。</div>';
 
-    html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">◀ 左サイドバー</div>';
+    html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">\u25C0 左サイドバー</div>';
 
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">検出幅: <span id="gesture-edge-val">' + cfg.edgeWidth + '</span>px</div>';
@@ -348,7 +657,7 @@
     html += '</div>';
 
     html += '<div style="margin-top:16px;padding-top:12px;border-top:.5px solid var(--c-divider)"></div>';
-    html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">▶ 右パネル</div>';
+    html += '<div class="fz-xs fw6 mb8" style="color:var(--c-primary)">\u25B6 右パネル</div>';
 
     html += '<div class="mb12">';
     html += '<div class="fz-xs fw6 c-secondary mb4">検出幅: <span id="gesture-redge-val">' + cfg.rightEdgeWidth + '</span>px</div>';
@@ -391,7 +700,7 @@
   window._gestureReset = function() {
     hp();
     saveGestureConfig(JSON.parse(JSON.stringify(DEFAULT_GESTURE_CFG)));
-    toast('👆 ジェスチャー設定を初期値に戻しました');
+    toast('\uD83D\uDC46 ジェスチャー設定を初期値に戻しました');
     if (typeof window._refreshSettingsOverlay === 'function') {
       window._refreshSettingsOverlay();
     }
@@ -407,5 +716,10 @@
   window.getGestureConfig = getGestureConfig;
   window.saveGestureConfig = saveGestureConfig;
   window.renderGestureSettings = renderGestureSettings;
+  window.renderSidebarSettings = renderSidebarSettings;
+  window.getSidebarConfig = getSidebarConfig;
+  window.saveSidebarConfig = saveSidebarConfig;
+  window.SIDEBAR_MENU_ITEMS = SIDEBAR_MENU_ITEMS;
+  window._initSidebarSortDrag = _initSidebarSortDrag;
 
 })();
