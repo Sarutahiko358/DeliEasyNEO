@@ -304,6 +304,20 @@
     var list = document.getElementById('dash-edit-list-' + coId);
     if (!list) return;
 
+    function _getFixedOffset(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body && p !== document.documentElement) {
+        var cs = window.getComputedStyle(p);
+        if (cs.transform && cs.transform !== 'none') {
+          var r = p.getBoundingClientRect();
+          return { x: r.left, y: r.top };
+        }
+        p = p.parentElement;
+      }
+      return { x: 0, y: 0 };
+    }
+    var _txOff = { x: 0, y: 0 };
+
     var scrollContainer = list.closest('.overlay-body');
 
     var LONG_PRESS_MS = 350;
@@ -346,6 +360,7 @@
         document.body.style.webkitUserSelect = 'none';
 
         var rect = dragRow.getBoundingClientRect();
+        _txOff = _getFixedOffset(dragRow);
         offsetY = startY - rect.top;
 
         placeholder = document.createElement('div');
@@ -355,8 +370,8 @@
 
         dragRow.classList.add('home-edit-dragging');
         dragRow.style.position = 'fixed';
-        dragRow.style.left = rect.left + 'px';
-        dragRow.style.top = rect.top + 'px';
+        dragRow.style.left = (rect.left - _txOff.x) + 'px';
+        dragRow.style.top = (rect.top - _txOff.y) + 'px';
         dragRow.style.width = rect.width + 'px';
         dragRow.style.zIndex = '10000';
         dragRow.style.pointerEvents = 'none';
@@ -377,7 +392,7 @@
       if (!isDragging || !dragRow) return;
       if (e.preventDefault) e.preventDefault();
 
-      dragRow.style.top = (pos.y - offsetY) + 'px';
+      dragRow.style.top = (pos.y - offsetY - _txOff.y) + 'px';
 
       var rows = getRows().filter(function(r) { return r !== dragRow; });
       var inserted = false;

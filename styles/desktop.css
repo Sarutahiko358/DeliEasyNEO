@@ -1,6 +1,7 @@
 /* ==========================================================
    DeliEasy v2 — styles/desktop.css
-   デスクトップ＋タブレット レスポンシブ対応（修正版）
+   デスクトップ＋タブレット レスポンシブ対応（v2 修正版）
+   transform問題の根本解決: flexbox中央配置
    ========================================================== */
 
 /* ==========================================================
@@ -23,14 +24,14 @@
   .ds-gbox .ds-gv {
     font-size: 1.25rem;
   }
+  /* タブレットのオーバーレイ: 幅80%・left/right autoで中央配置（transformなし） */
   .overlay-sheet {
     width: 80%;
     max-width: 80vw;
-    left: 50%;
-    transform: translateX(-50%) translateY(100%);
-  }
-  .overlay-sheet.open {
-    transform: translateX(-50%) translateY(0);
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -150,24 +151,45 @@
   }
 
   /* ==========================================================
-     オーバーレイ — 中央モーダル
+     オーバーレイ — 中央モーダル（flexbox配置・transformなし）
+
+     重要: transform を overlay-sheet に適用すると、
+     子要素の position:fixed がviewport基準ではなく
+     transform親基準になり、ドラッグ座標がずれる。
+     そのため flexbox で中央配置し transform を排除する。
      ========================================================== */
+  .overlay-container.has-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* backdrop は fixed inset:0 のまま（flex itemにならないよう） */
+  .overlay-backdrop {
+    position: fixed;
+    inset: 0;
+  }
+
   .overlay-sheet {
+    /* flexbox内の通常のitemとして中央配置される */
+    position: relative;
     bottom: auto;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(.95);
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 0;
+    transform: none;
     width: 680px;
     max-width: 90vw;
     height: 80vh;
     max-height: 80vh;
     border-radius: var(--ds-radius-lg);
     opacity: 0;
-    transition: transform .3s cubic-bezier(.28,.11,.32,1),
-                opacity .3s cubic-bezier(.28,.11,.32,1);
+    transition: opacity .3s cubic-bezier(.28,.11,.32,1);
+    z-index: 1; /* backdrop の上に */
   }
   .overlay-sheet.open {
-    transform: translate(-50%, -50%) scale(1);
+    transform: none;
     opacity: 1;
   }
 

@@ -120,6 +120,20 @@
     var list = document.getElementById('ovc-drag-list');
     if (!list) return;
 
+    function _getFixedOffset(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body && p !== document.documentElement) {
+        var cs = window.getComputedStyle(p);
+        if (cs.transform && cs.transform !== 'none') {
+          var r = p.getBoundingClientRect();
+          return { x: r.left, y: r.top };
+        }
+        p = p.parentElement;
+      }
+      return { x: 0, y: 0 };
+    }
+    var _txOff = { x: 0, y: 0 };
+
     var LONG_PRESS_MS = 400;
     var longPressTimer = null;
     var dragItem = null;
@@ -153,6 +167,7 @@
         isDragging = true;
         dragItem = target;
         var rect = dragItem.getBoundingClientRect();
+        _txOff = _getFixedOffset(dragItem);
         offsetY = startY - rect.top;
 
         document.body.style.userSelect = 'none';
@@ -165,8 +180,8 @@
 
         dragItem.classList.add('ovc-dragging');
         dragItem.style.position = 'fixed';
-        dragItem.style.left = rect.left + 'px';
-        dragItem.style.top = rect.top + 'px';
+        dragItem.style.left = (rect.left - _txOff.x) + 'px';
+        dragItem.style.top = (rect.top - _txOff.y) + 'px';
         dragItem.style.width = rect.width + 'px';
         dragItem.style.zIndex = '10000';
 
@@ -186,7 +201,7 @@
       if (!isDragging || !dragItem) return;
       if (e.preventDefault) e.preventDefault();
 
-      dragItem.style.top = (pos.y - offsetY) + 'px';
+      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
 
       var currentItems = getItems().filter(function(el) { return el !== dragItem; });
       var inserted = false;
