@@ -371,6 +371,31 @@
       if (typeof renderBottombar === 'function') renderBottombar();
       if (typeof renderFab === 'function') renderFab();
     }
+
+    /* FAB位置クランプ（ビューポート外にはみ出していたら補正） */
+    var fabCfg = typeof getFabConfig === 'function' ? getFabConfig() : null;
+    if (fabCfg && fabCfg.posX !== null && fabCfg.posX !== undefined) {
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+      var fabSize = 56;
+      var fabChanged = false;
+
+      if (fabCfg.posX + fabSize > vw) { fabCfg.posX = vw - fabSize - 8; fabChanged = true; }
+      if (fabCfg.posX < 0) { fabCfg.posX = 8; fabChanged = true; }
+      if (fabCfg.posY + fabSize > vh) { fabCfg.posY = vh - fabSize - 8; fabChanged = true; }
+      if (fabCfg.posY < 0) { fabCfg.posY = 8; fabChanged = true; }
+
+      if (fabChanged) {
+        if (typeof saveFabConfig === 'function') saveFabConfig(fabCfg);
+        var fabContainer = document.getElementById('fab-container');
+        if (fabContainer) {
+          fabContainer.style.left = fabCfg.posX + 'px';
+          fabContainer.style.top = fabCfg.posY + 'px';
+          fabContainer.style.right = 'auto';
+          fabContainer.style.bottom = 'auto';
+        }
+      }
+    }
   });
 
   document.addEventListener('DOMContentLoaded', initApp);
