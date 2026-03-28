@@ -363,16 +363,27 @@
     list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
     list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
 
-    /* Mouse events */
-    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
-    document.addEventListener('mousemove', function(e) {
+    /* Mouse events — documentに登録するため重複防止が必要 */
+    /* 前回のリスナーを除去してから再登録 */
+    if (window.__homeEditMouseMove) {
+      document.removeEventListener('mousemove', window.__homeEditMouseMove);
+    }
+    if (window.__homeEditMouseUp) {
+      document.removeEventListener('mouseup', window.__homeEditMouseUp);
+    }
+
+    window.__homeEditMouseMove = function(e) {
       if (!isMouseDown && !isDragging) return;
       onPointerMove(e);
-    });
-    document.addEventListener('mouseup', function() {
+    };
+    window.__homeEditMouseUp = function() {
       if (!isMouseDown && !isDragging) return;
       onPointerEnd();
-    });
+    };
+
+    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', window.__homeEditMouseMove);
+    document.addEventListener('mouseup', window.__homeEditMouseUp);
     list.addEventListener('contextmenu', function(e) {
       if (isDragging) e.preventDefault();
     });
