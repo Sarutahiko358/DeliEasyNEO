@@ -89,7 +89,21 @@
     updateSyncIndicator();
   };
 
-  window.openStatDetail = window.openStatDetail || function() {};
+  window.openStatDetail = window.openStatDetail || function(type, context, dateStr) {
+    /* stats.js が遅延ロード前の場合のshim:
+       パラメータをwindowに保存し、statsオーバーレイを開く。
+       stats.js ロード後にこの関数は上書きされる */
+    if (context === 'today' || context === 'calDay') window._dashPeriod = 'day';
+    else if (context === 'week') window._dashPeriod = 'week';
+    else if (context === 'month' || context === 'calMonth') window._dashPeriod = 'month';
+    else window._dashPeriod = 'month';
+    window._dashDateStr = dateStr || null;
+    window._dashSection = 'overview';
+    if (type === 'expense') window._dashSection = 'expense';
+    else if (type === 'pf' || type === 'count' || type === 'unit') window._dashSection = 'pf';
+    else if (type === 'records') window._dashSection = 'records';
+    if (typeof openOverlay === 'function') openOverlay('stats');
+  };
   window.curPage = -1;
 
   window.refreshHome = function() {

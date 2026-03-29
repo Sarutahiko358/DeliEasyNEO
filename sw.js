@@ -13,6 +13,11 @@ const PRE_CACHE = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
+  /* Lazy-loaded feature scripts (cached for offline use) */
+  './calendar.js',
+  './stats.js',
+  './expense.js',
+  './tax.js',
   /* v2 Styles */
   './styles/base.css',
   './styles/design-styles.css',

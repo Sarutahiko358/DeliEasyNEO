@@ -554,11 +554,17 @@
     if (typeof window.initCalendar === 'function') window.initCalendar();
     if (typeof openOverlay === 'function') {
       openOverlay('calendar');
-      setTimeout(function() {
+      /* calendar.js の遅延ロード完了を待ってから日付選択 */
+      var attempts = 0;
+      var trySelect = function() {
         if (typeof window.calSel === 'function') {
           window.calSel(dk);
+        } else if (attempts < 20) {
+          attempts++;
+          setTimeout(trySelect, 100);
         }
-      }, 150);
+      };
+      setTimeout(trySelect, 150);
     }
   }
 

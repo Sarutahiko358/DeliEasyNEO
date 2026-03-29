@@ -22,7 +22,22 @@
     /* stats.js は #pg2 にレンダリングする */
     body.innerHTML = '<div id="pg2" style="min-height:200px"></div>';
 
-    if (typeof renderStats === 'function') renderStats();
+    /* openStatDetail shim からのパラメータを適用 */
+    var hasDashParams = !!(window._dashPeriod || window._dashSection);
+    if (hasDashParams) {
+      if (window._dashPeriod && typeof setStatPeriod === 'function') {
+        setStatPeriod(window._dashPeriod);
+      }
+      if (window._dashSection && typeof setStatSection === 'function') {
+        setStatSection(window._dashSection);
+      }
+      /* パラメータをクリア（次回は通常表示） */
+      delete window._dashPeriod;
+      delete window._dashSection;
+      delete window._dashDateStr;
+    } else {
+      if (typeof renderStats === 'function') renderStats();
+    }
   }
 
   /* ダッシュボードオーバーレイ（openStatDetailから呼ばれる）*/

@@ -36,6 +36,9 @@
           if (_scriptLoadState[src] === 'loaded') {
             clearInterval(check);
             resolve();
+          } else if (_scriptLoadState[src] === 'error') {
+            clearInterval(check);
+            reject(new Error('Script load failed: ' + src));
           }
         }, 50);
         setTimeout(function() { clearInterval(check); resolve(); }, 10000);
@@ -49,7 +52,7 @@
         resolve();
       };
       script.onerror = function() {
-        _scriptLoadState[src] = 'loaded'; // エラーでもロード試行済みとする
+        _scriptLoadState[src] = 'error';
         console.error('[LazyLoad] Failed to load:', src);
         reject(new Error('Script load failed: ' + src));
       };
@@ -357,6 +360,15 @@
       var needsLoad = deps.some(function(src) {
         return _scriptLoadState[src] !== 'loaded';
       });
+
+      /* エラー状態のスクリプトはリトライ可能にする */
+      if (needsLoad) {
+        deps.forEach(function(src) {
+          if (_scriptLoadState[src] === 'error') {
+            delete _scriptLoadState[src];
+          }
+        });
+      }
 
       if (needsLoad) {
         body.innerHTML =
