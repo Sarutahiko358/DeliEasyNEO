@@ -75,6 +75,46 @@
 .cal-c.cal-sun .cal-da { color: var(--c-danger); }
 .cal-c.cal-sat .cal-da { color: var(--c-primary); }
 
+/* 祝日（日曜以外）— 日付の文字色を赤に */
+.cal-c.cal-holiday .cal-da {
+  color: var(--c-danger);
+}
+
+/* 祝日セルの背景を微かに着色 */
+.cal-c.cal-holiday:not(.today):not(.sel) {
+  background: rgba(255, 59, 48, 0.04);
+}
+
+/* 祝日マーカー（日付番号の右上に小さなドット） */
+.cal-c.cal-holiday .cal-da::after {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--c-danger);
+  margin-left: 1px;
+  vertical-align: super;
+  opacity: .5;
+}
+
+/* todayセルの場合はドットを白に */
+.cal-c.today.cal-holiday .cal-da::after {
+  background: rgba(255,255,255,.6);
+}
+
+/* ダークパレット対応 */
+[data-color="blue-dark"] .cal-c.cal-holiday:not(.today):not(.sel),
+[data-color="green-dark"] .cal-c.cal-holiday:not(.today):not(.sel),
+[data-color="pink-dark"] .cal-c.cal-holiday:not(.today):not(.sel),
+[data-color="orange-dark"] .cal-c.cal-holiday:not(.today):not(.sel),
+[data-color="purple-dark"] .cal-c.cal-holiday:not(.today):not(.sel),
+[data-color="midnight"] .cal-c.cal-holiday:not(.today):not(.sel),
+[data-color="sumi-dark"] .cal-c.cal-holiday:not(.today):not(.sel),
+[data-color="charcoal"] .cal-c.cal-holiday:not(.today):not(.sel) {
+  background: rgba(255, 69, 58, 0.08);
+}
+
 /* ===== 日付詳細 ===== */
 .cal-det {
   background: var(--c-card); border-radius: var(--ds-radius); margin-top: 16px; overflow: hidden;

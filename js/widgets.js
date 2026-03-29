@@ -331,14 +331,22 @@
           }
           var isToday = isCurrentMonth && d === todayDate;
           var dk = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+          var dayOfWeek = (firstDay + d - 1) % 7;
+          var isHoliday = typeof isJapaneseHoliday === 'function' && isJapaneseHoliday(year, month + 1, d);
+          var dayClasses = 'widget-cal-day';
+          if (isToday) dayClasses += ' widget-cal-today';
+          if (dayOfWeek === 0) dayClasses += ' widget-cal-sun';
+          if (dayOfWeek === 6) dayClasses += ' widget-cal-sat';
+          if (isHoliday && dayOfWeek !== 0) dayClasses += ' widget-cal-holiday';
 
-          html += '<div class="widget-cal-day' + (isToday ? ' widget-cal-today' : '') + '"' +
+          html += '<div class="' + dayClasses + '"' +
             (lv > 0 ? ' data-lv="' + lv + '"' : '') +
             ' onclick="event.stopPropagation();openCalendarAtDate(\'' + dk + '\')" style="cursor:pointer;position:relative">';
           html += '<span>' + d + '</span>';
           if (sales > 0) {
             var displayAmt = sales >= 10000 ? Math.round(sales / 1000) + 'k' : (sales >= 1000 ? (sales / 1000).toFixed(1) + 'k' : sales);
-            html += '<span style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);font-size:.45rem;font-weight:700;line-height:1;white-space:nowrap;color:' + (isToday ? 'rgba(255,255,255,.9)' : 'var(--c-tx-secondary)') + ';font-variant-numeric:tabular-nums">' + displayAmt + '</span>';
+            var amtFz = w.size === 'wide' ? '.5rem' : '.55rem';
+            html += '<span class="widget-cal-day-amount" style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);font-size:' + amtFz + ';font-weight:700;line-height:1;white-space:nowrap;color:' + (isToday ? 'rgba(255,255,255,.9)' : 'var(--c-tx-secondary)') + ';font-variant-numeric:tabular-nums">' + displayAmt + '</span>';
           }
           html += '</div>';
         }

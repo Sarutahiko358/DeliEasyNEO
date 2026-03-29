@@ -252,6 +252,59 @@
 .widget-cal-day[data-lv="4"] { background: rgba(255,45,85,.25); }
 .widget-cal-day[data-lv="5"] { background: rgba(175,82,222,.25); }
 
+/* 土曜日 */
+.widget-cal-day.widget-cal-sat {
+  color: var(--c-primary);
+}
+.widget-cal-day.widget-cal-sat > span:first-child {
+  color: var(--c-primary);
+}
+
+/* 日曜日 */
+.widget-cal-day.widget-cal-sun {
+  color: var(--c-danger);
+}
+.widget-cal-day.widget-cal-sun > span:first-child {
+  color: var(--c-danger);
+}
+
+/* 祝日（日曜以外） */
+.widget-cal-day.widget-cal-holiday {
+  color: var(--c-danger);
+}
+.widget-cal-day.widget-cal-holiday > span:first-child {
+  color: var(--c-danger);
+}
+
+/* 祝日インジケーター（日付の下に小さなドット） */
+.widget-cal-day.widget-cal-holiday::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--c-danger);
+  opacity: .6;
+}
+
+/* 今日のセルは上書きを維持（todayの白文字を保護） */
+.widget-cal-day.widget-cal-today.widget-cal-sat,
+.widget-cal-day.widget-cal-today.widget-cal-sun,
+.widget-cal-day.widget-cal-today.widget-cal-holiday {
+  color: #fff;
+}
+.widget-cal-day.widget-cal-today.widget-cal-sat > span:first-child,
+.widget-cal-day.widget-cal-today.widget-cal-sun > span:first-child,
+.widget-cal-day.widget-cal-today.widget-cal-holiday > span:first-child {
+  color: #fff;
+}
+.widget-cal-day.widget-cal-today.widget-cal-holiday::after {
+  background: rgba(255,255,255,.6);
+}
+
 /* ===== Desktop: Hover styles ===== */
 @media (hover: hover) {
   .widget-tappable:hover { transform: scale(.99); box-shadow: 0 2px 12px var(--c-shadow-color); }

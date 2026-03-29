@@ -203,7 +203,9 @@
           const isToday = dk === TD;
           const hasExp = expDates.has(dk);
           const dow = (firstDay + d - 1) % 7;
-          const dowClass = dow === 0 ? 'cal-sun' : dow === 6 ? 'cal-sat' : '';
+          let dowClass = dow === 0 ? 'cal-sun' : dow === 6 ? 'cal-sat' : '';
+          const isHoliday = typeof isJapaneseHoliday === 'function' && isJapaneseHoliday(calYear, calMonth + 1, d);
+          if (isHoliday && dow !== 0) dowClass += ' cal-holiday';
           let lvClass = '';
           if (dayTot > 0) {
             if (dayTot >= 20000) lvClass = 'lv5';
@@ -231,6 +233,7 @@
           <span><div class="dot" style="background:#f3e8ff"></div>¥20k~</span>
           <span><div class="dot" style="border:2px solid var(--c-success);width:8px;height:8px"></div>今日</span>
           <span>💸経費</span>
+          <span><div class="dot" style="background:var(--c-danger);width:4px;height:4px;border-radius:50%;margin:2px 3px"></div>祝日</span>
         </div>`;
       },
 
