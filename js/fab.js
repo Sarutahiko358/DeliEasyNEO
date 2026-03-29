@@ -27,7 +27,8 @@
     position: 'right',       /* legacy: 'right'|'left' */
     posX: null,               /* px from left edge — null = use position */
     posY: null,               /* px from top edge — null = use default bottom */
-    items: ['earnInput', 'expenseInput']
+    items: ['earnInput', 'expenseInput'],
+    order: null               /* null = デフォルト順を使用 */
   };
 
   function getFabConfig() {
@@ -57,6 +58,30 @@
       });
     });
     return actions;
+  }
+
+  /* ---------- 並び順解決ヘルパー ---------- */
+  function _getResolvedOrder(cfg) {
+    var allActions = _getAllFabActions();
+    var allIds = allActions.map(function(a) { return a.id; });
+
+    if (!cfg.order || !Array.isArray(cfg.order) || cfg.order.length === 0) {
+      return allIds;
+    }
+
+    var order = cfg.order.slice();
+
+    /* allActionsに存在するがorderに含まれないもの → 末尾に追加 */
+    allIds.forEach(function(id) {
+      if (order.indexOf(id) < 0) order.push(id);
+    });
+
+    /* orderに存在するがallActionsに含まれないもの → 除去 */
+    order = order.filter(function(id) {
+      return allIds.indexOf(id) >= 0;
+    });
+
+    return order;
   }
 
   /* ---------- Position helper ---------- */
@@ -101,11 +126,18 @@
 
     var items = cfg.items || DEFAULT_FAB_CFG.items;
     var allActions = _getAllFabActions();
+    var order = _getResolvedOrder(cfg);
+
+    /* orderの順序で、itemsに含まれるものだけを描画 */
+    var orderedItems = [];
+    order.forEach(function(id) {
+      if (items.indexOf(id) >= 0) orderedItems.push(id);
+    });
 
     var html = '';
     html += '<div class="fab-mini-group" id="fab-mini-group">';
-    for (var i = items.length - 1; i >= 0; i--) {
-      var itemId = items[i];
+    for (var i = orderedItems.length - 1; i >= 0; i--) {
+      var itemId = orderedItems[i];
       var action = null;
       for (var j = 0; j < allActions.length; j++) {
         if (allActions[j].id === itemId) { action = allActions[j]; break; }
@@ -323,19 +355,242 @@
         html += '<div class="fz-xs c-muted mb8">💡 FABボタンを長押しすると自由に移動できます</div>';
       }
 
-      html += '<div class="fz-xs fw6 c-secondary mb8">表示するアクション（タップで切替）</div>';
-      allActions.forEach(function(action) {
-        var isEnabled = items.indexOf(action.id) >= 0;
-        html += '<div class="flex items-center gap8 mb4" style="padding:6px 8px;background:' + (isEnabled ? 'var(--c-primary-light,rgba(0,122,255,.1))' : 'var(--c-fill-quaternary)') + ';border-radius:var(--ds-radius-sm);cursor:pointer" onclick="_fabToggleAction(\'' + escJs(action.id) + '\')">';
-        html += '<span style="font-size:1rem">' + action.icon + '</span>';
+      html += '<div class="fz-xs fw6 c-secondary mb8">表示するアクション</div>';
+      html += '<div class="fz-xs c-muted mb8">長押しでドラッグして並び替えできます。</div>';
+
+      html += '<div id="fab-sort-list">';
+      var sortOrder = _getResolvedOrder(cfg);
+      sortOrder.forEach(function(actionId) {
+        var action = null;
+        for (var j = 0; j < allActions.length; j++) {
+          if (allActions[j].id === actionId) { action = allActions[j]; break; }
+        }
+        if (!action) return;
+        var isEnabled = items.indexOf(actionId) >= 0;
+        var style = isEnabled ? '' : ' style="opacity:.4"';
+
+        html += '<div class="ovc-drag-item" data-fab-action-id="' + escHtml(actionId) + '"' + style + '>';
+        html += '<span class="ovc-drag-handle">☰</span>';
+        html += '<label class="topbar-toggle" style="flex-shrink:0">';
+        html += '<input type="checkbox" ' + (isEnabled ? 'checked' : '') + ' onchange="_fabToggleAction(\'' + escJs(actionId) + '\')">';
+        html += '<span class="topbar-toggle-slider"></span>';
+        html += '</label>';
+        html += '<span style="font-size:1rem;flex-shrink:0">' + action.icon + '</span>';
         html += '<span class="fz-s" style="flex:1">' + escHtml(action.label) + '</span>';
-        html += '<span class="fz-xs ' + (isEnabled ? 'c-success fw6' : 'c-muted') + '">' + (isEnabled ? '✓ 表示' : '非表示') + '</span>';
         html += '</div>';
       });
+      html += '</div>';
     }
 
     html += '</div></div></div>';
+    setTimeout(function() { _initFabSortDrag(); }, 50);
     return html;
+  }
+
+  /* ---------- FAB並べ替えドラッグ ---------- */
+  function _initFabSortDrag() {
+    var list = document.getElementById('fab-sort-list');
+    if (!list) return;
+
+    function _getFixedOffset(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body && p !== document.documentElement) {
+        var cs = window.getComputedStyle(p);
+        if (cs.transform && cs.transform !== 'none') {
+          var r = p.getBoundingClientRect();
+          return { x: r.left, y: r.top };
+        }
+        p = p.parentElement;
+      }
+      return { x: 0, y: 0 };
+    }
+    var _txOff = { x: 0, y: 0 };
+
+    var LONG_PRESS_MS = 400;
+    var longPressTimer = null;
+    var dragItem = null;
+    var placeholder = null;
+    var startY = 0;
+    var startX = 0;
+    var offsetY = 0;
+    var isDragging = false;
+    var isMouseDown = false;
+    var _scrollContainer = null;
+    var _prevOverflow = '';
+
+    function getItems() {
+      return Array.from(list.querySelectorAll('.ovc-drag-item'));
+    }
+
+    function _getXY(e) {
+      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function _findScrollParent(el) {
+      var p = el.parentElement;
+      while (p && p !== document.body) {
+        var cs = window.getComputedStyle(p);
+        if (cs.overflowY === 'auto' || cs.overflowY === 'scroll') return p;
+        p = p.parentElement;
+      }
+      return null;
+    }
+
+    function onPointerDown(e, isMouse) {
+      var target = e.target.closest('.ovc-drag-item');
+      if (!target) return;
+      if (isMouse && e.button !== 0) return;
+      if (e.target.closest('.topbar-toggle')) return;
+
+      var pos = _getXY(e);
+      startY = pos.y;
+      startX = pos.x;
+      if (isMouse) isMouseDown = true;
+
+      longPressTimer = setTimeout(function() {
+        isDragging = true;
+        dragItem = target;
+        var rect = dragItem.getBoundingClientRect();
+        _txOff = _getFixedOffset(dragItem);
+        offsetY = startY - rect.top;
+
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+
+        _scrollContainer = _findScrollParent(list);
+        if (_scrollContainer) {
+          _prevOverflow = _scrollContainer.style.overflowY;
+          _scrollContainer.style.overflowY = 'hidden';
+        }
+
+        placeholder = document.createElement('div');
+        placeholder.className = 'ovc-drag-placeholder';
+        placeholder.style.height = rect.height + 'px';
+        dragItem.parentNode.insertBefore(placeholder, dragItem);
+
+        dragItem.classList.add('ovc-dragging');
+        dragItem.style.position = 'fixed';
+        dragItem.style.left = (rect.left - _txOff.x) + 'px';
+        dragItem.style.top = (rect.top - _txOff.y) + 'px';
+        dragItem.style.width = rect.width + 'px';
+        dragItem.style.zIndex = '10000';
+
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function onPointerMove(e) {
+      var pos = _getXY(e);
+      if (!isDragging && longPressTimer) {
+        if (Math.abs(pos.y - startY) > 8 || Math.abs(pos.x - startX) > 8) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        return;
+      }
+      if (!isDragging || !dragItem) return;
+      if (e.preventDefault) e.preventDefault();
+
+      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
+
+      var currentItems = getItems().filter(function(el) { return el !== dragItem; });
+      var inserted = false;
+      for (var i = 0; i < currentItems.length; i++) {
+        var r = currentItems[i].getBoundingClientRect();
+        if (pos.y < r.top + r.height / 2) {
+          list.insertBefore(placeholder, currentItems[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) list.appendChild(placeholder);
+    }
+
+    function onPointerEnd() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+
+      if (_scrollContainer) {
+        _scrollContainer.style.overflowY = _prevOverflow;
+        _scrollContainer = null;
+      }
+
+      if (!isDragging || !dragItem) return;
+
+      dragItem.classList.remove('ovc-dragging');
+      dragItem.style.position = '';
+      dragItem.style.left = '';
+      dragItem.style.top = '';
+      dragItem.style.width = '';
+      dragItem.style.zIndex = '';
+
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(dragItem, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+      dragItem = null;
+      isDragging = false;
+
+      /* 新しい順序を保存 */
+      var newOrder = [];
+      getItems().forEach(function(el) {
+        var actionId = el.getAttribute('data-fab-action-id');
+        if (actionId) newOrder.push(actionId);
+      });
+      var cfg = getFabConfig();
+      cfg.order = newOrder;
+      saveFabConfig(cfg);
+      renderFab();
+    }
+
+    function onPointerCancel() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      isMouseDown = false;
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+      if (_scrollContainer) {
+        _scrollContainer.style.overflowY = _prevOverflow;
+        _scrollContainer = null;
+      }
+      if (dragItem) {
+        dragItem.classList.remove('ovc-dragging');
+        dragItem.style.position = '';
+        dragItem.style.left = '';
+        dragItem.style.top = '';
+        dragItem.style.width = '';
+        dragItem.style.zIndex = '';
+        if (placeholder) placeholder.remove();
+        dragItem = null;
+        placeholder = null;
+      }
+      isDragging = false;
+    }
+
+    /* Touch */
+    list.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
+    list.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
+    list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
+    list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
+
+    /* Mouse */
+    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', function(e) {
+      if (!isMouseDown && !isDragging) return;
+      onPointerMove(e);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!isMouseDown && !isDragging) return;
+      onPointerEnd();
+    });
+    list.addEventListener('contextmenu', function(e) {
+      if (isDragging) e.preventDefault();
+    });
   }
 
   window._fabToggleShow = function(show) {
@@ -372,6 +627,12 @@
     hp();
     var cfg = getFabConfig();
     if (!cfg.items) cfg.items = DEFAULT_FAB_CFG.items.slice();
+
+    /* orderが未設定なら現在の解決済み順序をセット */
+    if (!cfg.order) {
+      cfg.order = _getResolvedOrder(cfg);
+    }
+
     var idx = cfg.items.indexOf(actionId);
     if (idx >= 0) {
       cfg.items.splice(idx, 1);
