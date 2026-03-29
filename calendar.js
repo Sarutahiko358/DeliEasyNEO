@@ -206,6 +206,7 @@
           let dowClass = dow === 0 ? 'cal-sun' : dow === 6 ? 'cal-sat' : '';
           const isHoliday = typeof isJapaneseHoliday === 'function' && isJapaneseHoliday(calYear, calMonth + 1, d);
           if (isHoliday && dow !== 0) dowClass += ' cal-holiday';
+          const holidayName = typeof getJapaneseHolidayName === 'function' ? getJapaneseHolidayName(calYear, calMonth + 1, d) : null;
           let lvClass = '';
           if (dayTot > 0) {
             if (dayTot >= 20000) lvClass = 'lv5';
@@ -214,8 +215,9 @@
             else if (dayTot >= 5000) lvClass = 'lv2';
             else lvClass = 'lv1';
           }
-          h += `<div class="cal-c ${dowClass} ${isToday ? 'today' : ''} ${isSel ? 'sel' : ''}" onclick="calSel('${dk}')">
+          h += `<div class="cal-c ${dowClass} ${isToday ? 'today' : ''} ${isSel ? 'sel' : ''}"${holidayName ? ' title="' + escHtml(holidayName) + '"' : ''} onclick="calSel('${dk}')">
             <span class="cal-da">${d}</span>
+            ${holidayName ? `<span class="cal-holiday-name">${escHtml(holidayName)}</span>` : ''}
             ${dayTot > 0 ? `<span class="cal-am ${lvClass}">¥${dayTot >= 10000 ? Math.round(dayTot/1000)+'k' : fmt(dayTot)}</span>` : ''}
             ${hasExp ? `<span class="cal-tag">💸</span>` : ''}
           </div>`;
@@ -328,12 +330,16 @@
     const parts = dk.split('-');
     const dObj = new Date(+parts[0], +parts[1] - 1, +parts[2]);
     const dayLabel = `${+parts[1]}/${+parts[2]}(${DAYS[dObj.getDay()]})`;
+    const holidayName = typeof getJapaneseHolidayName === 'function' ? getJapaneseHolidayName(+parts[0], +parts[1], +parts[2]) : null;
 
     let html = '';
     html += `<div class="cal-det-hdr" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px 4px;background:var(--c-card);border-radius:12px 12px 0 0">
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="btn btn-secondary btn-sm" onclick="calSelDayPrev()" style="padding:4px 10px;font-size:.85rem">◀</button>
-        <span style="font-size:1.05rem;font-weight:700">${dayLabel}</span>
+        <div>
+          <span style="font-size:1.05rem;font-weight:700">${dayLabel}</span>
+          ${holidayName ? `<span class="cal-det-holiday-badge">${escHtml(holidayName)}</span>` : ''}
+        </div>
         <button class="btn btn-secondary btn-sm" onclick="calSelDayNext()" style="padding:4px 10px;font-size:.85rem">▶</button>
       </div>
       ${dk !== TD ? '<button class="btn btn-secondary btn-sm" onclick="calToday()" style="padding:4px 10px;font-size:.78rem">📅 今日</button>' : '<span style="font-size:.7rem;color:var(--c-tx-muted)">今日</span>'}

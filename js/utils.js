@@ -252,73 +252,78 @@
   var _holidayCache = {};
 
   function isJapaneseHoliday(year, month, day) {
-    // month: 1-12, day: 1-31
     var holidays = _getJapaneseHolidays(year);
     var key = String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
-    return holidays.indexOf(key) >= 0;
+    return !!holidays[key];
+  }
+
+  function getJapaneseHolidayName(year, month, day) {
+    var holidays = _getJapaneseHolidays(year);
+    var key = String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    return holidays[key] || null;
   }
 
   function _getJapaneseHolidays(year) {
     if (_holidayCache[year]) return _holidayCache[year];
-    var h = [];
+
+    var h = {}; // key: 'MM-DD', value: '祝日名'
+
     // 固定祝日
-    h.push('01-01'); // 元日
-    h.push('02-11'); // 建国記念の日
-    h.push('02-23'); // 天皇誕生日
-    h.push('04-29'); // 昭和の日
-    h.push('05-03'); // 憲法記念日
-    h.push('05-04'); // みどりの日
-    h.push('05-05'); // こどもの日
-    h.push('08-11'); // 山の日
-    h.push('11-03'); // 文化の日
-    h.push('11-23'); // 勤労感謝の日
+    h['01-01'] = '元日';
+    h['02-11'] = '建国記念の日';
+    h['02-23'] = '天皇誕生日';
+    h['04-29'] = '昭和の日';
+    h['05-03'] = '憲法記念日';
+    h['05-04'] = 'みどりの日';
+    h['05-05'] = 'こどもの日';
+    h['08-11'] = '山の日';
+    h['11-03'] = '文化の日';
+    h['11-23'] = '勤労感謝の日';
 
     // ハッピーマンデー
-    h.push(_nthMonday(year, 1, 2));  // 成人の日: 1月第2月曜
-    h.push(_nthMonday(year, 7, 3));  // 海の日: 7月第3月曜
-    h.push(_nthMonday(year, 9, 3));  // 敬老の日: 9月第3月曜
-    h.push(_nthMonday(year, 10, 2)); // スポーツの日: 10月第2月曜
+    h[_nthMonday(year, 1, 2)] = '成人の日';
+    h[_nthMonday(year, 7, 3)] = '海の日';
+    h[_nthMonday(year, 9, 3)] = '敬老の日';
+    h[_nthMonday(year, 10, 2)] = 'スポーツの日';
 
     // 春分の日・秋分の日（近似計算）
     var vernalEquinox = Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
-    h.push('03-' + String(vernalEquinox).padStart(2, '0'));
+    h['03-' + String(vernalEquinox).padStart(2, '0')] = '春分の日';
     var autumnalEquinox = Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
-    h.push('09-' + String(autumnalEquinox).padStart(2, '0'));
+    h['09-' + String(autumnalEquinox).padStart(2, '0')] = '秋分の日';
 
     // 振替休日: 祝日が日曜の場合、翌月曜が振替休日
-    var withSubstitute = h.slice();
-    h.forEach(function(mmdd) {
+    var baseKeys = Object.keys(h);
+    baseKeys.forEach(function(mmdd) {
       var parts = mmdd.split('-');
       var d = new Date(year, parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
       if (d.getDay() === 0) { // 日曜
         var next = new Date(d);
         next.setDate(next.getDate() + 1);
         var subKey = String(next.getMonth() + 1).padStart(2, '0') + '-' + String(next.getDate()).padStart(2, '0');
-        if (withSubstitute.indexOf(subKey) < 0) {
-          withSubstitute.push(subKey);
+        // 振替先が既に祝日の場合はさらに翌日に移動
+        while (h[subKey]) {
+          next.setDate(next.getDate() + 1);
+          subKey = String(next.getMonth() + 1).padStart(2, '0') + '-' + String(next.getDate()).padStart(2, '0');
         }
+        h[subKey] = '振替休日';
       }
     });
 
-    // 国民の休日: 敬老の日と秋分の日の間が1日の場合
-    var keirouIdx = -1, shubunIdx = -1;
-    withSubstitute.forEach(function(mmdd) {
-      if (mmdd.substring(0, 2) === '09') {
-        var dd = parseInt(mmdd.substring(3), 10);
-        if (dd >= 15 && dd <= 21) keirouIdx = dd;
-        if (dd >= 22 && dd <= 24) shubunIdx = dd;
-      }
-    });
-    if (keirouIdx > 0 && shubunIdx > 0 && shubunIdx - keirouIdx === 2) {
-      var betweenDay = keirouIdx + 1;
-      var betweenKey = '09-' + String(betweenDay).padStart(2, '0');
-      if (withSubstitute.indexOf(betweenKey) < 0) {
-        withSubstitute.push(betweenKey);
+    // 国民の休日: 2つの祝日に挟まれた平日
+    var keirouKey = _nthMonday(year, 9, 3);
+    var keirouDay = parseInt(keirouKey.substring(3), 10);
+    var shubunKey = '09-' + String(autumnalEquinox).padStart(2, '0');
+    var shubunDay = autumnalEquinox;
+    if (shubunDay - keirouDay === 2) {
+      var betweenKey = '09-' + String(keirouDay + 1).padStart(2, '0');
+      if (!h[betweenKey]) {
+        h[betweenKey] = '国民の休日';
       }
     }
 
-    _holidayCache[year] = withSubstitute;
-    return withSubstitute;
+    _holidayCache[year] = h;
+    return h;
   }
 
   function _nthMonday(year, month, n) {
@@ -330,5 +335,6 @@
   }
 
   window.isJapaneseHoliday = isJapaneseHoliday;
+  window.getJapaneseHolidayName = getJapaneseHolidayName;
 
 })();

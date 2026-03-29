@@ -115,6 +115,57 @@
   background: rgba(255, 69, 58, 0.08);
 }
 
+/* ===== 祝日名（グリッド内セル） ===== */
+.cal-c .cal-holiday-name {
+  font-size: .35rem;
+  line-height: 1;
+  color: var(--c-danger);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  opacity: .7;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* 今日セル内の祝日名は白文字 */
+.cal-c.today .cal-holiday-name {
+  color: rgba(255, 255, 255, .75);
+}
+
+/* 選択中セル内の祝日名 */
+.cal-c.sel:not(.today) .cal-holiday-name {
+  opacity: .85;
+}
+
+/* ===== 日付詳細の祝日バッジ ===== */
+.cal-det-holiday-badge {
+  display: inline-block;
+  font-size: .6rem;
+  font-weight: 600;
+  color: var(--c-danger);
+  background: var(--c-danger-light);
+  padding: 2px 8px;
+  border-radius: 980px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: -0.01em;
+}
+
+/* ダークパレット対応 */
+[data-color="blue-dark"] .cal-det-holiday-badge,
+[data-color="green-dark"] .cal-det-holiday-badge,
+[data-color="pink-dark"] .cal-det-holiday-badge,
+[data-color="orange-dark"] .cal-det-holiday-badge,
+[data-color="purple-dark"] .cal-det-holiday-badge,
+[data-color="midnight"] .cal-det-holiday-badge,
+[data-color="sumi-dark"] .cal-det-holiday-badge,
+[data-color="charcoal"] .cal-det-holiday-badge {
+  color: #ff6961;
+  background: rgba(255, 69, 58, 0.15);
+}
+
 /* ===== 日付詳細 ===== */
 .cal-det {
   background: var(--c-card); border-radius: var(--ds-radius); margin-top: 16px; overflow: hidden;
