@@ -1,5 +1,5 @@
 /* sw.js — DeliEasy Service Worker v2.2 */
-const CACHE_NAME = 'delieasy-v31';
+const CACHE_NAME = 'delieasy-neo-v1';
 const PRE_CACHE = [
   './',
   './index.html',
@@ -57,6 +57,8 @@ const PRE_CACHE = [
   './js/spreadsheet.js',
   './js/custom-overlays.js',
   './js/settings-view.js',
+  './js/help.js',
+  './styles/help.css',
   './js/app.js'
 ];
 

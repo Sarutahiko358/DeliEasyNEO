@@ -1,7 +1,7 @@
 {
-  "name": "DeliEasy",
-  "short_name": "DeliEasy",
-  "description": "デリバリー配達員向け売上管理アプリ",
+  "name": "DeliEasyNEO",
+  "short_name": "DeliEasyNEO",
+  "description": "デリバリー配達員向け売上管理アプリ — DeliEasyNEO",
   "id": "/delieasy",
   "start_url": "./index.html",
   "scope": "./",

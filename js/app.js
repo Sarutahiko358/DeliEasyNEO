@@ -232,6 +232,11 @@
         _initDesktopSidebar();
         if (typeof _applyDesktopRightPanel === 'function') _applyDesktopRightPanel();
 
+        /* オンボーディング（初回ガイド）の表示チェック */
+        if (typeof checkAndShowOnboarding === 'function') {
+          setTimeout(function() { checkAndShowOnboarding(); }, 800);
+        }
+
         /* Firebase SDK の読み込み完了を待ってから同期を初期化 */
         function initFirebase() {
           if (typeof initFirebaseAuth === 'function') initFirebaseAuth();

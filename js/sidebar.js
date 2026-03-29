@@ -162,7 +162,7 @@
     html += '</button>';
 
     /* Footer */
-    html += '<div class="sidebar-footer">DeliEasy v2.4</div>';
+    html += '<div class="sidebar-footer">DeliEasyNEO v3.0</div>';
 
     panel.innerHTML = html;
 

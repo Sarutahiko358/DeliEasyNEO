@@ -7,9 +7,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="DeliEasy">
-<meta name="description" content="デリバリー配達員向け売上管理アプリ">
-<title>DeliEasy</title>
+<meta name="apple-mobile-web-app-title" content="DeliEasyNEO">
+<meta name="description" content="デリバリー配達員向け売上管理アプリ — DeliEasyNEO">
+<title>DeliEasyNEO</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
@@ -36,6 +36,7 @@
 <link rel="stylesheet" href="./styles/stats.css">
 <link rel="stylesheet" href="./styles/desktop.css">
 <link rel="stylesheet" href="./styles/spreadsheet.css">
+<link rel="stylesheet" href="./styles/help.css">
 
 <!-- Topbar inline styles (minimal for Phase 1) -->
 <style>
@@ -162,7 +163,7 @@
   <div class="topbar" id="topbar">
     <div class="topbar-left">
       <button class="topbar-btn" onclick="toggleSidebar()" title="メニュー" aria-label="メニューを開く">☰</button>
-      <span class="topbar-title">DeliEasy</span>
+      <span class="topbar-title">DeliEasyNEO</span>
     </div>
     <div class="topbar-right">
       <button class="topbar-btn topbar-sync sync-off" id="sync-status-indicator" onclick="showSyncPopup()" title="同期">
@@ -289,6 +290,7 @@
 <script src="./js/spreadsheet.js"></script>
 <script src="./js/custom-overlays.js"></script>
 <script src="./js/settings-view.js"></script>
+<script src="./js/help.js"></script>
 <!-- app.js must be last -->
 <script src="./js/app.js"></script>
 

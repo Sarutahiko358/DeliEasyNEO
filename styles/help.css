@@ -1,0 +1,178 @@
+/* ==========================================================
+   DeliEasyNEO v3.0 — styles/help.css
+   ヘルプシステム専用スタイル
+   ========================================================== */
+
+/* ===== オンボーディング（初回ガイド） ===== */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  background: var(--c-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: v2-fade-in .3s;
+}
+.onboarding-card {
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  padding: 40px 24px;
+}
+.onboarding-icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+}
+.onboarding-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-tx);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.onboarding-body {
+  font-size: .875rem;
+  color: var(--c-tx-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin-bottom: 32px;
+}
+
+/* ドットインジケーター */
+.onboarding-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-fill-secondary);
+  transition: all .2s;
+}
+.onboarding-dot.active {
+  background: var(--c-primary);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ナビゲーションボタン */
+.onboarding-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.onboarding-skip {
+  font-size: .75rem;
+  color: var(--c-tx-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.onboarding-step-label {
+  font-size: .6875rem;
+  color: var(--c-tx-muted);
+}
+
+/* スワイプアニメーション */
+.onboarding-card-enter-left {
+  animation: ob-slide-in-left .3s ease;
+}
+.onboarding-card-enter-right {
+  animation: ob-slide-in-right .3s ease;
+}
+@keyframes ob-slide-in-left {
+  from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes ob-slide-in-right {
+  from { opacity: 0; transform: translateX(-60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* フェードアウト用 */
+@keyframes v2-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ===== ヘルプオーバーレイ ===== */
+.help-section {
+  margin-bottom: 16px;
+}
+.help-section-title {
+  font-size: .9375rem;
+  font-weight: 700;
+  color: var(--c-tx);
+  padding: 12px 0 8px;
+}
+.help-faq-item {
+  background: var(--c-card);
+  border-radius: var(--ds-radius-sm);
+  border: var(--ds-card-border);
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+.help-faq-q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-tx);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .12s;
+}
+.help-faq-q:active {
+  background: var(--c-fill-quaternary);
+}
+.help-faq-arrow {
+  font-size: .6rem;
+  color: var(--c-tx-muted);
+  transition: transform .2s;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.help-faq-item.open .help-faq-arrow {
+  transform: rotate(180deg);
+}
+.help-faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .3s ease;
+}
+.help-faq-item.open .help-faq-a {
+  max-height: 500px;
+}
+.help-faq-a-inner {
+  padding: 0 16px 14px;
+  font-size: .8125rem;
+  color: var(--c-tx-secondary);
+  line-height: 1.7;
+}
+.help-restart-btn {
+  display: block;
+  margin: 24px auto;
+  padding: 12px 24px;
+}
+
+/* ===== デスクトップ: hover ===== */
+@media (hover: hover) {
+  .help-faq-q:hover {
+    background: var(--c-fill-quaternary);
+  }
+  .onboarding-skip:hover {
+    color: var(--c-tx-secondary);
+  }
+}

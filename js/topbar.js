@@ -126,7 +126,7 @@
 
   /* ---------- スロットレンダラー ---------- */
   function _renderAppName() {
-    return '<span class="topbar-title">DeliEasy</span>';
+    return '<span class="topbar-title">DeliEasyNEO</span>';
   }
 
   function _renderTodaySales() {
