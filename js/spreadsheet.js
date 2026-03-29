@@ -15,12 +15,12 @@
     detailed: {
       name: '詳細',
       desc: 'PF別・経費別・時間も全部見る',
-      columns: ['date','dow','pf_uber','pf_demae','pf_wolt','pf_menu','total','count','unit','hours','hourly','delPerHour','exp_gas','exp_other','expTotal','profit','memo']
+      columns: ['date','dow','pf_uber','pf_demae','pf_wolt','pf_menu','total','count','unit','exp_gas','exp_other','expTotal','profit','memo']
     },
     profitFocus: {
       name: '収支重視',
       desc: '経費と利益にフォーカス',
-      columns: ['date','dow','total','count','exp_gas','exp_bike','exp_phone','exp_other','expTotal','profit','goal','achieve']
+      columns: ['date','dow','total','count','exp_gas','exp_bike','exp_phone','exp_other','expTotal','profit']
     }
   };
 
@@ -82,18 +82,13 @@
       { id: 'total', name: '合計売上', type: 'auto', width: 90, visible: true },
       { id: 'count', name: '件数', type: 'auto', width: 50, visible: true },
       { id: 'unit', name: '単価', type: 'auto', width: 70, visible: true },
-      { id: 'hours', name: '稼働時間', type: 'input', width: 65, visible: false },
-      { id: 'hourly', name: '時給', type: 'auto', width: 70, visible: false },
-      { id: 'delPerHour', name: '配達/h', type: 'auto', width: 55, visible: false },
       { id: 'exp_gas', name: 'ガソリン', type: 'expense', width: 70, visible: true, expCat: 'ガソリン' },
       { id: 'exp_bike', name: 'バイク維持', type: 'expense', width: 70, visible: false, expCat: 'バイク維持費' },
       { id: 'exp_phone', name: '通信費', type: 'expense', width: 70, visible: false, expCat: 'スマホ通信費' },
       { id: 'exp_other', name: 'その他経費', type: 'expense', width: 70, visible: true, expCat: '__other__' },
       { id: 'expTotal', name: '経費計', type: 'auto', width: 70, visible: true },
       { id: 'profit', name: '利益', type: 'auto', width: 80, visible: true },
-      { id: 'memo', name: '備考', type: 'input', width: 120, visible: true },
-      { id: 'goal', name: '目標', type: 'input', width: 70, visible: false },
-      { id: 'achieve', name: '達成率', type: 'auto', width: 55, visible: false }
+      { id: 'memo', name: '備考', type: 'input', width: 120, visible: true }
     );
     return { columns: columns, savedLayouts: [] };
   }
@@ -467,18 +462,7 @@
       case 'unit': return dayData.totalCount > 0 ? Math.round(dayData.totalSales / dayData.totalCount) : 0;
       case 'expTotal': return dayData.expTotal;
       case 'profit': return dayData.profit;
-      case 'hours': return dayExtra.hours || '';
-      case 'hourly':
-        var hrs = Number(dayExtra.hours) || 0;
-        return hrs > 0 ? Math.round(dayData.totalSales / hrs) : 0;
-      case 'delPerHour':
-        var hrs2 = Number(dayExtra.hours) || 0;
-        return hrs2 > 0 ? (dayData.totalCount / hrs2).toFixed(1) : '';
       case 'memo': return dayExtra.memo || '';
-      case 'goal': return dayExtra.goal || '';
-      case 'achieve':
-        var goal = Number(dayExtra.goal) || 0;
-        return goal > 0 ? Math.round((dayData.totalSales / goal) * 100) : 0;
       default:
         break;
     }
@@ -505,11 +489,7 @@
       return dayName;
     }
     if (col.id === 'count') return val;
-    if (col.id === 'achieve') return val ? val + '%' : '';
-    if (col.id === 'delPerHour') return val;
     if (col.id === 'memo') return escHtml(String(val || ''));
-    if (col.id === 'hours') return val;
-    if (col.id === 'goal') return val ? fmt(val) : '';
     if (typeof val === 'number' && val !== 0) return fmt(val);
     if (val === 0) return '0';
     return escHtml(String(val || ''));
@@ -523,8 +503,6 @@
     });
     t._days = 0;
     t._salesDays = 0;
-    t._totalHours = 0;
-    t._totalGoal = 0;
     return t;
   }
 
@@ -533,8 +511,6 @@
     if (col.id === 'date') {
       weekTotals._days++;
       if (dayData.totalSales > 0 || dayData.totalCount > 0) weekTotals._salesDays++;
-      weekTotals._totalHours += Number(dayExtra.hours) || 0;
-      weekTotals._totalGoal += Number(dayExtra.goal) || 0;
     }
     if (col.type === 'pf' && col.pfName) {
       weekTotals[col.id] += (dayData.pfSales[col.pfName] || 0);
@@ -552,10 +528,8 @@
       } else {
         weekTotals[col.id] += (dayData.expenses[col.expCat] || 0);
       }
-    } else if (col.id === 'hours') {
-      weekTotals[col.id] += Number(dayExtra.hours) || 0;
-    } else if (col.id === 'goal') {
-      weekTotals[col.id] += Number(dayExtra.goal) || 0;
+    } else if (col.id === 'memo') {
+      // memo は小計なし
     }
   }
 
@@ -572,15 +546,6 @@
       else if (col.id === 'dow') { val = ''; }
       else if (col.id === 'unit') {
         val = weekTotals['count'] > 0 ? fmt(Math.round(weekTotals['total'] / weekTotals['count'])) : '';
-      } else if (col.id === 'hourly') {
-        var h = weekTotals._totalHours;
-        val = h > 0 ? fmt(Math.round(weekTotals['total'] / h)) : '';
-      } else if (col.id === 'delPerHour') {
-        var h2 = weekTotals._totalHours;
-        val = h2 > 0 ? (weekTotals['count'] / h2).toFixed(1) : '';
-      } else if (col.id === 'achieve') {
-        var g = weekTotals._totalGoal;
-        val = g > 0 ? Math.round((weekTotals['total'] / g) * 100) + '%' : '';
       } else if (col.id === 'memo') {
         val = '';
       } else if (weekTotals[col.id] && typeof weekTotals[col.id] === 'number') {
@@ -623,15 +588,6 @@
       else if (col.id === 'dow') { val = ''; }
       else if (col.id === 'unit') {
         val = totals['count'] > 0 ? fmt(Math.round(totals['total'] / totals['count'])) : '';
-      } else if (col.id === 'hourly') {
-        var h = totals._totalHours;
-        val = h > 0 ? fmt(Math.round(totals['total'] / h)) : '';
-      } else if (col.id === 'delPerHour') {
-        var h2 = totals._totalHours;
-        val = h2 > 0 ? (totals['count'] / h2).toFixed(1) : '';
-      } else if (col.id === 'achieve') {
-        var g = totals._totalGoal;
-        val = g > 0 ? Math.round((totals['total'] / g) * 100) + '%' : '';
       } else if (col.id === 'memo') {
         val = '';
       } else if (totals[col.id] && typeof totals[col.id] === 'number') {
@@ -756,15 +712,9 @@
     if (!extra[mk]) extra[mk] = {};
     if (!extra[mk][dk]) extra[mk][dk] = {};
 
-    if (colId === 'hours') {
-      extra[mk][dk].hours = Number(value) || 0;
-      if (extra[mk][dk].hours === 0) delete extra[mk][dk].hours;
-    } else if (colId === 'memo') {
+    if (colId === 'memo') {
       extra[mk][dk].memo = String(value || '');
       if (!extra[mk][dk].memo) delete extra[mk][dk].memo;
-    } else if (colId === 'goal') {
-      extra[mk][dk].goal = Number(value) || 0;
-      if (extra[mk][dk].goal === 0) delete extra[mk][dk].goal;
     }
 
     // 空オブジェクトなら削除

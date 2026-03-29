@@ -58,7 +58,6 @@
     { id: 'recentRecords',  name: '直近の記録',       icon: '📋', render: _renderRecentRecords },
     { id: 'weekSummary',    name: '今週のまとめ',     icon: '📅', render: _renderWeekSummary },
     { id: 'monthSummary',   name: '今月のまとめ',     icon: '📆', render: _renderMonthSummary },
-    { id: 'goalProgress',   name: '目標進捗',         icon: '🎯', render: _renderGoalProgress },
     { id: 'pfBreakdown',    name: 'PF別（今日）',     icon: '📦', render: _renderPfBreakdown },
     { id: 'todayExpenses',  name: '今日の経費',       icon: '💸', render: _renderTodayExpenses },
     { id: 'quickStats',     name: 'クイック統計',     icon: '📈', render: _renderQuickStats }
@@ -248,18 +247,6 @@
       '<div class="rp-stat"><span class="rp-stat-label">件数</span><span class="rp-stat-value">' + cnt + '件</span></div>' +
       '<div class="rp-stat"><span class="rp-stat-label">単価</span><span class="rp-stat-value">¥' + fmt(avg) + '</span></div>' +
       '<div class="rp-stat"><span class="rp-stat-label">稼働日</span><span class="rp-stat-value">' + days + '日</span></div>' +
-    '</div>';
-  }
-
-  function _renderGoalProgress() {
-    var goal = S.g('monthlyGoal', 0);
-    var tot = typeof moTot === 'function' ? moTot() : 0;
-    if (!goal || goal <= 0) return '<div class="fz-xs c-muted">目標未設定</div>';
-    var pct = Math.min(Math.round(tot / goal * 100), 100);
-    return '<div class="rp-goal">' +
-      '<div class="rp-goal-text">¥' + fmt(tot) + ' / ¥' + fmt(goal) + '</div>' +
-      '<div class="rp-goal-bar"><div class="rp-goal-fill" style="width:' + pct + '%"></div></div>' +
-      '<div class="rp-goal-pct">' + pct + '% 達成</div>' +
     '</div>';
   }
 

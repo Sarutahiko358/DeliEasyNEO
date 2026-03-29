@@ -10,7 +10,6 @@
     { id: 'time',    icon: '🕐', name: '時間' },
     { id: 'today',   icon: '📅', name: '今日' },
     { id: 'summary', icon: '📊', name: '集計' },
-    { id: 'goal',    icon: '🎯', name: '目標' },
     { id: 'detail',  icon: '📋', name: '詳細' },
     { id: 'tax',     icon: '🧾', name: '税金' },
     { id: 'other',   icon: '⚙️', name: 'その他' }
@@ -190,49 +189,6 @@
         });
         html += '</div>';
         return html;
-      }
-    },
-
-    goalProgress: {
-      id: 'goalProgress', name: '月間目標', icon: '🎯', category: 'goal',
-      size: 'full', sizeOptions: ['full','wide','half'],
-      desc: '月間売上目標に対する進捗',
-      tappable: true, tapAction: 'goalSetting',
-      render: function(w) {
-        var goal = S.g('monthlyGoal', 0);
-        var tot = typeof moTot === 'function' ? moTot() : 0;
-        if (!goal || goal <= 0) {
-          return '<div class="widget-inner"><div class="widget-goal-value">目標未設定</div>' +
-            '<div class="widget-progress-label" style="cursor:pointer" onclick="event.stopPropagation();openGoalSetting()">タップして設定</div></div>';
-        }
-        var pct = Math.min(Math.round(tot / goal * 100), 100);
-        return '<div class="widget-inner">' +
-          '<div class="widget-goal-value">¥' + fmt(tot) + ' / ¥' + fmt(goal) + '</div>' +
-          '<div class="widget-progress"><div class="widget-progress-bar" style="width:' + pct + '%"></div></div>' +
-          '<div class="widget-progress-label">' + pct + '% 達成</div>' +
-        '</div>';
-      }
-    },
-    monthPace: {
-      id: 'monthPace', name: '月間ペース', icon: '📐', category: 'goal',
-      size: 'full', sizeOptions: ['full','wide'],
-      desc: '月末着地予測',
-      tappable: true, tapAction: 'stats',
-      render: function() {
-        var now = new Date();
-        var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-        var dayOfMonth = now.getDate();
-        var tot = typeof moTot === 'function' ? moTot() : 0;
-        var days = typeof moDays === 'function' ? moDays() : 0;
-        var pace = days > 0 ? Math.round(tot / days * daysInMonth) : 0;
-        var dailyAvg = days > 0 ? Math.round(tot / days) : 0;
-        return '<div class="widget-inner">' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          _miniStat('月末着地予測', '¥' + fmt(pace)) +
-          _miniStat('日平均', '¥' + fmt(dailyAvg)) +
-          _miniStat('経過日数', dayOfMonth + '/' + daysInMonth + '日') +
-          _miniStat('稼働日数', days + '日') +
-          '</div></div>';
       }
     },
 
@@ -493,33 +449,6 @@
       }
     },
 
-    /* ========== 連続稼働日数 ========== */
-    streak: {
-      id: 'streak', name: '連続稼働', icon: '🔥', category: 'goal',
-      size: 'half', sizeOptions: ['half','wide','full'],
-      desc: '連続稼働日数',
-      tappable: true, tapAction: 'calendar',
-      render: function(w) {
-        var streakDays = 0;
-        var d = new Date();
-        /* 今日にデータがなければ昨日から開始 */
-        var todayRecs = typeof eByDate === 'function' ? eByDate(dateKey(d)) : [];
-        if (todayRecs.length === 0) {
-          d.setDate(d.getDate() - 1);
-        }
-        for (var i = 0; i < 365; i++) {
-          var dk = dateKey(d);
-          var recs = typeof eByDate === 'function' ? eByDate(dk) : [];
-          if (recs.length > 0) {
-            streakDays++;
-            d.setDate(d.getDate() - 1);
-          } else {
-            break;
-          }
-        }
-        return _statBox('連続稼働', streakDays + '日' + (streakDays >= 7 ? ' 🔥' : ''), null, w);
-      }
-    }
   };
 
   /* ========== ヘルパー ========== */
@@ -609,9 +538,6 @@
       case 'theme':
         if (typeof openOverlay === 'function') openOverlay('theme');
         break;
-      case 'goalSetting':
-        openGoalSetting();
-        break;
       /* 旧互換 */
       case 'earn':
         if (typeof openOverlay === 'function') openOverlay('earnInput');
@@ -620,19 +546,6 @@
         if (typeof openOverlay === 'function') openOverlay(action);
         break;
     }
-  }
-
-  /* ========== 目標設定 ========== */
-  function openGoalSetting() {
-    var current = S.g('monthlyGoal', 0);
-    customPrompt('月間売上目標（円）', current ? String(current) : '', function(val) {
-      var num = parseInt(val, 10);
-      if (!isNaN(num) && num > 0) {
-        S.s('monthlyGoal', num);
-        toast('🎯 目標を ¥' + fmt(num) + ' に設定しました');
-        if (typeof renderHome === 'function') renderHome();
-      }
-    });
   }
 
   /* ========== Expose ========== */
@@ -656,8 +569,6 @@
   window.renderWidgetWrapper = renderWidgetWrapper;
   window.startWidgetClock = startWidgetClock;
   window.widgetTap = widgetTap;
-  window.openGoalSetting = openGoalSetting;
-
   /* ========== ミニカレンダー月移動 ========== */
   window._miniCalPrev = function(stateKey) {
     if (!window._miniCalState || !window._miniCalState[stateKey]) return;

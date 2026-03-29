@@ -1,5 +1,5 @@
 /* sw.js — DeliEasy Service Worker v2.2 */
-const CACHE_NAME = 'delieasy-v27';
+const CACHE_NAME = 'delieasy-v28';
 const PRE_CACHE = [
   './',
   './index.html',

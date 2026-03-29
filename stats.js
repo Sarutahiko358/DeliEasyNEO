@@ -607,11 +607,11 @@
 
   function _diffBadge(cur, prev) {
     if (prev === 0 && cur === 0) return '';
-    if (prev === 0) return cur > 0 ? '<span style="font-size:.6rem;color:var(--c-success)">NEW</span>' : '';
+    if (prev === 0) return cur > 0 ? '<span style="font-size:.6rem;color:var(--c-tx-secondary)">NEW</span>' : '';
     const diff = cur - prev;
     const pct = Math.round(Math.abs(diff) / prev * 100);
     if (diff === 0) return '<span style="font-size:.6rem;color:var(--c-tx-muted)">±0%</span>';
-    const color = diff > 0 ? 'var(--c-success)' : 'var(--c-danger)';
+    const color = 'var(--c-tx-secondary)';
     const arrow = diff > 0 ? '↑' : '↓';
     return `<span style="font-size:.6rem;color:${color}">${arrow}${pct}%</span>`;
   }
@@ -721,24 +721,6 @@
       compC += '<div class="ds-gbox"><div class="ds-gl">利益 ' + _diffBadge(pd.profit, prev.profit) + '</div><div class="ds-gv" style="color:' + (pd.profit >= 0 ? 'var(--c-success)' : 'var(--c-danger)') + '">¥' + fmt(pd.profit) + '</div><div style="font-size:.6rem;color:var(--c-tx-muted)">' + prev.label + ': ¥' + fmt(prev.profit) + '</div></div>';
       compC += '</div>';
       h += foldCard('stat', 'compare', '🔄 ' + prev.label + '比較', compC);
-    }
-
-    if (_statPeriod === 'month') {
-      const mk = _statDateStr || MK;
-      const mp = (mk.length > 7 ? mk.substring(0, 7) : mk).split('-');
-      const dim = new Date(+mp[0], +mp[1], 0).getDate();
-      const isCurrentMonth = mk === MK || mk.substring(0, 7) === MK;
-      const now = new Date();
-      const elapsed = isCurrentMonth ? now.getDate() : dim;
-      const pace = elapsed > 0 ? Math.round(pd.tot / elapsed * dim) : 0;
-      const pct = pace > 0 ? Math.min(Math.round(pd.tot / pace * 100), 100) : 0;
-      let paceC = '<div class="ds-grid">';
-      paceC += '<div class="ds-gbox"><div class="ds-gl">現在</div><div class="ds-gv" style="color:var(--c-primary)">¥' + fmt(pd.tot) + '</div></div>';
-      paceC += '<div class="ds-gbox"><div class="ds-gl">着地見込み</div><div class="ds-gv" style="color:var(--c-primary)">¥' + fmt(pace) + '</div></div>';
-      paceC += '</div>';
-      paceC += '<div class="ds-progress"><div class="ds-progress-bar"><div class="ds-progress-fill" style="width:' + pct + '%;background:var(--c-primary)"></div></div>';
-      paceC += '<div class="ds-progress-label">' + elapsed + '/' + dim + '日経過 (' + pct + '%)</div></div>';
-      h += foldCard('stat', 'pace', '📈 月間ペース予測', paceC);
     }
 
     if (pd.daysCnt > 1) {

@@ -12,8 +12,6 @@
       { id: 'todaySales',      label: '今日の売上',   render: _renderTodaySales },
       { id: 'todaySalesCount', label: '売上/件数',    render: _renderTodaySalesCount },
       { id: 'todayProfit',     label: '今日の利益',   render: _renderTodayProfit },
-      { id: 'goalProgress',    label: '目標進捗',     render: _renderGoalProgress },
-      { id: 'goalBar',         label: '目標バー',     render: _renderGoalBar },
       { id: 'date',            label: '日付',         render: _renderDate },
       { id: 'dateTime',        label: '日時',         render: _renderDateTime },
       { id: 'monthSales',      label: '今月の売上',   render: _renderMonthSales },
@@ -22,7 +20,6 @@
     center: [
       { id: 'none',            label: '非表示',       render: function(){ return ''; } },
       { id: 'date',            label: '日付',         render: _renderDate },
-      { id: 'goalBar',         label: '目標バー',     render: _renderGoalBar },
       { id: 'todaySales',      label: '今日の売上',   render: _renderTodaySales },
       { id: 'appName',         label: 'アプリ名',     render: _renderAppName },
       { id: 'presetName',      label: 'プリセット名', render: _renderPresetName }
@@ -151,24 +148,6 @@
     var profit = tot - expTot;
     var cls = profit >= 0 ? 'topbar-data-success' : 'topbar-data-danger';
     return '<span class="topbar-data ' + cls + '">利益 ¥' + fmt(profit) + '</span>';
-  }
-
-  function _renderGoalProgress() {
-    var goal = S.g('monthlyGoal', 0);
-    var tot = typeof moTot === 'function' ? moTot() : 0;
-    if (!goal || goal <= 0) return '<span class="topbar-data c-muted">目標未設定</span>';
-    return '<span class="topbar-data">¥' + fmt(tot) + '/¥' + fmt(goal) + '</span>';
-  }
-
-  function _renderGoalBar() {
-    var goal = S.g('monthlyGoal', 0);
-    var tot = typeof moTot === 'function' ? moTot() : 0;
-    if (!goal || goal <= 0) return '';
-    var pct = Math.min(Math.round(tot / goal * 100), 100);
-    return '<span class="topbar-goal-bar">' +
-      '<span class="topbar-goal-track"><span class="topbar-goal-fill" style="width:' + pct + '%"></span></span>' +
-      '<span class="topbar-goal-pct">' + pct + '%</span>' +
-    '</span>';
   }
 
   function _renderDate() {

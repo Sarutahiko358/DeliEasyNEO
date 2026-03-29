@@ -61,17 +61,13 @@
       mobile: {
         widgets: [
           { id: 'monthSummary', size: 'full' },
-          { id: 'monthPace', size: 'full' },
-          { id: 'miniCalendar', size: 'full' },
-          { id: 'goalProgress', size: 'full' }
+          { id: 'miniCalendar', size: 'full' }
         ]
       },
       desktop: {
         widgets: [
           { id: 'monthSummary', size: 'wide' },
-          { id: 'monthPace', size: 'wide' },
-          { id: 'miniCalendar', size: 'wide' },
-          { id: 'goalProgress', size: 'wide' }
+          { id: 'miniCalendar', size: 'wide' }
         ]
       }
     },
@@ -81,17 +77,13 @@
       mobile: {
         widgets: [
           { id: 'todaySummary', size: 'full' },
-          { id: 'weekSummary', size: 'full' },
-          { id: 'monthPace', size: 'full' },
-          { id: 'goalProgress', size: 'full' }
+          { id: 'weekSummary', size: 'full' }
         ]
       },
       desktop: {
         widgets: [
           { id: 'todaySummary', size: 'wide' },
-          { id: 'weekSummary', size: 'wide' },
-          { id: 'monthPace', size: 'wide' },
-          { id: 'goalProgress', size: 'wide' }
+          { id: 'weekSummary', size: 'wide' }
         ]
       }
     },
