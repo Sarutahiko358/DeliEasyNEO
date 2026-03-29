@@ -3,7 +3,7 @@
    ヘルプシステム専用スタイル
    ========================================================== */
 
-/* ===== オンボーディング ===== */
+/* ===== オンボーディング（初回ガイド） ===== */
 .onboarding-overlay {
   position: fixed;
   inset: 0;
@@ -19,46 +19,42 @@
   width: 90%;
   max-width: 380px;
   text-align: center;
-  padding: 32px 24px;
+  padding: 40px 24px;
 }
 .onboarding-icon {
-  font-size: 4rem;
-  margin-bottom: 16px;
-  line-height: 1.2;
+  font-size: 3.5rem;
+  margin-bottom: 20px;
 }
 .onboarding-title {
-  font-size: 1.375rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--c-tx);
   margin-bottom: 8px;
-  letter-spacing: -0.03em;
-  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 .onboarding-subtitle {
   font-size: .875rem;
   font-weight: 600;
   color: var(--c-primary);
   margin-bottom: 16px;
-  letter-spacing: -0.01em;
 }
 .onboarding-body {
-  font-size: .8125rem;
+  font-size: .875rem;
   color: var(--c-tx-secondary);
-  line-height: 1.9;
-  white-space: pre-wrap;
-  margin-bottom: 16px;
+  line-height: 1.8;
+  margin-bottom: 24px;
   text-align: center;
-  padding: 0 8px;
+  white-space: normal;
 }
 .onboarding-highlight {
   display: inline-block;
-  font-size: .75rem;
+  font-size: .8125rem;
   font-weight: 600;
   color: var(--c-primary);
   background: var(--c-primary-light);
-  padding: 8px 16px;
-  border-radius: var(--ds-radius-pill);
-  margin-bottom: 20px;
+  padding: 8px 20px;
+  border-radius: 20px;
+  margin-bottom: 28px;
 }
 
 /* ドットインジケーター */
@@ -66,14 +62,14 @@
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .onboarding-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--c-fill-secondary);
-  transition: all .25s;
+  transition: all .2s;
 }
 .onboarding-dot.active {
   background: var(--c-primary);
@@ -81,13 +77,13 @@
   border-radius: 4px;
 }
 
-/* ナビゲーション */
+/* ナビゲーションボタン */
 .onboarding-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 .onboarding-skip {
   font-size: .75rem;
@@ -97,12 +93,17 @@
   cursor: pointer;
   padding: 8px 16px;
   -webkit-tap-highlight-color: transparent;
-  transition: color .15s;
 }
 .onboarding-step-label {
   font-size: .6875rem;
   color: var(--c-tx-muted);
-  font-variant-numeric: tabular-nums;
+}
+
+/* 矢印ステップ（左揃えブロックを中央配置） */
+.onboarding-steps-block {
+  display: inline-block;
+  text-align: left;
+  margin: 4px 0;
 }
 
 /* スワイプアニメーション */
@@ -114,15 +115,15 @@
 }
 @keyframes ob-slide-in-left {
   from { opacity: 0; transform: translateX(60px); }
-  to { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes ob-slide-in-right {
   from { opacity: 0; transform: translateX(-60px); }
-  to { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes v2-fade-out {
   from { opacity: 1; }
-  to { opacity: 0; }
+  to   { opacity: 0; }
 }
 
 /* ===== ヘルプオーバーレイ ===== */

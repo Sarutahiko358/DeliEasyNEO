@@ -17,67 +17,67 @@
   var ONBOARDING_STEPS = [
     {
       id: 'welcome',
-      icon: '🚀',
+      icon: '\uD83D\uDE80',
       title: 'DeliEasyNEOへようこそ！',
       subtitle: 'デリバリー配達員のための最強ツール',
-      body: '売上も経費もこのアプリひとつで完結。\n毎日の稼ぎを「見える化」して、\nもっと効率的に稼ぎましょう！',
-      highlight: '30秒で使い方がわかります 👇'
+      body: '売上も経費もこのアプリひとつで完結。<br>毎日の稼ぎを「見える化」して、<br>もっと効率的に稼ぎましょう！',
+      highlight: '30秒で使い方がわかります \uD83D\uDC47'
     },
     {
       id: 'record',
-      icon: '✏️',
+      icon: '\u270F\uFE0F',
       title: 'ワンタップで売上記録',
       subtitle: '記録はたった3タップ',
-      body: '画面右下の「＋」ボタンをタップ\n→ 金額を入力　　　\n→ 記録ボタンを押すだけ！\n\nUber Eats・出前館・Woltなど\nプラットフォーム別に自動集計されます。',
-      highlight: '1日の記録にかかる時間はわずか数秒 ⚡'
+      body: '画面右下の「＋」ボタンをタップ<br><span class="onboarding-steps-block">\u2192 金額を入力<br>\u2192 記録ボタンを押すだけ！</span><br><br>Uber Eats\u30FB出前館\u30FBWoltなど<br>プラットフォーム別に自動集計されます。',
+      highlight: '1日の記録にかかる時間はわずか数秒 \u26A1'
     },
     {
       id: 'home',
-      icon: '🏠',
+      icon: '\uD83C\uDFE0',
       title: 'ホーム画面は自分だけの形に',
       subtitle: 'ウィジェットを自由に配置',
-      body: '今日の売上、件数、単価、カレンダー…\n必要な情報だけをホーム画面に並べられます。\n\nウィジェットを長押しで編集モードに。\n複数のレイアウトを保存して\n場面ごとに切り替えも可能です。',
-      highlight: '長押しで編集モードに入れます 🎯'
+      body: '今日の売上、件数、単価、カレンダーなど<br>必要な情報だけをホーム画面に並べられます。<br><br>ウィジェットを長押しで編集モードに。<br>複数のレイアウトを保存して<br>場面ごとに切り替えも可能です。',
+      highlight: '長押しで編集モードに入れます \uD83C\uDFAF'
     },
     {
       id: 'sidebar',
-      icon: '📱',
+      icon: '\uD83D\uDCF1',
       title: 'すべての機能にすぐアクセス',
-      subtitle: '左上の ☰ をタップ',
-      body: 'カレンダーで月間の売上を俯瞰\n統計で稼ぎのパターンを分析\n税金計算で確定申告もラクラク\n経費管理で利益を正確に把握\n\n…すべてメニューから開けます。',
-      highlight: '左端からスワイプでも開けます 👆'
+      subtitle: '左上の \u2630 をタップ',
+      body: 'カレンダーで月間の売上を俯瞰<br>統計で稼ぎのパターンを分析<br>税金計算で確定申告もラクラク<br>経費管理で利益を正確に把握<br><br>すべてメニューから開けます。',
+      highlight: '左端からスワイプでも開けます \uD83D\uDC46'
     },
     {
       id: 'rightPanel',
-      icon: '📊',
+      icon: '\uD83D\uDCCA',
       title: 'サッと確認、右パネル',
       subtitle: '画面右端から左にスワイプ',
-      body: '今日のサマリーや直近の記録を\nホーム画面を離れずにチェックできます。\n\n配達の合間にサッと確認するのに\nぴったりの機能です。',
-      highlight: '右端からスワイプで表示 📋'
+      body: '今日のサマリーや直近の記録を<br>ホーム画面を離れずにチェックできます。<br><br>配達の合間にサッと確認するのに<br>ぴったりの機能です。',
+      highlight: '右端からスワイプで表示 \uD83D\uDCCB'
     },
     {
       id: 'calendar',
-      icon: '📅',
+      icon: '\uD83D\uDCC5',
       title: 'カレンダーで一目瞭然',
       subtitle: '稼いだ日がひと目でわかる',
-      body: '月間の売上をヒートマップで表示。\n色が濃い日ほどよく稼いだ日です。\n\n日付をタップすると詳細が開き、\nその場で売上の追加・編集もできます。\nスワイプで日付を前後に移動。',
-      highlight: '稼ぎのパターンが見えてきます 🔥'
+      body: '月間の売上をヒートマップで表示。<br>色が濃い日ほどよく稼いだ日です。<br><br>日付をタップすると詳細が開き、<br>その場で売上の追加\u30FB編集もできます。<br>スワイプで日付を前後に移動。',
+      highlight: '稼ぎのパターンが見えてきます \uD83D\uDD25'
     },
     {
       id: 'sync',
-      icon: '☁️',
+      icon: '\u2601\uFE0F',
       title: 'データは安全にクラウドへ',
       subtitle: 'Googleアカウントで同期',
-      body: 'ログインするだけで自動的に\nクラウドにバックアップされます。\n\nスマホを買い替えても、\nPCからアクセスしても、\nデータはいつも最新の状態です。',
-      highlight: '設定 → クラウド同期からログイン 🔐'
+      body: 'ログインするだけで自動的に<br>クラウドにバックアップされます。<br><br>スマホを買い替えても、<br>PCからアクセスしても、<br>データはいつも最新の状態です。',
+      highlight: '設定 \u2192 クラウド同期からログイン \uD83D\uDD10'
     },
     {
       id: 'customize',
-      icon: '🎨',
+      icon: '\uD83C\uDFA8',
       title: 'あなた好みにカスタマイズ',
       subtitle: '360通りのテーマを用意',
-      body: '18種類のデザインスタイル\n× 20色のカラーパレット\n= 360通りの組み合わせ！\n\nトップバー、FAB、ボトムバーの配置も\nメモ帳やチェックリストの追加も\nすべて自由自在です。',
-      highlight: '使いながら少しずつ発見してください ✨'
+      body: '18種類のデザインスタイル<br>\u00D7 20色のカラーパレット<br>\uFF1D 360通りの組み合わせ！<br><br>トップバー、FAB、ボトムバーの配置も<br>メモ帳やチェックリストの追加も<br>すべて自由自在です。',
+      highlight: '使いながら少しずつ発見してください \u2728'
     }
   ];
 
@@ -157,40 +157,40 @@
     /* ナビゲーション */
     var navHtml = '<div class="onboarding-nav">';
     if (!isFirst) {
-      navHtml += '<button class="btn btn-ghost btn-sm" onclick="_obPrev()">◀ 戻る</button>';
+      navHtml += '<button class="btn btn-ghost btn-sm" onclick="_obPrev()">\u25C0 \u623B\u308B</button>';
     } else {
       navHtml += '<span></span>';
     }
     navHtml += '<span class="onboarding-step-label">' + (_currentStep + 1) + ' / ' + total + '</span>';
     if (isLast) {
-      navHtml += '<button class="btn btn-primary btn-sm" onclick="_obComplete()" style="min-width:120px">🎉 はじめる！</button>';
+      navHtml += '<button class="btn btn-primary btn-sm" onclick="_obComplete()" style="min-width:120px">\uD83C\uDF89 \u306F\u3058\u3081\u308B\uFF01</button>';
     } else {
-      navHtml += '<button class="btn btn-primary btn-sm" onclick="_obNext()" style="min-width:100px">次へ →</button>';
+      navHtml += '<button class="btn btn-primary btn-sm" onclick="_obNext()" style="min-width:100px">\u6B21\u3078 \u2192</button>';
     }
     navHtml += '</div>';
-
-    /* ハイライトテキスト */
-    var highlightHtml = '';
-    if (step.highlight) {
-      highlightHtml = '<div class="onboarding-highlight">' + escHtml(step.highlight) + '</div>';
-    }
 
     /* サブタイトル */
     var subtitleHtml = '';
     if (step.subtitle) {
-      subtitleHtml = '<div class="onboarding-subtitle">' + escHtml(step.subtitle) + '</div>';
+      subtitleHtml = '<div class="onboarding-subtitle">' + step.subtitle + '</div>';
+    }
+
+    /* ハイライト */
+    var highlightHtml = '';
+    if (step.highlight) {
+      highlightHtml = '<div class="onboarding-highlight">' + step.highlight + '</div>';
     }
 
     _obOverlay.innerHTML =
       '<div class="onboarding-card' + animClass + '">' +
         '<div class="onboarding-icon">' + step.icon + '</div>' +
-        '<div class="onboarding-title">' + escHtml(step.title) + '</div>' +
+        '<div class="onboarding-title">' + step.title + '</div>' +
         subtitleHtml +
-        '<div class="onboarding-body">' + escHtml(step.body) + '</div>' +
+        '<div class="onboarding-body">' + step.body + '</div>' +
         highlightHtml +
         dotsHtml +
         navHtml +
-        '<button class="onboarding-skip" onclick="_obSkip()">あとで見る</button>' +
+        '<button class="onboarding-skip" onclick="_obSkip()">\u3042\u3068\u3067\u898B\u308B</button>' +
       '</div>';
   }
 
@@ -228,14 +228,14 @@
     S.s('onboarding_completed', true);
     S.r('onboarding_step');
     _closeOnboarding();
-    if (typeof toast === 'function') toast('🎉 セットアップ完了！まずは「＋」ボタンから売上を記録してみましょう');
+    if (typeof toast === 'function') toast('\uD83C\uDF89 \u30BB\u30C3\u30C8\u30A2\u30C3\u30D7\u5B8C\u4E86\uFF01\u307E\u305A\u306F\u300C\uFF0B\u300D\u30DC\u30BF\u30F3\u304B\u3089\u58F2\u4E0A\u3092\u8A18\u9332\u3057\u3066\u307F\u307E\u3057\u3087\u3046');
   }
 
   /* ---------- オンボーディング中断 ---------- */
   function _pauseOnboarding() {
     S.si('onboarding_step', _currentStep);
     _closeOnboarding();
-    if (typeof toast === 'function') toast('💡 ヘルプはサイドバーの「❓ ヘルプ」からいつでも見られます');
+    if (typeof toast === 'function') toast('\uD83D\uDCA1 \u30D8\u30EB\u30D7\u306F\u30B5\u30A4\u30C9\u30D0\u30FC\u306E\u300C\u2753 \u30D8\u30EB\u30D7\u300D\u304B\u3089\u3044\u3064\u3067\u3082\u898B\u3089\u308C\u307E\u3059');
   }
 
   /* ---------- オンボーディング閉じる ---------- */
@@ -267,7 +267,7 @@
   var HELP_SECTIONS = [
     {
       id: 'quickStart',
-      title: '🚀 クイックスタート',
+      title: '\uD83D\uDE80 クイックスタート',
       content: [
         { q: '売上を記録するには？', a: '画面右下の「＋」ボタンをタップ → 「✏️ 売上」を選択 → 金額を入力 → 「記録する」をタップします。プラットフォーム（Uber Eats、出前館等）を選択すると、PF別の集計ができます。' },
         { q: '経費を記録するには？', a: '「＋」ボタン → 「💸 経費」を選択 → カテゴリ（ガソリン、通信費等）と金額を入力して記録します。' },
@@ -276,16 +276,16 @@
     },
     {
       id: 'homeCustom',
-      title: '🏠 ホーム画面のカスタマイズ',
+      title: '\uD83C\uDFE0 ホーム画面のカスタマイズ',
       content: [
         { q: 'ウィジェットを追加/削除するには？', a: 'ウィジェットを長押しすると編集モードに入ります。「＋ ウィジェットを追加」で新しいウィジェットを追加、各ウィジェットの「✕」で削除できます。ドラッグで並び替えも可能です。' },
         { q: 'プリセットとは？', a: 'ホーム画面の構成（ウィジェットの種類・配置）を名前をつけて保存したものです。配達中用、振り返り用など場面に合わせて複数作り、ワンタップで切り替えられます。' },
-        { q: 'デスクトップとモバイルで別のレイアウトにできる？', a: 'はい。プリセットはモバイル（〜1023px）とデスクトップ（1024px〜）で個別にウィジェット配置を管理しています。' }
+        { q: 'デスクトップとモバイルで別のレイアウトにできる？', a: 'はい。プリセットはモバイルとデスクトップで個別にウィジェット配置を管理しています。' }
       ]
     },
     {
       id: 'navigation',
-      title: '📱 操作方法',
+      title: '\uD83D\uDCF1 操作方法',
       content: [
         { q: 'サイドバーの開き方は？', a: '左上の「☰」ボタンをタップするか、画面の左端から右にスワイプします。' },
         { q: '右パネルの開き方は？', a: '画面の右端から左にスワイプします。今日のサマリーや直近の記録をすばやく確認できます。' },
@@ -295,7 +295,7 @@
     },
     {
       id: 'features',
-      title: '📊 主な機能',
+      title: '\uD83D\uDCCA 主な機能',
       content: [
         { q: 'カレンダー', a: '月間の売上をヒートマップで確認できます。日付をタップすると日別の詳細が表示されます。スワイプで日付を移動できます。' },
         { q: '統計', a: '日・週・月・3ヶ月・年の各期間で売上・件数・単価・利益の推移を確認できます。PF別分析、曜日別パフォーマンスなども表示されます。' },
@@ -306,7 +306,7 @@
     },
     {
       id: 'sync',
-      title: '☁️ クラウド同期',
+      title: '\u2601\uFE0F クラウド同期',
       content: [
         { q: '設定方法は？', a: '設定 → クラウド同期 → 「Googleでログイン」をタップします。' },
         { q: '複数端末で共有するには？', a: '同じGoogleアカウントで各端末にログインすれば自動的にデータが同期されます。' },
@@ -315,7 +315,7 @@
     },
     {
       id: 'theme',
-      title: '🎨 テーマ',
+      title: '\uD83C\uDFA8 テーマ',
       content: [
         { q: 'テーマの変え方は？', a: 'サイドバー → 「🎨 テーマ」を開きます。18スタイル×20カラーの360通りの外観を楽しめます。' },
         { q: 'ダークモードはある？', a: 'はい。カラーパレットの「🌙 ダーク」セクションから8種類のダークテーマを選べます。' }
@@ -323,7 +323,7 @@
     },
     {
       id: 'data',
-      title: '💾 データ管理',
+      title: '\uD83D\uDCBE データ管理',
       content: [
         { q: 'バックアップ方法は？', a: '設定 → データ管理 → 「💾 バックアップ」でJSONファイルとしてダウンロードできます。' },
         { q: 'データの復元方法は？', a: '設定 → データ管理 → 「📂 JSONファイルから復元」でバックアップファイルを読み込みます。' }
@@ -331,11 +331,10 @@
     },
     {
       id: 'tips',
-      title: '💡 便利な使い方',
+      title: '\uD83D\uDCA1 便利な使い方',
       content: [
         { q: 'ミニカレンダーから直接記録', a: 'ホーム画面のミニカレンダーの日付をタップすると、その日のカレンダー詳細が開きます。' },
-        { q: 'PFの追加', a: '売上入力画面でPF一覧の右にある「＋ 追加」ボタンから新しいプラットフォームを追加できます。' },
-        { q: 'まとめ記録', a: '売上入力画面で「▼ 件数を変更する」を開くと、複数件をまとめて記録できます。' }
+        { q: 'PFの追加', a: '売上入力画面でPF一覧の右にある「＋ 追加」ボタンから新しいプラットフォームを追加できます。' }
       ]
     }
   ];
@@ -355,7 +354,7 @@
         html += '<div class="help-faq-item" id="' + itemId + '">';
         html += '<div class="help-faq-q" onclick="toggleHelpFaq(\'' + itemId + '\')">';
         html += '<span>' + escHtml(item.q) + '</span>';
-        html += '<span class="help-faq-arrow">▼</span>';
+        html += '<span class="help-faq-arrow">\u25BC</span>';
         html += '</div>';
         html += '<div class="help-faq-a"><div class="help-faq-a-inner">' + escHtml(item.a) + '</div></div>';
         html += '</div>';
@@ -365,7 +364,7 @@
 
     /* 初回ガイド再表示ボタン */
     html += '<button class="btn btn-ghost btn-sm help-restart-btn" onclick="restartOnboarding()">';
-    html += '🔄 初回ガイドをもう一度見る';
+    html += '\uD83D\uDD04 初回ガイドをもう一度見る';
     html += '</button>';
 
     body.innerHTML = html;
