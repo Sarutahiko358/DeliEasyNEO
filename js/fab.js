@@ -7,6 +7,7 @@
 
   var _isOpen = false;
   var _isHidden = false;
+  var _fabSortCleanup = null;
 
   /* ---------- FABアクション定義 ---------- */
   var ALL_FAB_ACTIONS = [
@@ -389,6 +390,11 @@
 
   /* ---------- FAB並べ替えドラッグ ---------- */
   function _initFabSortDrag() {
+    if (_fabSortCleanup) {
+      _fabSortCleanup();
+      _fabSortCleanup = null;
+    }
+
     var list = document.getElementById('fab-sort-list');
     if (!list) return;
 
@@ -579,18 +585,26 @@
     list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
 
     /* Mouse */
-    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
-    document.addEventListener('mousemove', function(e) {
+    function onDocMouseMove(e) {
       if (!isMouseDown && !isDragging) return;
       onPointerMove(e);
-    });
-    document.addEventListener('mouseup', function() {
+    }
+    function onDocMouseUp() {
       if (!isMouseDown && !isDragging) return;
       onPointerEnd();
-    });
+    }
+
+    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
+    document.addEventListener('mousemove', onDocMouseMove);
+    document.addEventListener('mouseup', onDocMouseUp);
     list.addEventListener('contextmenu', function(e) {
       if (isDragging) e.preventDefault();
     });
+
+    _fabSortCleanup = function() {
+      document.removeEventListener('mousemove', onDocMouseMove);
+      document.removeEventListener('mouseup', onDocMouseUp);
+    };
   }
 
   window._fabToggleShow = function(show) {
