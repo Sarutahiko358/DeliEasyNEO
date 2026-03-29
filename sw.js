@@ -1,4 +1,4 @@
-/* sw.js — DeliEasy Service Worker v2.2 */
+/* sw.js — DeliEasy Service Worker v2.3 */
 const CACHE_NAME = 'delieasy-neo-v1';
 const PRE_CACHE = [
   './',
