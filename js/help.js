@@ -5,6 +5,12 @@
 (function(){
   'use strict';
 
+  if (!S.r) {
+    S.r = function(key) {
+      try { localStorage.removeItem('dp_' + key); } catch(e) {}
+    };
+  }
+
   /* ========== A. オンボーディング（初回起動ガイド） ========== */
 
   var ONBOARDING_STEPS = [
@@ -24,7 +30,7 @@
       id: 'home',
       icon: '\uD83C\uDFE0',
       title: 'ホーム画面はカスタム自在',
-      body: 'ホーム画面のウィジェットは自由に追加・削除・並び替えできます。\nウィジェットを長押しすると編集モードに入ります。\n\n複数のプリセット（稼働中・振り返り等）を作って\n場面に応じて切り替えることもできます。'
+      body: 'ホーム画面のウィジェットは自由に追加・削除・並び替えできます。\nウィジェットを長押しすると編集モードに入ります。\n\n複数のプリセットを作って\n場面に応じて切り替えることもできます。\n（例: 配達中用、振り返り用、月末分析用など）'
     },
     {
       id: 'sidebar',
@@ -130,15 +136,15 @@
     /* ナビゲーション */
     var navHtml = '<div class="onboarding-nav">';
     if (!isFirst) {
-      navHtml += '<button class="v2-btn v2-btn-ghost" id="ob-prev">\u25C0 戻る</button>';
+      navHtml += '<button class="btn btn-ghost btn-sm" id="ob-prev">\u25C0 戻る</button>';
     } else {
       navHtml += '<span></span>';
     }
     navHtml += '<span class="onboarding-step-label">' + (_currentStep + 1) + '/' + total + '</span>';
     if (isLast) {
-      navHtml += '<button class="v2-btn v2-btn-primary" id="ob-next">はじめる！</button>';
+      navHtml += '<button class="btn btn-primary btn-sm" id="ob-next">はじめる！</button>';
     } else {
-      navHtml += '<button class="v2-btn v2-btn-primary" id="ob-next">次へ →</button>';
+      navHtml += '<button class="btn btn-primary btn-sm" id="ob-next">次へ →</button>';
     }
     navHtml += '</div>';
 
@@ -241,7 +247,7 @@
       title: '\uD83C\uDFE0 ホーム画面のカスタマイズ',
       content: [
         { q: 'ウィジェットを追加/削除するには？', a: 'ウィジェットを長押しすると編集モードに入ります。「＋ ウィジェットを追加」で新しいウィジェットを追加、各ウィジェットの「✕」で削除できます。ドラッグで並び替えも可能です。' },
-        { q: 'プリセットとは？', a: 'ホーム画面の構成（ウィジェットの種類・配置）を名前をつけて保存したものです。「稼働中」「振り返り」など場面に合わせて複数作り、ワンタップで切り替えられます。' },
+        { q: 'プリセットとは？', a: 'ホーム画面の構成（ウィジェットの種類・配置）を名前をつけて保存したものです。配達中用、振り返り用など場面に合わせて複数作り、ワンタップで切り替えられます。' },
         { q: 'デスクトップとモバイルで別のレイアウトにできる？', a: 'はい。プリセットはモバイル（〜1023px）とデスクトップ（1024px〜）で個別にウィジェット配置を管理しています。編集モードで各モードのレイアウトを独立して設定できます。' }
       ]
     },
@@ -330,7 +336,7 @@
     }
 
     /* 初回ガイド再表示ボタン */
-    html += '<button class="v2-btn v2-btn-ghost help-restart-btn" onclick="restartOnboarding()">';
+    html += '<button class="btn btn-ghost btn-sm help-restart-btn" onclick="restartOnboarding()">';
     html += '\uD83D\uDD04 初回ガイドをもう一度見る';
     html += '</button>';
 
