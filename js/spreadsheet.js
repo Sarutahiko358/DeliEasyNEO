@@ -115,7 +115,7 @@
     // 経費カテゴリ別集計
     var expenses = {};
     dayExps.forEach(function(e) {
-      var cat = e.category || 'その他';
+      var cat = e.cat || 'その他';
       expenses[cat] = (expenses[cat] || 0) + (Number(e.amount) || 0);
     });
 
@@ -723,7 +723,7 @@
     // その日のそのカテゴリの既存経費を検索
     var existingIdx = -1;
     for (var j = 0; j < allExps.length; j++) {
-      if (allExps[j].date === dk && allExps[j].category === expCat) {
+      if (allExps[j].date === dk && allExps[j].cat === expCat) {
         existingIdx = j;
         break;
       }
@@ -735,15 +735,13 @@
       }
     } else if (existingIdx >= 0) {
       allExps[existingIdx].amount = amount;
-      allExps[existingIdx]._updatedAt = Date.now();
     } else {
       allExps.push({
         date: dk,
+        cat: expCat,
         amount: amount,
-        category: expCat,
-        note: '',
-        ts: Date.now(),
-        _updatedAt: Date.now()
+        memo: '',
+        ts: Date.now()
       });
     }
     S.s('exps', allExps);
@@ -1085,7 +1083,7 @@
     var allExps = S.g('exps', []);
     var cats = {};
     allExps.forEach(function(e) {
-      if (e.category) cats[e.category] = true;
+      if (e.cat) cats[e.cat] = true;
     });
 
     var layout = _getLayout(oId);
