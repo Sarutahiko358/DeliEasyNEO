@@ -164,12 +164,16 @@
   padding: 0 16px 32px;
 }
 
-/* ブラウザモード: オーバーレイの高さを実際のビューポートに合わせる */
-[data-display-mode="browser"] .overlay-sheet {
-  height: calc(var(--app-height, 100vh) * 0.95);
-  max-height: calc(var(--app-height, 100vh) * 0.95);
-}
-[data-display-mode="browser"] .overlay-sheet[data-level="2"] {
-  height: calc(var(--app-height, 100vh) * 0.90);
-  max-height: calc(var(--app-height, 100vh) * 0.90);
+/* ブラウザモード: モバイル（767px以下）のみオーバーレイ高さを
+   実際のビューポートに合わせる。
+   768px以上では desktop.css の flexbox モーダル表示が優先される。 */
+@media (max-width: 767px) {
+  [data-display-mode="browser"] .overlay-sheet {
+    height: calc(var(--app-height, 100vh) * 0.95);
+    max-height: calc(var(--app-height, 100vh) * 0.95);
+  }
+  [data-display-mode="browser"] .overlay-sheet[data-level="2"] {
+    height: calc(var(--app-height, 100vh) * 0.90);
+    max-height: calc(var(--app-height, 100vh) * 0.90);
+  }
 }

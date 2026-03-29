@@ -101,11 +101,18 @@
       container.style.left = '';
       container.style.right = '';
       container.style.bottom = '';
-      /* ブラウザモードではボトムに追加マージンを確保 */
+      /* ブラウザモードではボトムバーの実際の高さを計測してオフセットを決定 */
       var bottomOffset = 24;
       var isPWA = document.documentElement.getAttribute('data-display-mode') === 'standalone';
       if (!isPWA) {
-        bottomOffset = 60; /* ブラウザUIバーの高さ分を追加 */
+        var bottombar = document.querySelector('.bottombar');
+        if (bottombar && !bottombar.classList.contains('bottombar-hidden')) {
+          /* ボトムバーが表示中の場合、その高さ + 8px のマージンを確保 */
+          bottomOffset = bottombar.offsetHeight + 8;
+        } else {
+          /* ボトムバーが非表示またはデスクトップの場合 */
+          bottomOffset = 60;
+        }
       }
       if (cfg.position === 'left') {
         container.style.left = '20px';

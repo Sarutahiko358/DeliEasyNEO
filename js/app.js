@@ -42,6 +42,25 @@
     applyTheme(getThemeStyle(), color);
   }
 
+  /* ---------- ビューポート高さ即時設定（非PWA対策）---------- */
+  /* initApp() を待たず script 読み込み時点で即座に実行。
+     CSSが --app-height を参照する前に値を確定させる。 */
+  function _updateViewportHeight() {
+    var vh = window.innerHeight;
+    document.documentElement.style.setProperty('--app-height', vh + 'px');
+    document.documentElement.style.setProperty('--real-vh', (vh * 0.01) + 'px');
+  }
+  _updateViewportHeight();
+  window.addEventListener('resize', _updateViewportHeight);
+  window.addEventListener('orientationchange', function() {
+    setTimeout(_updateViewportHeight, 100);
+  });
+
+  /* ---------- PWAモード即時検出 ---------- */
+  var _isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+               window.navigator.standalone === true;
+  document.documentElement.setAttribute('data-display-mode', _isPWA ? 'standalone' : 'browser');
+
   /* ---------- デスクトップ判定 ---------- */
   function _isDesktop() {
     return window.innerWidth >= 1024;
@@ -193,23 +212,6 @@
   /* ---------- Init ---------- */
   function initApp() {
     applyTheme(getThemeStyle(), getThemeColor());
-
-    /* ビューポート高さをCSS変数に反映（非PWA対策） */
-    function _updateViewportHeight() {
-      var vh = window.innerHeight;
-      document.documentElement.style.setProperty('--app-height', vh + 'px');
-      document.documentElement.style.setProperty('--real-vh', (vh * 0.01) + 'px');
-    }
-    _updateViewportHeight();
-    window.addEventListener('resize', _updateViewportHeight);
-    window.addEventListener('orientationchange', function() {
-      setTimeout(_updateViewportHeight, 100);
-    });
-
-    /* PWAモード検出 */
-    var _isPWA = window.matchMedia('(display-mode: standalone)').matches ||
-                 window.navigator.standalone === true;
-    document.documentElement.setAttribute('data-display-mode', _isPWA ? 'standalone' : 'browser');
 
     if (typeof initEarnsDB === 'function') {
       initEarnsDB().then(function() {
