@@ -165,6 +165,8 @@
     var CLOSE_THRESHOLD = 0.2;
     var VELOCITY_THRESHOLD = 0.4;
     var isSpreadsheetMain = sheet.getAttribute('data-id') === 'spreadsheet-main';
+    /* スプレッドシートは下スワイプ閉じを完全無効化（テーブル縦スクロールとの干渉防止） */
+    if (isSpreadsheetMain) return;
     var startTime = 0;
 
     function isOnHandleOrHeader(target) {
@@ -270,7 +272,7 @@
 
       var backdrop = _getBackdrop();
 
-      var closePx = isSpreadsheetMain ? 180 : sheetHeight * CLOSE_THRESHOLD;
+      var closePx = sheetHeight * CLOSE_THRESHOLD;
       if (dy > closePx || velocity > VELOCITY_THRESHOLD) {
         sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
         sheet.style.transform = 'translateX(-50%) translateY(100%)';

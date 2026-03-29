@@ -58,10 +58,18 @@
 /* ===== タブバー ===== */
 .ss-tabs {
   display: flex;
-  background: var(--c-fill-quaternary);
   border-radius: var(--ds-radius-sm);
   padding: 2px;
   margin-bottom: 10px;
+
+  /* sticky固定: overlay-body内でスクロールしても常に上部に表示 */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  /* 背景の透過を防ぐためにソリッドな背景を確保 */
+  background: var(--c-bg);
+  /* タブバーの下に微妙な影を付けて、コンテンツとの境界を明示 */
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 .ss-tab {
   flex: 1;
