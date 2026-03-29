@@ -18,6 +18,7 @@
     { id: 'presetNext',   icon: '🔄', label: '次のプリセット', action: _nextPreset },
     { id: 'editMode',     icon: '✏️', label: '編集モード',  action: function(){ if (typeof enterEditMode === 'function') enterEditMode(); } },
     { id: 'editAdvanced', icon: '🔧', label: '詳細設定',  action: function(){ if (typeof openOverlay === 'function') openOverlay('detailSettings'); } },
+    { id: 'spreadsheet',  icon: '📊', label: 'シート',      action: function(){ if (typeof window.openSpreadsheetMain === 'function') window.openSpreadsheetMain(); } },
     { id: 'none',         icon: '',   label: '空欄',        action: function(){} }
   ];
 
@@ -25,7 +26,7 @@
   var DEFAULT_BOTTOMBAR_CFG = {
     show: false,
     slotCount: 5,
-    items: ['earnInput', 'calendar', 'stats', 'expense', 'settings', 'none']
+    items: ['earnInput', 'calendar', 'stats', 'expense', 'spreadsheet', 'none']
   };
 
   /* ---------- デスクトップ判定 ---------- */
@@ -90,12 +91,6 @@
       html += '</button>';
     }
 
-    /* 固定「シート」タブを末尾に追加 */
-    html += '<button class="bottombar-item" data-tab="spreadsheet">';
-    html += '<span class="bottombar-item-icon">📊</span>';
-    html += '<span class="bottombar-item-label">シート</span>';
-    html += '</button>';
-
     bar.innerHTML = html;
     document.getElementById('app').appendChild(bar);
 
@@ -112,18 +107,6 @@
         }
       });
     });
-
-    /* シートタブのイベント */
-    var ssTab = bar.querySelector('[data-tab="spreadsheet"]');
-    if (ssTab) {
-      ssTab.addEventListener('click', function() {
-        hp();
-        ssTab.classList.add('active');
-        if (typeof window.openSpreadsheetMain === 'function') {
-          window.openSpreadsheetMain();
-        }
-      });
-    }
 
     _adjustMainPadding(true);
   }
@@ -297,8 +280,7 @@
 
   /* ---------- ボトムバータブ状態復帰 ---------- */
   window.restoreBottomBarTab = function() {
-    var ssTab = document.querySelector('[data-tab="spreadsheet"]');
-    if (ssTab) ssTab.classList.remove('active');
+    // 現在は通常アクションとして動くため特別な処理は不要
   };
 
   /* ---------- Expose ---------- */
