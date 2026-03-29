@@ -333,6 +333,7 @@
           var dk = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
           var dayOfWeek = (firstDay + d - 1) % 7;
           var isHoliday = typeof isJapaneseHoliday === 'function' && isJapaneseHoliday(year, month + 1, d);
+          var holidayName = typeof getJapaneseHolidayName === 'function' ? getJapaneseHolidayName(year, month + 1, d) : null;
           var dayClasses = 'widget-cal-day';
           if (isToday) dayClasses += ' widget-cal-today';
           if (dayOfWeek === 0) dayClasses += ' widget-cal-sun';
@@ -341,8 +342,15 @@
 
           html += '<div class="' + dayClasses + '"' +
             (lv > 0 ? ' data-lv="' + lv + '"' : '') +
+            (holidayName ? ' title="' + escHtml(holidayName) + '"' : '') +
             ' onclick="event.stopPropagation();openCalendarAtDate(\'' + dk + '\')" style="cursor:pointer;position:relative">';
           html += '<span>' + d + '</span>';
+          if (holidayName) {
+            var showHolidayText = true; // 将来的に sales > 0 の場合に false にすることも可能
+            if (showHolidayText) {
+              html += '<span class="widget-cal-holiday-name">' + escHtml(holidayName.length > 3 ? holidayName.substring(0, 3) : holidayName) + '</span>';
+            }
+          }
           if (sales > 0) {
             var displayAmt = sales >= 10000 ? Math.round(sales / 1000) + 'k' : (sales >= 1000 ? (sales / 1000).toFixed(1) + 'k' : sales);
             var amtFz = w.size === 'wide' ? '.5rem' : '.55rem';

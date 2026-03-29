@@ -305,6 +305,51 @@
   background: rgba(255,255,255,.6);
 }
 
+/* ===== ミニカレンダー祝日名テキスト ===== */
+.widget-cal-day .widget-cal-holiday-name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 2px);
+  font-size: .3rem;
+  line-height: 1;
+  color: var(--c-danger);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  opacity: .65;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  pointer-events: none;
+}
+
+/* 今日のセル内の祝日名は白文字 */
+.widget-cal-day.widget-cal-today .widget-cal-holiday-name {
+  color: rgba(255, 255, 255, .7);
+}
+
+/* ヒートマップ背景がある場合の視認性確保 */
+.widget-cal-day[data-lv] .widget-cal-holiday-name {
+  opacity: .55;
+}
+
+/* 祝日名テキストがある場合はドットインジケーターを非表示にする */
+.widget-cal-day.widget-cal-holiday:has(.widget-cal-holiday-name)::after {
+  display: none;
+}
+
+/* :has() 未対応ブラウザ用フォールバック */
+@supports not selector(:has(*)) {
+  .widget-cal-day.widget-cal-holiday::after {
+    bottom: auto;
+    top: 2px;
+    right: 2px;
+    left: auto;
+    transform: none;
+  }
+}
+
 /* ===== Desktop: Hover styles ===== */
 @media (hover: hover) {
   .widget-tappable:hover { transform: scale(.99); box-shadow: 0 2px 12px var(--c-shadow-color); }
