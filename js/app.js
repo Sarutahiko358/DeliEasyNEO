@@ -194,6 +194,23 @@
   function initApp() {
     applyTheme(getThemeStyle(), getThemeColor());
 
+    /* ビューポート高さをCSS変数に反映（非PWA対策） */
+    function _updateViewportHeight() {
+      var vh = window.innerHeight;
+      document.documentElement.style.setProperty('--app-height', vh + 'px');
+      document.documentElement.style.setProperty('--real-vh', (vh * 0.01) + 'px');
+    }
+    _updateViewportHeight();
+    window.addEventListener('resize', _updateViewportHeight);
+    window.addEventListener('orientationchange', function() {
+      setTimeout(_updateViewportHeight, 100);
+    });
+
+    /* PWAモード検出 */
+    var _isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                 window.navigator.standalone === true;
+    document.documentElement.setAttribute('data-display-mode', _isPWA ? 'standalone' : 'browser');
+
     if (typeof initEarnsDB === 'function') {
       initEarnsDB().then(function() {
         if (typeof initExpensesDB === 'function') {
@@ -376,7 +393,7 @@
     var fabCfg = typeof getFabConfig === 'function' ? getFabConfig() : null;
     if (fabCfg && fabCfg.posX !== null && fabCfg.posX !== undefined) {
       var vw = window.innerWidth;
-      var vh = window.innerHeight;
+      var vh = window.innerHeight; /* innerHeight はブラウザUIを除いた高さ */
       var fabSize = 56;
       var fabChanged = false;
 
@@ -387,13 +404,7 @@
 
       if (fabChanged) {
         if (typeof saveFabConfig === 'function') saveFabConfig(fabCfg);
-        var fabContainer = document.getElementById('fab-container');
-        if (fabContainer) {
-          fabContainer.style.left = fabCfg.posX + 'px';
-          fabContainer.style.top = fabCfg.posY + 'px';
-          fabContainer.style.right = 'auto';
-          fabContainer.style.bottom = 'auto';
-        }
+        if (typeof renderFab === 'function') renderFab();
       }
     }
   });

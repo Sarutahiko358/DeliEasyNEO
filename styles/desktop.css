@@ -44,9 +44,8 @@
     left: auto;
     right: auto;
     margin: 0;
-    transform: none !important;
     width: min(560px, 90vw);
-    max-height: 85vh;
+    max-height: min(85vh, calc(var(--app-height, 85vh) * 0.85));
     border-radius: var(--ds-radius-lg);
     box-shadow: 0 24px 80px rgba(0,0,0,.25);
     opacity: 0;
@@ -58,6 +57,22 @@
   }
   .overlay-handle {
     display: none;
+  }
+}
+
+/* モバイルでは transform を維持（スワイプ閉じのため） */
+@media (max-width: 767px) {
+  .overlay-sheet {
+    transform: translateX(-50%) translateY(100%);
+  }
+  .overlay-sheet.open {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+/* タブレット以上では transform なし */
+@media (min-width: 768px) {
+  .overlay-sheet {
+    transform: none !important;
   }
 }
 

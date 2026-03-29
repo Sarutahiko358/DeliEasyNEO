@@ -161,3 +161,13 @@
   -webkit-overflow-scrolling: touch;
   padding: 0 16px 32px;
 }
+
+/* ブラウザモード: オーバーレイの高さを実際のビューポートに合わせる */
+[data-display-mode="browser"] .overlay-sheet {
+  height: calc(var(--app-height, 95vh) * 0.95);
+  max-height: calc(var(--app-height, 95vh) * 0.95);
+}
+[data-display-mode="browser"] .overlay-sheet[data-level="2"] {
+  height: calc(var(--app-height, 90vh) * 0.90);
+  max-height: calc(var(--app-height, 90vh) * 0.90);
+}

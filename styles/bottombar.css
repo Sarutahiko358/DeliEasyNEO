@@ -72,3 +72,10 @@
 @media (hover: hover) {
   .bottombar-item:hover { color: var(--c-primary); }
 }
+
+/* ブラウザモード: ボトムバーが表示される場合にブラウザUIとの重なりを防止 */
+[data-display-mode="browser"] .bottombar {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  height: auto;
+  min-height: 84px;
+}

@@ -40,6 +40,7 @@
   #app {
     min-height: 100vh;
     min-height: 100dvh;
+    min-height: -webkit-fill-available; /* iOS Safari フォールバック */
     position: relative;
     background: var(--c-bg);
   }
@@ -138,6 +139,16 @@
     padding: 12px 16px 120px; /* extra bottom for FAB */
     min-height: calc(100vh - 44px);
     min-height: calc(100dvh - 44px);
+  }
+
+  /* 非PWAブラウザモード対応 */
+  @supports not (height: 100dvh) {
+    #app {
+      min-height: -webkit-fill-available;
+    }
+    .main-content {
+      min-height: calc(var(--app-height, 100vh) - 44px);
+    }
   }
 </style>
 </head>

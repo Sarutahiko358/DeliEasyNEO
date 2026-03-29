@@ -197,3 +197,28 @@ body {
   outline: 3px solid var(--c-primary);
   outline-offset: 2px;
 }
+
+/* ========== 非PWA（ブラウザ）モード対応 ========== */
+
+/* ブラウザモードのときだけ適用 */
+[data-display-mode="browser"] #app {
+  min-height: var(--app-height, 100vh);
+}
+
+[data-display-mode="browser"] .main-content {
+  min-height: calc(var(--app-height, 100vh) - 44px);
+  /* ブラウザのボトムバー分の余白を追加 */
+  padding-bottom: 140px;
+}
+
+/* ブラウザモードでのFAB位置補正 */
+[data-display-mode="browser"] .fab-container {
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+/* iOS Safari の `-webkit-fill-available` フォールバック */
+@supports (-webkit-touch-callout: none) {
+  [data-display-mode="browser"] #app {
+    min-height: -webkit-fill-available;
+  }
+}

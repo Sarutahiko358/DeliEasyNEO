@@ -101,14 +101,20 @@
       container.style.left = '';
       container.style.right = '';
       container.style.bottom = '';
+      /* ブラウザモードではボトムに追加マージンを確保 */
+      var bottomOffset = 24;
+      var isPWA = document.documentElement.getAttribute('data-display-mode') === 'standalone';
+      if (!isPWA) {
+        bottomOffset = 60; /* ブラウザUIバーの高さ分を追加 */
+      }
       if (cfg.position === 'left') {
         container.style.left = '20px';
         container.style.right = 'auto';
-        container.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + 24px)';
+        container.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + ' + bottomOffset + 'px)';
       } else {
         container.style.right = '20px';
         container.style.left = 'auto';
-        container.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + 24px)';
+        container.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + ' + bottomOffset + 'px)';
       }
     }
   }
