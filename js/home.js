@@ -1,6 +1,7 @@
 /* ==========================================================
    DeliEasy v2 — js/home.js
    ホーム画面描画 + グリッドベース編集UI（モバイル/デスクトップ個別管理版）
+   差分更新対応版
    ========================================================== */
 (function(){
   'use strict';
@@ -8,7 +9,118 @@
   var _editMode = false;
   var _homeEditCurrentMode = null; // null = 自動検出
 
-  /* ========== メイン描画 ========== */
+  /* ========== 差分更新用の状態 ========== */
+  var _lastSnapshot = null;
+  var _lastPresetId = null;
+  var _lastPresetName = null;
+  var _lastPresetCount = 0;
+  var _lastWidgetIds = null;
+  var _domInitialized = false;
+
+  /* ========== スナップショット生成 ========== */
+  function _buildSnapshot(widgets) {
+    var snap = {};
+    widgets.forEach(function(w, i) {
+      snap[i + '_' + w.id] = _getWidgetDataHash(w);
+    });
+    return snap;
+  }
+
+  function _getWidgetDataHash(w) {
+    switch (w.id) {
+      case 'clock':
+        return 'clock';
+      case 'todaySales':
+        return 'ts_' + (typeof tdTot === 'function' ? tdTot() : 0);
+      case 'todayCount':
+        return 'tc_' + (typeof tdCnt === 'function' ? tdCnt() : 0);
+      case 'todayUnit': {
+        var tot = typeof tdTot === 'function' ? tdTot() : 0;
+        var cnt = typeof tdCnt === 'function' ? tdCnt() : 0;
+        return 'tu_' + tot + '_' + cnt;
+      }
+      case 'todayProfit': {
+        var t = typeof tdTot === 'function' ? tdTot() : 0;
+        var exps = S.g('exps', []);
+        var expTot = 0;
+        exps.forEach(function(e) { if (e.date === TD) expTot += (Number(e.amount) || 0); });
+        return 'tp_' + t + '_' + expTot;
+      }
+      case 'todayExpense': {
+        var ex = S.g('exps', []);
+        var et = 0;
+        ex.forEach(function(e) { if (e.date === TD) et += (Number(e.amount) || 0); });
+        return 'te_' + et;
+      }
+      case 'todaySummary': {
+        var ts2 = typeof tdTot === 'function' ? tdTot() : 0;
+        var tc2 = typeof tdCnt === 'function' ? tdCnt() : 0;
+        var ex2 = S.g('exps', []);
+        var et2 = 0;
+        ex2.forEach(function(e) { if (e.date === TD) et2 += (Number(e.amount) || 0); });
+        return 'tsum_' + ts2 + '_' + tc2 + '_' + et2;
+      }
+      case 'weekSummary': {
+        var wd = typeof wkData === 'function' ? wkData() : { tot: 0, cnt: 0, days: 0 };
+        return 'ws_' + wd.tot + '_' + wd.cnt + '_' + wd.days;
+      }
+      case 'monthSummary': {
+        var mt = typeof moTot === 'function' ? moTot() : 0;
+        var mc = typeof moCnt === 'function' ? moCnt() : 0;
+        var md = typeof moDays === 'function' ? moDays() : 0;
+        return 'ms_' + mt + '_' + mc + '_' + md;
+      }
+      case 'todayPfBreakdown': {
+        var records = typeof eByDate === 'function' ? eByDate(TD) : [];
+        return 'pf_' + records.length + '_' + (typeof sumA === 'function' ? sumA(records) : 0);
+      }
+      case 'recentRecords': {
+        var all = typeof getE === 'function' ? getE() : [];
+        var last5 = all.slice(-5);
+        return 'rr_' + last5.map(function(r) { return r.ts; }).join(',');
+      }
+      case 'miniCalendar': {
+        var stateKey = 'miniCal_' + (w._instanceId || 'default');
+        var st = window._miniCalState ? window._miniCalState[stateKey] : null;
+        var ym = st ? st.year + '-' + st.month : 'current';
+        var mk = st ? st.year + '-' + String(st.month + 1).padStart(2, '0') : MK;
+        var me = typeof eByMonth === 'function' ? eByMonth(mk) : [];
+        return 'mc_' + ym + '_' + me.length + '_' + (typeof sumA === 'function' ? sumA(me) : 0);
+      }
+      case 'taxSummary': {
+        var earns = typeof getE === 'function' ? getE() : [];
+        var yr = new Date().getFullYear();
+        var from = yr + '-01-01';
+        var to = yr + '-12-31';
+        var rev = 0;
+        earns.forEach(function(r) { if (r.d >= from && r.d <= to) rev += (Number(r.a) || 0); });
+        var aexp = S.g('exps', []);
+        var exp = 0;
+        aexp.forEach(function(e) { if (e.date >= from && e.date <= to) exp += (Number(e.amount) || 0); });
+        return 'tax_' + rev + '_' + exp;
+      }
+      case 'furusatoLimit': {
+        var earns2 = typeof getE === 'function' ? getE() : [];
+        var yr2 = new Date().getFullYear();
+        var from2 = yr2 + '-01-01';
+        var to2 = yr2 + '-12-31';
+        var rev2 = 0;
+        earns2.forEach(function(r) { if (r.d >= from2 && r.d <= to2) rev2 += (Number(r.a) || 0); });
+        var aexp2 = S.g('exps', []);
+        var exp2 = 0;
+        aexp2.forEach(function(e) { if (e.date >= from2 && e.date <= to2) exp2 += (Number(e.amount) || 0); });
+        return 'fl_' + rev2 + '_' + exp2;
+      }
+      case 'quickMemo':
+        return 'memo_' + (S.g('quickMemo', '') || '').length;
+      case 'themeInfo':
+        return 'theme_' + (typeof getThemeStyle === 'function' ? getThemeStyle() : '') + '_' + (typeof getThemeColor === 'function' ? getThemeColor() : '');
+      default:
+        return 'default_' + w.id + '_' + (w.size || '');
+    }
+  }
+
+  /* ========== メイン描画（差分更新対応） ========== */
   function renderHome() {
     var main = document.getElementById('main-content');
     if (!main) return;
@@ -16,11 +128,52 @@
     var preset = getActivePreset();
     if (!preset) return;
     var presets = getPresets();
+
+    /* === 構造変更の検出 === */
+    var currentWidgetIds = JSON.stringify(preset.widgets.map(function(w) { return w.id + ':' + (w.size || ''); }));
+    var structureChanged = !_domInitialized ||
+        _lastPresetId !== preset.id ||
+        _lastWidgetIds !== currentWidgetIds ||
+        _lastPresetCount !== presets.length;
+
+    if (structureChanged) {
+      _fullRender(main, preset, presets);
+      _lastPresetId = preset.id;
+      _lastPresetName = preset.name;
+      _lastPresetCount = presets.length;
+      _lastWidgetIds = currentWidgetIds;
+      _lastSnapshot = _buildSnapshot(preset.widgets);
+      _domInitialized = true;
+      return;
+    }
+
+    /* === データ差分更新 === */
+    var newSnapshot = _buildSnapshot(preset.widgets);
+
+    if (_lastPresetName !== preset.name) {
+      _updatePresetBar(presets, preset);
+      _lastPresetName = preset.name;
+    }
+
+    preset.widgets.forEach(function(w, i) {
+      var key = i + '_' + w.id;
+      var oldHash = _lastSnapshot ? _lastSnapshot[key] : null;
+      var newHash = newSnapshot[key];
+      if (oldHash !== newHash) {
+        _updateSingleWidget(i, w);
+      }
+    });
+
+    _lastSnapshot = newSnapshot;
+  }
+
+  /* ========== 全体再構築 ========== */
+  function _fullRender(main, preset, presets) {
     var html = '';
 
     /* === プリセットバー === */
     if (presets.length > 1) {
-      html += '<div class="preset-bar">';
+      html += '<div class="preset-bar" id="home-preset-bar">';
       html += '<div class="preset-bar-scroll">';
       presets.forEach(function(p) {
         var isActive = preset.id === p.id;
@@ -31,16 +184,16 @@
       html += '</div>';
     }
 
-    /* === 通常モード: ウィジェットグリッド === */
+    /* === ウィジェットグリッド === */
     html += '<div class="widget-grid" id="widget-grid">';
-    preset.widgets.forEach(function(w) {
-      html += renderWidgetWrapper(w, false);
+    preset.widgets.forEach(function(w, i) {
+      html += _renderWidgetWithIndex(w, i, false);
     });
     html += '</div>';
 
     /* === ヒント === */
     if (presets.length <= 1) {
-      html += '<div class="text-c fz-xs c-muted mt16 mb8" style="opacity:.5">';
+      html += '<div class="text-c fz-xs c-muted mt16 mb8" style="opacity:.5" id="home-hint">';
       html += 'ウィジェットを長押しでカスタマイズ';
       html += '</div>';
     }
@@ -52,6 +205,105 @@
     }
 
     _initLongPress();
+  }
+
+  /* ========== data-widget-index 付きウィジェット描画 ========== */
+  function _renderWidgetWithIndex(w, index, editMode) {
+    var def = WIDGET_DEFS[w.id];
+    if (!def) return '';
+    var sizeClass = 'widget-' + (w.size || def.size || 'full');
+    var tappable = !editMode && def.tappable ? ' widget-tappable' : '';
+    var tapAttr = '';
+    if (!editMode && def.tappable && def.tapAction) {
+      tapAttr = ' onclick="widgetTap(\'' + escJs(def.tapAction) + '\')"';
+    }
+
+    var html = '<div class="widget ' + sizeClass + tappable + '" data-widget-index="' + index + '"' + tapAttr + '>';
+    html += '<div class="widget-title">';
+    html += '<span>' + def.icon + ' ' + escHtml(def.name) + '</span>';
+    html += '</div>';
+
+    try {
+      html += def.render(w);
+    } catch (e) {
+      html += '<div class="widget-empty">表示エラー</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  /* ========== 単一ウィジェット更新 ========== */
+  function _updateSingleWidget(index, w) {
+    var grid = document.getElementById('widget-grid');
+    if (!grid) return;
+
+    var widgetEl = grid.querySelector('[data-widget-index="' + index + '"]');
+    if (!widgetEl) return;
+
+    var def = WIDGET_DEFS[w.id];
+    if (!def) return;
+
+    // 時計は setInterval で自己更新するのでスキップ
+    if (w.id === 'clock') return;
+
+    // quickMemo はユーザー入力中の可能性があるのでスキップ
+    if (w.id === 'quickMemo') return;
+
+    // タイトル以降のコンテンツを差し替え
+    var titleEl = widgetEl.querySelector('.widget-title');
+    if (!titleEl) return;
+
+    while (titleEl.nextSibling) {
+      titleEl.nextSibling.remove();
+    }
+
+    try {
+      var newContent = def.render(w);
+      var temp = document.createElement('div');
+      temp.innerHTML = newContent;
+      while (temp.firstChild) {
+        widgetEl.appendChild(temp.firstChild);
+      }
+    } catch (e) {
+      var errEl = document.createElement('div');
+      errEl.className = 'widget-empty';
+      errEl.textContent = '表示エラー';
+      widgetEl.appendChild(errEl);
+    }
+
+    // ミニカレンダーのスワイプ再初期化
+    if (w.id === 'miniCalendar') {
+      var stateKey = 'miniCal_' + (w._instanceId || 'default');
+      var swipeId = 'mini-cal-swipe-' + stateKey.replace(/[^a-zA-Z0-9]/g, '_');
+      var swipeEl = document.getElementById(swipeId);
+      if (swipeEl) swipeEl._mcSwipeInit = false;
+      setTimeout(function() { _initMiniCalSwipe(swipeId, stateKey); }, 50);
+    }
+  }
+
+  /* ========== プリセットバー更新 ========== */
+  function _updatePresetBar(presets, activePreset) {
+    var bar = document.getElementById('home-preset-bar');
+    if (!bar) return;
+    var scroll = bar.querySelector('.preset-bar-scroll');
+    if (!scroll) return;
+
+    var html = '';
+    presets.forEach(function(p) {
+      var isActive = activePreset.id === p.id;
+      html += '<button class="preset-tab' + (isActive ? ' active' : '') + '" onclick="switchPreset(\'' + escJs(p.id) + '\')">' + escHtml(p.name) + '</button>';
+    });
+    html += '<button class="preset-tab preset-tab-add" onclick="openPresetMenu()">+</button>';
+    scroll.innerHTML = html;
+  }
+
+  /* ========== 強制全体再描画 ========== */
+  function forceFullRenderHome() {
+    _domInitialized = false;
+    _lastSnapshot = null;
+    _lastPresetId = null;
+    _lastWidgetIds = null;
+    renderHome();
   }
 
   /* ========== 編集操作（グリッドベース） ========== */
@@ -229,7 +481,7 @@
       closeOverlay();
     }
     _homeEditCurrentMode = null;
-    renderHome();
+    forceFullRenderHome();
     if (typeof renderTopbar === 'function') renderTopbar();
     if (typeof renderBottombar === 'function') renderBottombar();
   }
@@ -327,14 +579,20 @@
     renderHome();
   };
 
-  /* ========== 長押し検知 ========== */
+  /* ========== 長押し検知（リスナーリーク防止版） ========== */
   function _initLongPress() {
     var grid = document.getElementById('widget-grid');
     if (!grid) return;
+
+    // 前回のリスナーがあればクリーンアップ
+    if (grid._lpCleanup) {
+      grid._lpCleanup();
+    }
+
     var timer = null;
     var _lpActive = false;
 
-    grid.addEventListener('touchstart', function(e) {
+    function onTouchStart(e) {
       var widget = e.target.closest('.widget');
       if (!widget) return;
       _lpActive = true;
@@ -343,20 +601,27 @@
         hp();
         enterEditMode();
       }, 500);
-    }, { passive: true });
-    grid.addEventListener('touchend', function(e) {
+    }
+
+    function onTouchEnd() {
       clearTimeout(timer);
       timer = null;
       _lpActive = false;
-    }, { passive: true });
-    grid.addEventListener('touchmove', function(e) {
+    }
+
+    function onTouchMove() {
       if (_lpActive) {
         clearTimeout(timer);
         timer = null;
         _lpActive = false;
       }
-    }, { passive: true });
-    grid.addEventListener('mousedown', function(e) {
+    }
+
+    grid.addEventListener('touchstart', onTouchStart, { passive: true });
+    grid.addEventListener('touchend', onTouchEnd, { passive: true });
+    grid.addEventListener('touchmove', onTouchMove, { passive: true });
+
+    function onMouseDown(e) {
       if (e.button !== 0) return;
       var widget = e.target.closest('.widget');
       if (!widget) return;
@@ -366,24 +631,29 @@
         hp();
         enterEditMode();
       }, 500);
-      grid.addEventListener('mouseup', function clearMouse() {
+
+      function onMouseUp() {
         clearTimeout(timer);
-        grid.removeEventListener('mouseup', clearMouse);
-        grid.removeEventListener('mousemove', moveMouse);
-        grid.removeEventListener('mouseleave', clearMouse);
-      });
-      function moveMouse(ev) {
+        document.removeEventListener('mouseup', onMouseUp);
+        document.removeEventListener('mousemove', onMouseMove);
+      }
+      function onMouseMove(ev) {
         if (Math.abs(ev.clientX - startX) > 5 || Math.abs(ev.clientY - startY) > 5) {
           clearTimeout(timer);
         }
       }
-      grid.addEventListener('mousemove', moveMouse);
-      grid.addEventListener('mouseleave', function clearMouse() {
-        clearTimeout(timer);
-        grid.removeEventListener('mouseleave', clearMouse);
-        grid.removeEventListener('mousemove', moveMouse);
-      });
-    });
+      document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener('mousemove', onMouseMove);
+    }
+
+    grid.addEventListener('mousedown', onMouseDown);
+
+    grid._lpCleanup = function() {
+      grid.removeEventListener('touchstart', onTouchStart);
+      grid.removeEventListener('touchend', onTouchEnd);
+      grid.removeEventListener('touchmove', onTouchMove);
+      grid.removeEventListener('mousedown', onMouseDown);
+    };
   }
 
   /* ========== ホーム編集オーバーレイ（グリッドベース） ========== */
@@ -516,6 +786,7 @@
   window.renderHome = renderHome;
   window.renderHomeWidgets = renderHome;
   window.refreshHome = renderHome;
+  window.forceFullRenderHome = forceFullRenderHome;
   window.enterEditMode = enterEditMode;
   window.exitEditMode = exitEditMode;
   window.isEditMode = isEditMode;
