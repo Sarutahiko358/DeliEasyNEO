@@ -418,209 +418,30 @@
 
   /* ---------- 右パネル並び替えドラッグ ---------- */
   function _initRpSortDrag() {
-    var list = document.getElementById('rp-sort-list');
-    if (!list) return;
-
-    function _getFixedOffset(el) {
-      var p = el.parentElement;
-      while (p && p !== document.body && p !== document.documentElement) {
-        var cs = window.getComputedStyle(p);
-        if (cs.transform && cs.transform !== 'none') {
-          var r = p.getBoundingClientRect();
-          return { x: r.left, y: r.top };
-        }
-        p = p.parentElement;
+    initDragSort({
+      listId: 'rp-sort-list',
+      itemSelector: '.ovc-drag-item',
+      handleSelector: '.ovc-drag-handle',
+      dataAttr: 'data-rp-sec-id',
+      draggingClass: 'ovc-dragging',
+      placeholderClass: 'ovc-drag-placeholder',
+      ignoreSelectors: ['.topbar-toggle'],
+      onReorder: function(newOrder) {
+        // DOM順でチェックONの項目だけをsectionsに
+        var list = document.getElementById('rp-sort-list');
+        if (!list) return;
+        var newSections = [];
+        Array.from(list.querySelectorAll('.ovc-drag-item')).forEach(function(el) {
+          var secId = el.getAttribute('data-rp-sec-id');
+          if (!secId) return;
+          var cb = el.querySelector('input[type="checkbox"]');
+          if (cb && cb.checked) newSections.push(secId);
+        });
+        var cfg = getRightPanelConfig();
+        cfg.sections = newSections;
+        saveRightPanelConfig(cfg);
+        renderRightPanel();
       }
-      return { x: 0, y: 0 };
-    }
-    var _txOff = { x: 0, y: 0 };
-
-    var LONG_PRESS_MS = 400;
-    var longPressTimer = null;
-    var dragItem = null;
-    var placeholder = null;
-    var startY = 0;
-    var startX = 0;
-    var offsetY = 0;
-    var isDragging = false;
-    var isMouseDown = false;
-    var _scrollContainer = null;
-    var _prevOverflow = '';
-
-    function getItems() {
-      return Array.from(list.querySelectorAll('.ovc-drag-item'));
-    }
-
-    function _getXY(e) {
-      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      return { x: e.clientX, y: e.clientY };
-    }
-
-    function _findScrollParent(el) {
-      var p = el.parentElement;
-      while (p && p !== document.body) {
-        var cs = window.getComputedStyle(p);
-        if (cs.overflowY === 'auto' || cs.overflowY === 'scroll') return p;
-        p = p.parentElement;
-      }
-      return null;
-    }
-
-    function onPointerDown(e, isMouse) {
-      var target = e.target.closest('.ovc-drag-item');
-      if (!target) return;
-      if (isMouse && e.button !== 0) return;
-      if (e.target.closest('.topbar-toggle')) return;
-
-      var pos = _getXY(e);
-      startY = pos.y;
-      startX = pos.x;
-      if (isMouse) isMouseDown = true;
-
-      longPressTimer = setTimeout(function() {
-        isDragging = true;
-        dragItem = target;
-        var rect = dragItem.getBoundingClientRect();
-        _txOff = _getFixedOffset(dragItem);
-        offsetY = startY - rect.top;
-
-        document.body.style.userSelect = 'none';
-        document.body.style.webkitUserSelect = 'none';
-
-        _scrollContainer = _findScrollParent(list);
-        if (_scrollContainer) {
-          _prevOverflow = _scrollContainer.style.overflowY;
-          _scrollContainer.style.overflowY = 'hidden';
-        }
-
-        placeholder = document.createElement('div');
-        placeholder.className = 'ovc-drag-placeholder';
-        placeholder.style.height = rect.height + 'px';
-        dragItem.parentNode.insertBefore(placeholder, dragItem);
-
-        dragItem.classList.add('ovc-dragging');
-        dragItem.style.position = 'fixed';
-        dragItem.style.left = (rect.left - _txOff.x) + 'px';
-        dragItem.style.top = (rect.top - _txOff.y) + 'px';
-        dragItem.style.width = rect.width + 'px';
-        dragItem.style.zIndex = '10000';
-
-        if (navigator.vibrate) navigator.vibrate(30);
-      }, LONG_PRESS_MS);
-    }
-
-    function onPointerMove(e) {
-      var pos = _getXY(e);
-      if (!isDragging && longPressTimer) {
-        if (Math.abs(pos.y - startY) > 8 || Math.abs(pos.x - startX) > 8) {
-          clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-        return;
-      }
-      if (!isDragging || !dragItem) return;
-      if (e.preventDefault) e.preventDefault();
-
-      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
-
-      var currentItems = getItems().filter(function(el) { return el !== dragItem; });
-      var inserted = false;
-      for (var i = 0; i < currentItems.length; i++) {
-        var r = currentItems[i].getBoundingClientRect();
-        if (pos.y < r.top + r.height / 2) {
-          list.insertBefore(placeholder, currentItems[i]);
-          inserted = true;
-          break;
-        }
-      }
-      if (!inserted) list.appendChild(placeholder);
-    }
-
-    function onPointerEnd() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-
-      if (_scrollContainer) {
-        _scrollContainer.style.overflowY = _prevOverflow;
-        _scrollContainer = null;
-      }
-
-      if (!isDragging || !dragItem) return;
-
-      dragItem.classList.remove('ovc-dragging');
-      dragItem.style.position = '';
-      dragItem.style.left = '';
-      dragItem.style.top = '';
-      dragItem.style.width = '';
-      dragItem.style.zIndex = '';
-
-      if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.insertBefore(dragItem, placeholder);
-        placeholder.remove();
-      }
-      placeholder = null;
-      dragItem = null;
-      isDragging = false;
-
-      /* DOM順を読み取り、チェックONの項目だけをsectionsに */
-      var newSections = [];
-      getItems().forEach(function(el) {
-        var secId = el.getAttribute('data-rp-sec-id');
-        if (!secId) return;
-        var cb = el.querySelector('input[type="checkbox"]');
-        if (cb && cb.checked) newSections.push(secId);
-      });
-      var cfg = getRightPanelConfig();
-      cfg.sections = newSections;
-      saveRightPanelConfig(cfg);
-      renderRightPanel();
-    }
-
-    function onPointerCancel() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-      if (_scrollContainer) {
-        _scrollContainer.style.overflowY = _prevOverflow;
-        _scrollContainer = null;
-      }
-      if (dragItem) {
-        dragItem.classList.remove('ovc-dragging');
-        dragItem.style.position = '';
-        dragItem.style.left = '';
-        dragItem.style.top = '';
-        dragItem.style.width = '';
-        dragItem.style.zIndex = '';
-        if (placeholder) placeholder.remove();
-        dragItem = null;
-        placeholder = null;
-      }
-      isDragging = false;
-    }
-
-    /* Touch */
-    list.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
-    list.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
-    list.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
-    list.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
-
-    /* Mouse */
-    list.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
-    document.addEventListener('mousemove', function(e) {
-      if (!isMouseDown && !isDragging) return;
-      onPointerMove(e);
-    });
-    document.addEventListener('mouseup', function() {
-      if (!isMouseDown && !isDragging) return;
-      onPointerEnd();
-    });
-    list.addEventListener('contextmenu', function(e) {
-      if (isDragging) e.preventDefault();
     });
   }
 

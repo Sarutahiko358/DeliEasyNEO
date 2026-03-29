@@ -1519,152 +1519,26 @@
         return;
     }
 
-    var listEl = document.getElementById(listId);
-    if (!listEl) return;
-
-    var scrollContainer = listEl.closest('.overlay-body');
-
-    var LONG_PRESS_MS = 400;
-    var longPressTimer = null;
-    var dragItem = null;
-    var placeholder = null;
-    var startY = 0;
-    var startX = 0;
-    var offsetY = 0;
-    var isDragging = false;
-    var isMouseDown = false;
-
-    function _getFixedOffset(el) {
-      var p = el.parentElement;
-      while (p && p !== document.body && p !== document.documentElement) {
-        var cs = window.getComputedStyle(p);
-        if (cs.transform && cs.transform !== 'none') {
-          var r = p.getBoundingClientRect();
-          return { x: r.left, y: r.top };
+    initDragSort({
+      listId: listId,
+      itemSelector: '.co-manage-item',
+      handleSelector: '.co-manage-handle',
+      dataAttr: dataAttr,
+      draggingClass: 'co-manage-dragging',
+      placeholderClass: 'co-manage-placeholder',
+      ignoreSelectors: ['.co-manage-btn', '.co-cl-del', '.co-link-del', '.co-cl-checkbox-wrap'],
+      onReorder: function(newOrderAttrs) {
+        var freshList = getCustomOverlays();
+        var freshOverlay = null;
+        for (var i = 0; i < freshList.length; i++) {
+          if (freshList[i].id === overlayId) { freshOverlay = freshList[i]; break; }
         }
-        p = p.parentElement;
-      }
-      return { x: 0, y: 0 };
-    }
-    var _txOff = { x: 0, y: 0 };
+        if (!freshOverlay || !freshOverlay.data[dataKey]) return;
 
-    function getItems() {
-      return Array.from(listEl.querySelectorAll('.co-manage-item'));
-    }
-
-    function _getXY(e) {
-      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      return { x: e.clientX, y: e.clientY };
-    }
-
-    function onPointerDown(e, isMouse) {
-      if (e.target.closest('.co-manage-btn') || e.target.closest('.co-cl-del') || e.target.closest('.co-link-del')) return;
-      var item = e.target.closest('.co-manage-item');
-      if (!item) return;
-      if (isMouse && e.button !== 0) return;
-
-      var pos = _getXY(e);
-      startY = pos.y;
-      startX = pos.x;
-      if (isMouse) isMouseDown = true;
-
-      longPressTimer = setTimeout(function() {
-        isDragging = true;
-        dragItem = item;
-        var rect = dragItem.getBoundingClientRect();
-        offsetY = startY - rect.top;
-
-        if (scrollContainer) scrollContainer.style.overflowY = 'hidden';
-        document.body.style.userSelect = 'none';
-        document.body.style.webkitUserSelect = 'none';
-
-        placeholder = document.createElement('div');
-        placeholder.style.height = rect.height + 'px';
-        placeholder.style.background = 'var(--c-fill-quaternary)';
-        placeholder.style.borderRadius = '8px';
-        placeholder.style.margin = '2px 0';
-        dragItem.parentNode.insertBefore(placeholder, dragItem);
-
-        _txOff = _getFixedOffset(dragItem);
-        dragItem.style.position = 'fixed';
-        dragItem.style.left = (rect.left - _txOff.x) + 'px';
-        dragItem.style.top = (rect.top - _txOff.y) + 'px';
-        dragItem.style.width = rect.width + 'px';
-        dragItem.style.zIndex = '10001';
-        dragItem.style.pointerEvents = 'none';
-        dragItem.style.boxShadow = '0 4px 16px rgba(0,0,0,.18)';
-        dragItem.style.opacity = '0.92';
-        dragItem.style.transition = 'none';
-
-        if (navigator.vibrate) navigator.vibrate(30);
-      }, LONG_PRESS_MS);
-    }
-
-    function onPointerMove(e) {
-      var pos = _getXY(e);
-      if (!isDragging && longPressTimer) {
-        if (Math.abs(pos.x - startX) > 8 || Math.abs(pos.y - startY) > 8) {
-          clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-        return;
-      }
-      if (!isDragging || !dragItem) return;
-      if (e.preventDefault) e.preventDefault();
-
-      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
-
-      var items = getItems().filter(function(el) { return el !== dragItem; });
-      var inserted = false;
-      for (var i = 0; i < items.length; i++) {
-        var r = items[i].getBoundingClientRect();
-        if (pos.y < r.top + r.height / 2) {
-          listEl.insertBefore(placeholder, items[i]);
-          inserted = true;
-          break;
-        }
-      }
-      if (!inserted) listEl.appendChild(placeholder);
-    }
-
-    function onPointerEnd() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-
-      if (!isDragging || !dragItem) { isDragging = false; return; }
-
-      dragItem.style.position = '';
-      dragItem.style.left = '';
-      dragItem.style.top = '';
-      dragItem.style.width = '';
-      dragItem.style.zIndex = '';
-      dragItem.style.pointerEvents = '';
-      dragItem.style.boxShadow = '';
-      dragItem.style.opacity = '';
-      dragItem.style.transition = '';
-
-      if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.insertBefore(dragItem, placeholder);
-        placeholder.remove();
-      }
-      placeholder = null;
-      _txOff = { x: 0, y: 0 };
-      if (scrollContainer) scrollContainer.style.overflowY = '';
-
-      /* データ再構築 */
-      var freshList = getCustomOverlays();
-      var freshOverlay = null;
-      for (var oi = 0; oi < freshList.length; oi++) {
-        if (freshList[oi].id === overlayId) { freshOverlay = freshList[oi]; break; }
-      }
-      if (freshOverlay && freshOverlay.data[dataKey]) {
         var oldData = freshOverlay.data[dataKey].slice();
         var newData = [];
-        getItems().forEach(function(el) {
-          var idx = parseInt(el.getAttribute(dataAttr), 10);
+        newOrderAttrs.forEach(function(idxStr) {
+          var idx = parseInt(idxStr, 10);
           if (!isNaN(idx) && idx >= 0 && idx < oldData.length) {
             newData.push(oldData[idx]);
           }
@@ -1674,74 +1548,27 @@
           saveCustomOverlays(freshList);
           toast('✅ 並び替えを保存しました');
         }
-      }
-
-      var savedOverlayId = overlayId;
-      dragItem = null;
-      isDragging = false;
-
-      /* オーバーレイ本体を再描画 */
-      var body = document.getElementById('overlay-body-' + savedOverlayId);
-      if (body) {
-        var updatedList = getCustomOverlays();
-        for (var ri = 0; ri < updatedList.length; ri++) {
-          if (updatedList[ri].id === savedOverlayId) {
-            _renderCustomOverlayBody(body, updatedList[ri]);
-            break;
+      },
+      onDragEnd: function() {
+        // オーバーレイ本体を再描画
+        var body = document.getElementById('overlay-body-' + overlayId);
+        if (body) {
+          var updatedList = getCustomOverlays();
+          for (var ri = 0; ri < updatedList.length; ri++) {
+            if (updatedList[ri].id === overlayId) {
+              _renderCustomOverlayBody(body, updatedList[ri]);
+              break;
+            }
           }
         }
       }
-    }
-
-    function onPointerCancel() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-      if (dragItem) {
-        dragItem.style.position = '';
-        dragItem.style.left = '';
-        dragItem.style.top = '';
-        dragItem.style.width = '';
-        dragItem.style.zIndex = '';
-        dragItem.style.pointerEvents = '';
-        dragItem.style.boxShadow = '';
-        dragItem.style.opacity = '';
-        dragItem.style.transition = '';
-        if (placeholder) placeholder.remove();
-      }
-      dragItem = null;
-      placeholder = null;
-      isDragging = false;
-      if (scrollContainer) scrollContainer.style.overflowY = '';
-    }
-
-    /* Touch */
-    listEl.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
-    listEl.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
-    listEl.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
-    listEl.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
-
-    /* Mouse */
-    listEl.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
-    document.addEventListener('mousemove', function(e) {
-      if (!isMouseDown && !isDragging) return;
-      onPointerMove(e);
-    });
-    document.addEventListener('mouseup', function() {
-      if (!isMouseDown && !isDragging) return;
-      onPointerEnd();
-    });
-    listEl.addEventListener('contextmenu', function(e) {
-      if (isDragging) e.preventDefault();
     });
   }
 
   /* ============================================================
      管理タブのドラッグ並び替え（メモ・チェックリスト・リンク共通）
      ============================================================ */
-  function _initManageListDrag(overlayId, overlayType, onReorder) {
+  function _initManageListDrag(overlayId, overlayType, onReorderCallback) {
     var listId = null;
     var dataAttr = null;
     var dataKey = null;
@@ -1766,196 +1593,26 @@
         return;
     }
 
-    var listEl = document.getElementById(listId);
-    if (!listEl) return;
-
-    /* スクロールコンテナを特定（confirm-box or overlay-body） */
-    var scrollContainer = listEl.closest('.confirm-box') || listEl.closest('.overlay-body');
-
-    var LONG_PRESS_MS = 400;
-    var longPressTimer = null;
-    var dragItem = null;
-    var placeholder = null;
-    var startY = 0;
-    var startX = 0;
-    var offsetY = 0;
-    var isDragging = false;
-    var isMouseDown = false;
-
-    function _getFixedOffset(el) {
-      var p = el.parentElement;
-      while (p && p !== document.body && p !== document.documentElement) {
-        var cs = window.getComputedStyle(p);
-        if (cs.transform && cs.transform !== 'none') {
-          var r = p.getBoundingClientRect();
-          return { x: r.left, y: r.top };
+    initDragSort({
+      listId: listId,
+      itemSelector: '.co-manage-item',
+      handleSelector: '.co-manage-handle',
+      dataAttr: dataAttr,
+      draggingClass: 'co-manage-dragging',
+      placeholderClass: 'co-manage-placeholder',
+      ignoreSelectors: ['.co-manage-btn'],
+      onReorder: function(newOrderAttrs) {
+        var freshList = getCustomOverlays();
+        var freshOverlay = null;
+        for (var i = 0; i < freshList.length; i++) {
+          if (freshList[i].id === overlayId) { freshOverlay = freshList[i]; break; }
         }
-        p = p.parentElement;
-      }
-      return { x: 0, y: 0 };
-    }
-    var _txOff = { x: 0, y: 0 };
+        if (!freshOverlay || !freshOverlay.data[dataKey]) return;
 
-    function getItems() {
-      return Array.from(listEl.querySelectorAll('.co-manage-item'));
-    }
-
-    function _getXY(e) {
-      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      return { x: e.clientX, y: e.clientY };
-    }
-
-    function onPointerDown(e, isMouse) {
-      if (e.target.closest('.co-manage-btn')) return;
-      var item = e.target.closest('.co-manage-item');
-      if (!item) return;
-      if (isMouse && e.button !== 0) return;
-
-      var pos = _getXY(e);
-      startY = pos.y;
-      startX = pos.x;
-      if (isMouse) isMouseDown = true;
-
-      longPressTimer = setTimeout(function() {
-        isDragging = true;
-        dragItem = item;
-        var rect = dragItem.getBoundingClientRect();
-        offsetY = startY - rect.top;
-
-        /* スクロールを停止 */
-        if (scrollContainer) {
-          scrollContainer.style.overflowY = 'hidden';
-        }
-        document.body.style.userSelect = 'none';
-        document.body.style.webkitUserSelect = 'none';
-
-        placeholder = document.createElement('div');
-        placeholder.className = 'co-manage-placeholder';
-        placeholder.style.height = rect.height + 'px';
-        placeholder.style.background = 'var(--c-fill-quaternary)';
-        placeholder.style.borderRadius = '8px';
-        placeholder.style.margin = '2px 0';
-        dragItem.parentNode.insertBefore(placeholder, dragItem);
-
-        dragItem.classList.add('co-manage-dragging');
-        _txOff = _getFixedOffset(dragItem);
-        dragItem.style.position = 'fixed';
-        dragItem.style.left = (rect.left - _txOff.x) + 'px';
-        dragItem.style.top = (rect.top - _txOff.y) + 'px';
-        dragItem.style.width = rect.width + 'px';
-        dragItem.style.zIndex = '10001';
-        dragItem.style.pointerEvents = 'none';
-        dragItem.style.boxShadow = '0 4px 16px rgba(0,0,0,.18)';
-        dragItem.style.opacity = '0.92';
-
-        if (navigator.vibrate) navigator.vibrate(30);
-      }, LONG_PRESS_MS);
-    }
-
-    function onPointerMove(e) {
-      var pos = _getXY(e);
-      if (!isDragging && longPressTimer) {
-        if (Math.abs(pos.x - startX) > 8 || Math.abs(pos.y - startY) > 8) {
-          clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-        return;
-      }
-      if (!isDragging || !dragItem) return;
-      if (e.preventDefault) e.preventDefault();
-
-      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
-
-      var items = getItems().filter(function(el) { return el !== dragItem; });
-      var inserted = false;
-      for (var i = 0; i < items.length; i++) {
-        var r = items[i].getBoundingClientRect();
-        if (pos.y < r.top + r.height / 2) {
-          listEl.insertBefore(placeholder, items[i]);
-          inserted = true;
-          break;
-        }
-      }
-      if (!inserted) {
-        listEl.appendChild(placeholder);
-      }
-    }
-
-    function cleanupDrag() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-
-      if (dragItem) {
-        dragItem.classList.remove('co-manage-dragging');
-        dragItem.style.position = '';
-        dragItem.style.left = '';
-        dragItem.style.top = '';
-        dragItem.style.width = '';
-        dragItem.style.zIndex = '';
-        dragItem.style.pointerEvents = '';
-        dragItem.style.boxShadow = '';
-        dragItem.style.opacity = '';
-      }
-      if (placeholder && placeholder.parentNode) {
-        placeholder.remove();
-      }
-      placeholder = null;
-      isDragging = false;
-
-      /* スクロールを復元 */
-      if (scrollContainer) {
-        scrollContainer.style.overflowY = '';
-      }
-    }
-
-    function onPointerEnd() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-
-      if (!isDragging || !dragItem) {
-        isDragging = false;
-        return;
-      }
-
-      dragItem.classList.remove('co-manage-dragging');
-      dragItem.style.position = '';
-      dragItem.style.left = '';
-      dragItem.style.top = '';
-      dragItem.style.width = '';
-      dragItem.style.zIndex = '';
-      dragItem.style.pointerEvents = '';
-      dragItem.style.boxShadow = '';
-      dragItem.style.opacity = '';
-
-      if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.insertBefore(dragItem, placeholder);
-        placeholder.remove();
-      }
-      placeholder = null;
-      _txOff = { x: 0, y: 0 };
-
-      /* スクロールを復元 */
-      if (scrollContainer) {
-        scrollContainer.style.overflowY = '';
-      }
-
-      /* DOMの順序からデータを再構築 */
-      var freshList = getCustomOverlays();
-      var freshOverlay = null;
-      for (var oi = 0; oi < freshList.length; oi++) {
-        if (freshList[oi].id === overlayId) { freshOverlay = freshList[oi]; break; }
-      }
-      if (freshOverlay && freshOverlay.data[dataKey]) {
         var oldData = freshOverlay.data[dataKey].slice();
         var newData = [];
-        getItems().forEach(function(el) {
-          var idx = parseInt(el.getAttribute(dataAttr), 10);
+        newOrderAttrs.forEach(function(idxStr) {
+          var idx = parseInt(idxStr, 10);
           if (!isNaN(idx) && idx >= 0 && idx < oldData.length) {
             newData.push(oldData[idx]);
           }
@@ -1964,37 +1621,10 @@
           freshOverlay.data[dataKey] = newData;
           saveCustomOverlays(freshList);
         }
+      },
+      onDragEnd: function() {
+        if (typeof onReorderCallback === 'function') onReorderCallback();
       }
-
-      dragItem = null;
-      isDragging = false;
-
-      if (typeof onReorder === 'function') onReorder();
-    }
-
-    function onPointerCancel() {
-      cleanupDrag();
-      dragItem = null;
-    }
-
-    /* Touch */
-    listEl.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
-    listEl.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
-    listEl.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
-    listEl.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
-
-    /* Mouse */
-    listEl.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
-    document.addEventListener('mousemove', function(e) {
-      if (!isMouseDown && !isDragging) return;
-      onPointerMove(e);
-    });
-    document.addEventListener('mouseup', function() {
-      if (!isMouseDown && !isDragging) return;
-      onPointerEnd();
-    });
-    listEl.addEventListener('contextmenu', function(e) {
-      if (isDragging) e.preventDefault();
     });
   }
 

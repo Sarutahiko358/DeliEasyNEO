@@ -24,6 +24,47 @@
   /* ---------- State ---------- */
   var _stack = [];
 
+  /* ========== Lazy Script Loader ========== */
+  var _scriptLoadState = {};  // 'loading' | 'loaded' | undefined
+
+  function _loadScript(src) {
+    return new Promise(function(resolve, reject) {
+      if (_scriptLoadState[src] === 'loaded') { resolve(); return; }
+      if (_scriptLoadState[src] === 'loading') {
+        // 既にロード中なら完了を待つ
+        var check = setInterval(function() {
+          if (_scriptLoadState[src] === 'loaded') {
+            clearInterval(check);
+            resolve();
+          }
+        }, 50);
+        setTimeout(function() { clearInterval(check); resolve(); }, 10000);
+        return;
+      }
+      _scriptLoadState[src] = 'loading';
+      var script = document.createElement('script');
+      script.src = src;
+      script.onload = function() {
+        _scriptLoadState[src] = 'loaded';
+        resolve();
+      };
+      script.onerror = function() {
+        _scriptLoadState[src] = 'loaded'; // エラーでもロード試行済みとする
+        console.error('[LazyLoad] Failed to load:', src);
+        reject(new Error('Script load failed: ' + src));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  /* オーバーレイごとに必要なスクリプトを定義 */
+  var OVERLAY_DEPS = {
+    calendar:      ['./calendar.js'],
+    stats:         ['./stats.js'],
+    expenseManage: ['./expense.js'],
+    tax:           ['./tax.js']
+  };
+
   /* ---------- デスクトップ判定 ---------- */
   function _isDesktopMode() {
     return window.innerWidth >= 1024;
@@ -310,6 +351,43 @@
     var body = document.getElementById('overlay-body-' + id);
     if (!body) return;
 
+    var deps = OVERLAY_DEPS[id];
+    if (deps && deps.length > 0) {
+      // 依存スクリプトがまだロードされていない場合
+      var needsLoad = deps.some(function(src) {
+        return _scriptLoadState[src] !== 'loaded';
+      });
+
+      if (needsLoad) {
+        body.innerHTML =
+          '<div class="text-c" style="padding:60px 0">' +
+            '<div style="font-size:1.5rem;margin-bottom:8px;animation:v2-fade-in .5s infinite alternate">⏳</div>' +
+            '<div class="fz-s c-muted">読み込み中...</div>' +
+          '</div>';
+
+        Promise.all(deps.map(function(src) { return _loadScript(src); }))
+          .then(function() {
+            _doRenderOverlayContent(id, body);
+          })
+          .catch(function(err) {
+            body.innerHTML =
+              '<div class="text-c" style="padding:60px 20px">' +
+                '<div style="font-size:2rem;margin-bottom:12px">⚠️</div>' +
+                '<div class="fz-s c-danger">読み込みに失敗しました</div>' +
+                '<button class="btn btn-primary btn-sm mt12" onclick="_renderOverlayContent(\'' + escJs(id) + '\')">再試行</button>' +
+              '</div>';
+          });
+        return;
+      }
+    }
+
+    _doRenderOverlayContent(id, body);
+  }
+
+  function _doRenderOverlayContent(id, body) {
+    if (!body) body = document.getElementById('overlay-body-' + id);
+    if (!body) return;
+
     var fnName = 'renderOverlay_' + id;
     if (typeof window[fnName] === 'function') { window[fnName](body); return; }
 
@@ -555,5 +633,6 @@
   window.isOverlayOpen = isOverlayOpen;
   window.getTopOverlayId = getTopOverlayId;
   window.openOverlayManager = openOverlayManager;
+  window._renderOverlayContent = _renderOverlayContent;
 
 })();

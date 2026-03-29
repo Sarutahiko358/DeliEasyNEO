@@ -1,5 +1,5 @@
 /* sw.js — DeliEasy Service Worker v2.4 */
-const CACHE_NAME = 'delieasy-neo-v1';
+const CACHE_NAME = 'delieasy-neo-v2';
 const PRE_CACHE = [
   './',
   './index.html',
@@ -8,10 +8,6 @@ const PRE_CACHE = [
   './earns-db.js',
   './expenses-db.js',
   './firebase-sync.js',
-  './calendar.js',
-  './stats.js',
-  './expense.js',
-  './tax.js',
   './manifest.json',
   './icon.svg',
   './icon-192.png',
@@ -37,6 +33,7 @@ const PRE_CACHE = [
   './styles/spreadsheet.css',
   /* v2 Scripts */
   './js/utils.js',
+  './js/drag-sort.js',
   './js/sidebar.js',
   './js/overlay.js',
   './js/overlay-customizer.js',
