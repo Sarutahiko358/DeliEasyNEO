@@ -2,7 +2,7 @@
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#ff9a28"/>
-      <stop offset="52%" stop-color="#ff6f00"/>
+      <stop offset="58%" stop-color="#ff6f00"/>
       <stop offset="100%" stop-color="#e75500"/>
     </linearGradient>
     <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
@@ -11,17 +11,18 @@
     </linearGradient>
   </defs>
 
-  <rect x="24" y="24" width="464" height="464" rx="106" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
 
-  <path d="M168 130h118c67 0 114 49 114 114s-47 114-114 114H168z" fill="#fff" opacity=".18"/>
-  <path d="M180 160h96c54 0 92 37 92 84s-38 84-92 84h-96z" fill="#fff"/>
+  <path d="M154 132H270A116 116 0 0 1 270 364H154Z" fill="#f4c489" opacity=".5"/>
+  <path d="M166 146H272A93 93 0 0 1 272 332H166Z" fill="#f4f4f4"/>
+  <path d="M232 191H270A42 42 0 0 1 270 275H232Z" fill="#ff7a00"/>
 
-  <g fill="none" stroke="#fff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
-    <path d="M132 356h248"/>
-    <path d="M188 328l-56 28 56 28"/>
-    <path d="M324 328l56 28-56 28"/>
+  <g fill="none" stroke="#d9d9d9" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity=".95">
+    <path d="M225 331c-36-4-70-2-104 2"/>
+    <path d="M122 333l23-15"/>
+    <path d="M122 333l23 13"/>
   </g>
 
-  <rect x="246" y="320" width="204" height="98" rx="30" fill="url(#badge)"/>
-  <text x="348" y="383" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="52" font-weight="700" fill="#fff" letter-spacing="1.5">NEO</text>
+  <rect x="231" y="316" width="195" height="97" rx="31" fill="url(#badge)"/>
+  <text x="328.5" y="377" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="55" font-weight="700" fill="#fff" letter-spacing="1">NEO</text>
 </svg>
