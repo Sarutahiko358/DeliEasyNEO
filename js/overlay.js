@@ -134,6 +134,9 @@
       sheet.classList.remove('open');
       setTimeout(function() { sheet.remove(); }, 350);
     }
+    if (top.id === 'spreadsheet-main' && typeof window.restoreBottomBarTab === 'function') {
+      window.restoreBottomBarTab();
+    }
   }
 
   function closeAllOverlays() {
@@ -161,6 +164,7 @@
     var sheetHeight = 0;
     var CLOSE_THRESHOLD = 0.2;
     var VELOCITY_THRESHOLD = 0.4;
+    var isSpreadsheetMain = sheet.getAttribute('data-id') === 'spreadsheet-main';
     var startTime = 0;
 
     function isOnHandleOrHeader(target) {
@@ -266,7 +270,8 @@
 
       var backdrop = _getBackdrop();
 
-      if (dy > sheetHeight * CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD) {
+      var closePx = isSpreadsheetMain ? 180 : sheetHeight * CLOSE_THRESHOLD;
+      if (dy > closePx || velocity > VELOCITY_THRESHOLD) {
         sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
         sheet.style.transform = 'translateX(-50%) translateY(100%)';
         if (backdrop) {

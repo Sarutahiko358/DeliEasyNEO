@@ -25,6 +25,7 @@
   };
 
   /* ===== 状態管理 ===== */
+  var _mainOverlayDefs = {};
   var _state = {};
   // _state[overlayId] = { tab, year, month, editingCell }
 
@@ -224,11 +225,12 @@
 
   /* ===== リフレッシュ ===== */
   function _refreshSS(oId) {
-    var list = getCustomOverlays();
     var overlay = null;
+    var list = getCustomOverlays();
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === oId) { overlay = list[i]; break; }
     }
+    if (!overlay && _mainOverlayDefs[oId]) overlay = _mainOverlayDefs[oId];
     if (!overlay) return;
     var body = document.getElementById('overlay-body-' + oId);
     if (!body) return;
@@ -1285,6 +1287,33 @@
       touchDragIdx = null;
     });
   }
+
+  /* ===== メインスプレッドシート起動 ===== */
+  window.openSpreadsheetMain = function() {
+    var ssOverlay = {
+      id: 'spreadsheet-main',
+      type: 'spreadsheet',
+      title: 'スプレッドシート'
+    };
+    _mainOverlayDefs['spreadsheet-main'] = ssOverlay;
+
+    if (window.OVERLAYS) {
+      window.OVERLAYS['spreadsheet-main'] = { title: '📊 スプレッドシート' };
+    }
+    window['renderOverlay_spreadsheet-main'] = function(body) {
+      renderSpreadsheet(body, ssOverlay);
+    };
+
+    if (typeof openOverlay === 'function') {
+      openOverlay('spreadsheet-main');
+    }
+  };
+
+  window.closeSpreadsheetMain = function() {
+    if (typeof closeOverlay === 'function') {
+      closeOverlay();
+    }
+  };
 
   /* ===== Expose ===== */
   window._renderSpreadsheetOverlay = renderSpreadsheet;

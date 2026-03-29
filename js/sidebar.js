@@ -57,6 +57,7 @@
     { id: 'stats',         icon: '\uD83D\uDCCA', label: '統計',           overlay: 'stats',           group: 'main' },
     { id: 'tax',           icon: '\uD83E\uDDFE', label: '税金',           overlay: 'tax',             group: 'main' },
     { id: 'expense-mgmt',  icon: '\uD83D\uDCB0', label: '経費管理',       overlay: 'expenseManage',   group: 'main' },
+    { id: 'spreadsheet',   icon: '\uD83D\uDCCA', label: 'スプレッドシート', action: 'openSpreadsheetMain', group: 'main' },
     { id: 'pf-manage',     icon: '\uD83D\uDCE6', label: 'PF・カテゴリ',   overlay: 'pfManage',        group: 'manage' },
     { id: 'theme',         icon: '\uD83C\uDFA8', label: 'テーマ',         overlay: 'theme',           group: 'manage' },
     { id: 'overlay-mgr',   icon: '\uD83D\uDCD0', label: 'オーバーレイ管理', action: 'openOverlayManager', group: 'manage' },
@@ -68,7 +69,7 @@
 
   /* ---------- サイドバー設定データ ---------- */
   var DEFAULT_SIDEBAR_CFG = {
-    order: ['earn-input','expense-input','calendar','stats','tax','expense-mgmt','pf-manage','theme','overlay-mgr','home-edit','edit-advanced','settings','help'],
+    order: ['earn-input','expense-input','calendar','stats','tax','expense-mgmt','spreadsheet','pf-manage','theme','overlay-mgr','home-edit','edit-advanced','settings','help'],
     hidden: {}
   };
 
@@ -192,6 +193,10 @@
         } else if (actionId === 'openEditAdvanced') {
           setTimeout(function() {
             if (typeof window.openEditAdvanced === 'function') window.openEditAdvanced();
+          }, _isSidebarDesktop() ? 0 : 150);
+        } else if (actionId === 'openSpreadsheetMain') {
+          setTimeout(function() {
+            if (typeof window.openSpreadsheetMain === 'function') window.openSpreadsheetMain();
           }, _isSidebarDesktop() ? 0 : 150);
         }
       });

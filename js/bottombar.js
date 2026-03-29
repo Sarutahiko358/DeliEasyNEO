@@ -90,6 +90,12 @@
       html += '</button>';
     }
 
+    /* 固定「シート」タブを末尾に追加 */
+    html += '<button class="bottombar-item" data-tab="spreadsheet">';
+    html += '<span class="bottombar-item-icon">📊</span>';
+    html += '<span class="bottombar-item-label">シート</span>';
+    html += '</button>';
+
     bar.innerHTML = html;
     document.getElementById('app').appendChild(bar);
 
@@ -106,6 +112,18 @@
         }
       });
     });
+
+    /* シートタブのイベント */
+    var ssTab = bar.querySelector('[data-tab="spreadsheet"]');
+    if (ssTab) {
+      ssTab.addEventListener('click', function() {
+        hp();
+        ssTab.classList.add('active');
+        if (typeof window.openSpreadsheetMain === 'function') {
+          window.openSpreadsheetMain();
+        }
+      });
+    }
 
     _adjustMainPadding(true);
   }
@@ -276,6 +294,12 @@
     var bar = document.getElementById('bottombar');
     if (bar) bar.classList.add('bottombar-hidden');
   }
+
+  /* ---------- ボトムバータブ状態復帰 ---------- */
+  window.restoreBottomBarTab = function() {
+    var ssTab = document.querySelector('[data-tab="spreadsheet"]');
+    if (ssTab) ssTab.classList.remove('active');
+  };
 
   /* ---------- Expose ---------- */
   window.renderBottombar = renderBottombar;
