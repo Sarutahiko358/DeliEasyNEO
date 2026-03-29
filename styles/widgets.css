@@ -308,19 +308,19 @@
 /* ===== ミニカレンダー祝日名テキスト ===== */
 .widget-cal-day .widget-cal-holiday-name {
   position: absolute;
-  top: 50%;
+  top: 54%;
   left: 50%;
-  transform: translate(-50%, 2px);
-  font-size: .3rem;
+  transform: translateX(-50%);
+  font-size: .4rem;
   line-height: 1;
   color: var(--c-danger);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90%;
-  opacity: .65;
+  max-width: 95%;
+  opacity: .75;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   pointer-events: none;
 }
 
