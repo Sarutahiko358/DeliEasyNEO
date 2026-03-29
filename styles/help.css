@@ -3,7 +3,7 @@
    ヘルプシステム専用スタイル
    ========================================================== */
 
-/* ===== オンボーディング（初回ガイド） ===== */
+/* ===== オンボーディング ===== */
 .onboarding-overlay {
   position: fixed;
   inset: 0;
@@ -19,25 +19,46 @@
   width: 90%;
   max-width: 380px;
   text-align: center;
-  padding: 40px 24px;
+  padding: 32px 24px;
 }
 .onboarding-icon {
-  font-size: 3.5rem;
-  margin-bottom: 20px;
+  font-size: 4rem;
+  margin-bottom: 16px;
+  line-height: 1.2;
 }
 .onboarding-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.375rem;
+  font-weight: 800;
   color: var(--c-tx);
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+}
+.onboarding-subtitle {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--c-primary);
   margin-bottom: 16px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 .onboarding-body {
-  font-size: .875rem;
+  font-size: .8125rem;
   color: var(--c-tx-secondary);
-  line-height: 1.8;
+  line-height: 1.9;
   white-space: pre-wrap;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
+  text-align: left;
+  padding: 0 8px;
+}
+.onboarding-highlight {
+  display: inline-block;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--c-primary);
+  background: var(--c-primary-light);
+  padding: 8px 16px;
+  border-radius: var(--ds-radius-pill);
+  margin-bottom: 20px;
 }
 
 /* ドットインジケーター */
@@ -45,14 +66,14 @@
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 .onboarding-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--c-fill-secondary);
-  transition: all .2s;
+  transition: all .25s;
 }
 .onboarding-dot.active {
   background: var(--c-primary);
@@ -60,13 +81,13 @@
   border-radius: 4px;
 }
 
-/* ナビゲーションボタン */
+/* ナビゲーション */
 .onboarding-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 .onboarding-skip {
   font-size: .75rem;
@@ -76,11 +97,12 @@
   cursor: pointer;
   padding: 8px 16px;
   -webkit-tap-highlight-color: transparent;
+  transition: color .15s;
 }
-
 .onboarding-step-label {
   font-size: .6875rem;
   color: var(--c-tx-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* スワイプアニメーション */
@@ -98,8 +120,6 @@
   from { opacity: 0; transform: translateX(-60px); }
   to { opacity: 1; transform: translateX(0); }
 }
-
-/* フェードアウト用 */
 @keyframes v2-fade-out {
   from { opacity: 1; }
   to { opacity: 0; }
@@ -167,7 +187,7 @@
   padding: 12px 24px;
 }
 
-/* ===== デスクトップ: hover ===== */
+/* ===== デスクトップ hover ===== */
 @media (hover: hover) {
   .help-faq-q:hover {
     background: var(--c-fill-quaternary);
