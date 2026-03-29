@@ -1,22 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="DeliEasy NEO app icon">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ff8c00"/>
-      <stop offset="100%" stop-color="#ff5500"/>
+      <stop offset="0%" stop-color="#ff9a28"/>
+      <stop offset="52%" stop-color="#ff6f00"/>
+      <stop offset="100%" stop-color="#e75500"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2b2f36"/>
+      <stop offset="100%" stop-color="#121418"/>
     </linearGradient>
   </defs>
-  <!-- Rounded background -->
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <!-- Scooter / delivery motif — simplified -->
-  <g transform="translate(256,240)" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Bag / box -->
-    <rect x="-70" y="-110" width="140" height="110" rx="16" fill="#fff" fill-opacity=".25" stroke="#fff"/>
-    <!-- Bag flap -->
-    <line x1="-70" y1="-60" x2="70" y2="-60"/>
-    <!-- Arrow-up (speed / delivery) -->
-    <polyline points="-25,-130 0,-160 25,-130" stroke-width="20"/>
-    <line x1="0" y1="-155" x2="0" y2="-80" stroke-width="16"/>
+
+  <rect x="24" y="24" width="464" height="464" rx="106" fill="url(#bg)"/>
+
+  <path d="M168 130h118c67 0 114 49 114 114s-47 114-114 114H168z" fill="#fff" opacity=".18"/>
+  <path d="M180 160h96c54 0 92 37 92 84s-38 84-92 84h-96z" fill="#fff"/>
+
+  <g fill="none" stroke="#fff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+    <path d="M132 356h248"/>
+    <path d="M188 328l-56 28 56 28"/>
+    <path d="M324 328l56 28-56 28"/>
   </g>
-  <!-- Text "DE" -->
-  <text x="256" y="410" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="90" fill="#fff" letter-spacing="8">DeliEasy</text>
+
+  <rect x="246" y="320" width="204" height="98" rx="30" fill="url(#badge)"/>
+  <text x="348" y="383" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="52" font-weight="700" fill="#fff" letter-spacing="1.5">NEO</text>
 </svg>
