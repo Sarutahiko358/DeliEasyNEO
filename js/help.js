@@ -5,7 +5,8 @@
 (function(){
   'use strict';
 
-  if (!S.r) {
+  /* S.r (remove) は storage.js に存在しないため、ここで定義 */
+  if (typeof S !== 'undefined' && !S.r) {
     S.r = function(key) {
       try { localStorage.removeItem('dp_' + key); } catch(e) {}
     };
@@ -104,6 +105,13 @@
       var dx = e.changedTouches[0].clientX - _swStartX;
       var dy = e.changedTouches[0].clientY - _swStartY;
       if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+
+      /* アニメーション完了まで次のスワイプを無視 */
+      _obOverlay.style.pointerEvents = 'none';
+      setTimeout(function() {
+        if (_obOverlay) _obOverlay.style.pointerEvents = '';
+      }, 350);
+
       if (dx < 0 && _currentStep < ONBOARDING_STEPS.length - 1) {
         _currentStep++;
         _renderOnboardingStep('left');
