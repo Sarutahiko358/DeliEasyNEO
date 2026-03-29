@@ -33,6 +33,19 @@
       icon: '🔗',
       desc: 'よく使うURLをまとめる',
       render: _renderLinksOverlay
+    },
+    {
+      id: 'spreadsheet',
+      name: 'スプレッドシート',
+      icon: '📋',
+      desc: 'スプレッドシート形式で売上・経費を管理',
+      render: function(body, overlay) {
+        if (typeof window._renderSpreadsheetOverlay === 'function') {
+          window._renderSpreadsheetOverlay(body, overlay);
+        } else {
+          body.innerHTML = '<div class="text-c c-muted fz-s" style="padding:40px">スプレッドシートモジュールが読み込まれていません</div>';
+        }
+      }
     }
   ];
 

@@ -1,0 +1,540 @@
+/* ==========================================================
+   DeliEasy — styles/spreadsheet.css
+   スプレッドシートオーバーレイ専用スタイル
+   ========================================================== */
+
+/* ===== コンテナ ===== */
+.ss-container {
+  padding: 10px;
+}
+
+/* ===== 月ナビゲーション ===== */
+.ss-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ss-month-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ds-radius-sm);
+  border: none;
+  background: var(--c-fill-quaternary);
+  color: var(--c-tx);
+  font-size: .85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .12s;
+}
+.ss-month-nav-btn:active {
+  background: var(--c-fill-secondary);
+}
+.ss-month-label {
+  font-size: .875rem;
+  font-weight: 700;
+  min-width: 110px;
+  text-align: center;
+  color: var(--c-tx);
+}
+.ss-today-btn {
+  font-size: .65rem;
+  padding: 4px 10px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--ds-radius-sm);
+  background: var(--c-card);
+  color: var(--c-tx-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ss-today-btn:active {
+  background: var(--c-fill-secondary);
+}
+
+/* ===== タブバー ===== */
+.ss-tabs {
+  display: flex;
+  background: var(--c-fill-quaternary);
+  border-radius: var(--ds-radius-sm);
+  padding: 2px;
+  margin-bottom: 10px;
+}
+.ss-tab {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: .75rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--c-tx-secondary);
+  cursor: pointer;
+  border-radius: calc(var(--ds-radius-sm) - 2px);
+  transition: all .15s;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.ss-tab.active {
+  background: var(--c-card);
+  color: var(--c-tx);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+/* ===== サマリーバー ===== */
+.ss-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--c-card);
+  border-radius: var(--ds-radius);
+  margin-bottom: 10px;
+  border: var(--ds-card-border);
+}
+.ss-summary-item {
+  text-align: center;
+  flex: 1;
+  min-width: 60px;
+}
+.ss-summary-label {
+  font-size: .55rem;
+  color: var(--c-tx-muted);
+  line-height: 1.2;
+}
+.ss-summary-value {
+  font-size: .82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-tx);
+}
+
+/* ===== テーブルラッパー ===== */
+.ss-table-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 60vh;
+  border: var(--ds-card-border);
+  border-radius: var(--ds-radius);
+  background: var(--c-card);
+}
+
+/* ===== テーブル ===== */
+.ss-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ヘッダー行 */
+.ss-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--c-fill-quaternary);
+  padding: 8px 6px;
+  font-weight: 600;
+  font-size: .65rem;
+  color: var(--c-tx-secondary);
+  white-space: nowrap;
+  border-bottom: 1.5px solid var(--c-divider);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* 日付・曜日列: 左固定 */
+.ss-table .ss-col-date {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  background: var(--c-card);
+}
+.ss-table .ss-col-dow {
+  position: sticky;
+  z-index: 5;
+  background: var(--c-card);
+}
+.ss-table thead .ss-col-date {
+  z-index: 15;
+  background: var(--c-fill-quaternary);
+}
+.ss-table thead .ss-col-dow {
+  z-index: 15;
+  background: var(--c-fill-quaternary);
+}
+
+/* 週小計/月合計行の固定列も背景継承 */
+.ss-row-week-total .ss-col-date,
+.ss-row-week-total .ss-col-dow {
+  background: var(--c-fill-tertiary);
+}
+.ss-row-month-total .ss-col-date,
+.ss-row-month-total .ss-col-dow {
+  background: var(--c-primary-light);
+}
+.ss-row-today .ss-col-date,
+.ss-row-today .ss-col-dow {
+  background: rgba(var(--c-primary-rgb, 0,122,255), .06);
+}
+
+/* セル共通 */
+.ss-table td {
+  padding: 6px 6px;
+  border-bottom: .5px solid var(--c-divider);
+  text-align: right;
+  white-space: nowrap;
+  color: var(--c-tx);
+}
+
+/* 入力可能セル */
+.ss-cell-editable {
+  background: var(--c-fill-quaternary);
+  cursor: pointer;
+  transition: background .1s;
+}
+.ss-cell-editable:active {
+  background: var(--c-fill-secondary);
+}
+
+/* 自動計算セル */
+.ss-cell-auto {
+  background: var(--c-card);
+  color: var(--c-tx);
+}
+
+/* 利益色分け */
+.ss-cell-profit-positive { color: var(--c-success); font-weight: 600; }
+.ss-cell-profit-negative { color: var(--c-danger); font-weight: 600; }
+
+/* 週小計行 */
+.ss-row-week-total {
+  background: var(--c-fill-tertiary);
+  font-weight: 600;
+}
+.ss-row-week-total td {
+  border-bottom: 1.5px solid var(--c-divider);
+  padding: 8px 6px;
+}
+
+/* 月合計行 */
+.ss-row-month-total {
+  background: var(--c-primary-light);
+  font-weight: 700;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+
+/* 今日の行 */
+.ss-row-today {
+  background: rgba(var(--c-primary-rgb, 0,122,255), .06);
+}
+
+/* 曜日色分け */
+.ss-dow-sat { color: var(--c-primary); }
+.ss-dow-sun { color: var(--c-danger); }
+.ss-dow-holiday { color: var(--c-danger); }
+
+/* セル編集中 */
+.ss-cell-editing {
+  padding: 2px;
+}
+.ss-cell-editing input {
+  width: 100%;
+  border: 2px solid var(--c-primary);
+  border-radius: 4px;
+  background: var(--c-card);
+  color: var(--c-tx);
+  font-size: .75rem;
+  text-align: right;
+  padding: 4px 6px;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+}
+
+/* 空セル */
+.ss-cell-empty {
+  color: var(--c-tx-muted);
+  opacity: .3;
+}
+
+/* PFカラードット */
+.ss-pf-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+
+/* ===== 年間集計テーブル ===== */
+.ss-annual-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: var(--ds-card-border);
+  border-radius: var(--ds-radius);
+  background: var(--c-card);
+}
+.ss-annual-table {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+.ss-annual-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--c-fill-quaternary);
+  padding: 8px 6px;
+  font-weight: 600;
+  font-size: .65rem;
+  color: var(--c-tx-secondary);
+  text-align: center;
+  border-bottom: 1.5px solid var(--c-divider);
+}
+.ss-annual-table td {
+  padding: 8px 6px;
+  border-bottom: .5px solid var(--c-divider);
+  text-align: right;
+  color: var(--c-tx);
+}
+.ss-annual-table .ss-col-month {
+  text-align: center;
+  font-weight: 600;
+}
+.ss-annual-row-total {
+  background: var(--c-primary-light);
+  font-weight: 700;
+}
+.ss-annual-row-total td {
+  border-bottom: none;
+}
+.ss-annual-row-current {
+  background: rgba(var(--c-primary-rgb, 0,122,255), .06);
+}
+
+/* ===== 設定タブ ===== */
+.ss-settings {
+  padding: 4px 0;
+}
+.ss-settings-section {
+  margin-bottom: 20px;
+}
+.ss-settings-title {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--c-tx);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ss-col-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ss-col-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--c-card);
+  border: var(--ds-card-border);
+  border-radius: var(--ds-radius-sm);
+  margin-bottom: 4px;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .1s;
+}
+.ss-col-item:active {
+  background: var(--c-fill-quaternary);
+}
+.ss-col-item.ss-col-dragging {
+  opacity: .5;
+  background: var(--c-fill-secondary);
+}
+.ss-col-item.ss-col-drop-target {
+  border-color: var(--c-primary);
+}
+.ss-col-drag-handle {
+  color: var(--c-tx-muted);
+  font-size: .7rem;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+.ss-col-check {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--c-primary);
+  flex-shrink: 0;
+}
+.ss-col-name {
+  flex: 1;
+  font-size: .75rem;
+  color: var(--c-tx);
+}
+.ss-col-locked {
+  font-size: .55rem;
+  color: var(--c-tx-muted);
+  background: var(--c-fill-quaternary);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+.ss-col-width-input {
+  width: 48px;
+  font-size: .65rem;
+  text-align: center;
+  border: 1px solid var(--c-border);
+  border-radius: 4px;
+  background: var(--c-card);
+  color: var(--c-tx);
+  padding: 2px 4px;
+}
+
+/* プリセット/保存レイアウトボタン群 */
+.ss-preset-grid {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.ss-preset-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 8px;
+  border-radius: var(--ds-radius-sm);
+  border: 1.5px solid var(--c-border);
+  background: var(--c-card);
+  cursor: pointer;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: all .12s;
+}
+.ss-preset-btn:active {
+  background: var(--c-fill-secondary);
+}
+.ss-preset-btn-name {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--c-tx);
+  display: block;
+}
+.ss-preset-btn-desc {
+  font-size: .55rem;
+  color: var(--c-tx-muted);
+  margin-top: 2px;
+  display: block;
+}
+
+.ss-saved-layout-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--c-card);
+  border: var(--ds-card-border);
+  border-radius: var(--ds-radius-sm);
+  margin-bottom: 4px;
+}
+.ss-saved-layout-name {
+  flex: 1;
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--c-tx);
+}
+.ss-saved-layout-btn {
+  font-size: .65rem;
+  padding: 4px 10px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--ds-radius-sm);
+  background: var(--c-card);
+  color: var(--c-tx-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ss-saved-layout-btn:active {
+  background: var(--c-fill-secondary);
+}
+.ss-saved-layout-btn-del {
+  color: var(--c-danger);
+  border-color: var(--c-danger);
+}
+
+/* 追加ボタン */
+.ss-add-col-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .7rem;
+  padding: 6px 12px;
+  border: 1.5px dashed var(--c-border);
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--c-tx-secondary);
+  cursor: pointer;
+  margin-right: 6px;
+  margin-top: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.ss-add-col-btn:active {
+  background: var(--c-fill-quaternary);
+}
+
+/* 年選択 (年間集計) */
+.ss-year-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* ===== デスクトップ対応 ===== */
+@media (hover: hover) {
+  .ss-cell-editable:hover {
+    background: var(--c-fill-tertiary);
+  }
+  .ss-tab:hover:not(.active) {
+    background: rgba(var(--c-primary-rgb, 0,122,255), .04);
+  }
+  .ss-month-nav-btn:hover {
+    background: var(--c-fill-tertiary);
+  }
+  .ss-preset-btn:hover {
+    border-color: var(--c-primary);
+  }
+}
+
+/* ===== モバイル対応 ===== */
+@media (max-width: 430px) {
+  .ss-container {
+    padding: 8px;
+  }
+  .ss-table {
+    font-size: .65rem;
+  }
+  .ss-table td, .ss-table th {
+    padding: 5px 4px;
+  }
+  .ss-summary-bar {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .ss-summary-value {
+    font-size: .75rem;
+  }
+}
