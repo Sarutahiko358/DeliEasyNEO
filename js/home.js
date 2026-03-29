@@ -21,10 +21,10 @@
     /* === プリセットバー === */
     if (presets.length > 1) {
       html += '<div class="preset-bar">';
-      html += '<div class="preset-bar-scroll" id="preset-bar-scroll">';
+      html += '<div class="preset-bar-scroll">';
       presets.forEach(function(p) {
         var isActive = preset.id === p.id;
-        html += '<button class="preset-tab' + (isActive ? ' active' : '') + '" data-preset-id="' + escHtml(p.id) + '">' + escHtml(p.name) + '</button>';
+        html += '<button class="preset-tab' + (isActive ? ' active' : '') + '" onclick="switchPreset(\'' + escJs(p.id) + '\')">' + escHtml(p.name) + '</button>';
       });
       html += '<button class="preset-tab preset-tab-add" onclick="openPresetMenu()">+</button>';
       html += '</div>';
@@ -52,7 +52,6 @@
     }
 
     _initLongPress();
-    _initPresetBarDrag();
   }
 
   /* ========== 編集操作（グリッドベース） ========== */
@@ -691,210 +690,6 @@
     if (typeof renderTopbar === 'function') renderTopbar();
     if (typeof renderBottombar === 'function') renderBottombar();
   };
-
-  /* ========== プリセットバー 長押しドラッグ並び替え ========== */
-  function _initPresetBarDrag() {
-    var scroll = document.getElementById('preset-bar-scroll');
-    if (!scroll) return;
-
-    var LONG_PRESS_MS = 400;
-    var longPressTimer = null;
-    var dragItem = null;
-    var placeholder = null;
-    var startX = 0, startY = 0;
-    var offsetX = 0;
-    var isDragging = false;
-    var isMouseDown = false;
-    var tappedId = null;
-    var _txOff = { x: 0, y: 0 };
-
-    function _getFixedOffset(el) {
-      var p = el.parentElement;
-      while (p && p !== document.body && p !== document.documentElement) {
-        var cs = window.getComputedStyle(p);
-        if (cs.transform && cs.transform !== 'none') {
-          var r = p.getBoundingClientRect();
-          return { x: r.left, y: r.top };
-        }
-        p = p.parentElement;
-      }
-      return { x: 0, y: 0 };
-    }
-
-    function getPresetTabs() {
-      return Array.from(scroll.querySelectorAll('.preset-tab[data-preset-id]'));
-    }
-
-    function _getXY(e) {
-      if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      return { x: e.clientX, y: e.clientY };
-    }
-
-    function onPointerDown(e, isMouse) {
-      var tab = e.target.closest('.preset-tab[data-preset-id]');
-      if (!tab) return;
-      if (isMouse && e.button !== 0) return;
-
-      var pos = _getXY(e);
-      startX = pos.x;
-      startY = pos.y;
-      tappedId = tab.getAttribute('data-preset-id');
-      if (isMouse) isMouseDown = true;
-
-      longPressTimer = setTimeout(function() {
-        isDragging = true;
-        dragItem = tab;
-        tappedId = null;
-
-        scroll.style.overflowX = 'hidden';
-        document.body.style.userSelect = 'none';
-        document.body.style.webkitUserSelect = 'none';
-
-        var rect = dragItem.getBoundingClientRect();
-        _txOff = _getFixedOffset(dragItem);
-        offsetX = startX - rect.left;
-
-        placeholder = document.createElement('div');
-        placeholder.className = 'preset-tab-placeholder';
-        placeholder.style.width = rect.width + 'px';
-        placeholder.style.height = rect.height + 'px';
-        placeholder.style.flexShrink = '0';
-        dragItem.parentNode.insertBefore(placeholder, dragItem);
-
-        dragItem.classList.add('preset-tab-dragging');
-        dragItem.style.position = 'fixed';
-        dragItem.style.left = (rect.left - _txOff.x) + 'px';
-        dragItem.style.top = (rect.top - _txOff.y) + 'px';
-        dragItem.style.width = rect.width + 'px';
-        dragItem.style.zIndex = '10000';
-        dragItem.style.pointerEvents = 'none';
-
-        if (navigator.vibrate) navigator.vibrate(30);
-      }, LONG_PRESS_MS);
-    }
-
-    function onPointerMove(e) {
-      var pos = _getXY(e);
-
-      if (!isDragging && longPressTimer) {
-        if (Math.abs(pos.x - startX) > 8 || Math.abs(pos.y - startY) > 8) {
-          clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-        return;
-      }
-
-      if (!isDragging || !dragItem) return;
-      if (e.preventDefault) e.preventDefault();
-
-      dragItem.style.left = (pos.x - offsetX - _txOff.x) + 'px';
-
-      var tabs = getPresetTabs().filter(function(el) { return el !== dragItem; });
-      var addBtn = scroll.querySelector('.preset-tab-add');
-      var inserted = false;
-      for (var i = 0; i < tabs.length; i++) {
-        var r = tabs[i].getBoundingClientRect();
-        if (pos.x < r.left + r.width / 2) {
-          scroll.insertBefore(placeholder, tabs[i]);
-          inserted = true;
-          break;
-        }
-      }
-      if (!inserted) {
-        if (addBtn) scroll.insertBefore(placeholder, addBtn);
-      }
-    }
-
-    function onPointerEnd() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-
-      if (!isDragging) {
-        if (tappedId) {
-          switchPreset(tappedId);
-          tappedId = null;
-        }
-        return;
-      }
-
-      dragItem.classList.remove('preset-tab-dragging');
-      dragItem.style.position = '';
-      dragItem.style.left = '';
-      dragItem.style.top = '';
-      dragItem.style.width = '';
-      dragItem.style.zIndex = '';
-      dragItem.style.pointerEvents = '';
-
-      if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.insertBefore(dragItem, placeholder);
-        placeholder.remove();
-      }
-      placeholder = null;
-      scroll.style.overflowX = '';
-
-      var newOrder = [];
-      getPresetTabs().forEach(function(tab) {
-        var pid = tab.getAttribute('data-preset-id');
-        if (pid) newOrder.push(pid);
-      });
-      if (newOrder.length > 0) {
-        reorderPresets(newOrder);
-        toast('✅ タブの順序を保存しました');
-      }
-
-      dragItem = null;
-      isDragging = false;
-      tappedId = null;
-
-      renderHome();
-    }
-
-    function onPointerCancel() {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-      isMouseDown = false;
-      tappedId = null;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-      scroll.style.overflowX = '';
-      if (dragItem) {
-        dragItem.classList.remove('preset-tab-dragging');
-        dragItem.style.position = '';
-        dragItem.style.left = '';
-        dragItem.style.top = '';
-        dragItem.style.width = '';
-        dragItem.style.zIndex = '';
-        dragItem.style.pointerEvents = '';
-        if (placeholder) placeholder.remove();
-      }
-      dragItem = null;
-      placeholder = null;
-      isDragging = false;
-    }
-
-    // Touch
-    scroll.addEventListener('touchstart', function(e) { onPointerDown(e, false); }, { passive: true });
-    scroll.addEventListener('touchmove', function(e) { onPointerMove(e); }, { passive: false });
-    scroll.addEventListener('touchend', function() { onPointerEnd(); }, { passive: true });
-    scroll.addEventListener('touchcancel', function() { onPointerCancel(); }, { passive: true });
-
-    // Mouse
-    scroll.addEventListener('mousedown', function(e) { onPointerDown(e, true); });
-    document.addEventListener('mousemove', function(e) {
-      if (!isMouseDown && !isDragging) return;
-      onPointerMove(e);
-    });
-    document.addEventListener('mouseup', function() {
-      if (!isMouseDown && !isDragging) return;
-      onPointerEnd();
-    });
-    scroll.addEventListener('contextmenu', function(e) {
-      if (isDragging) e.preventDefault();
-    });
-  }
 
   /* ========== Expose ========== */
   window.renderHome = renderHome;

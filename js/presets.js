@@ -344,32 +344,6 @@
     savePreset(preset);
   }
 
-  /**
-   * プリセットの順序を入れ替える
-   * @param {string[]} newOrderIds - 新しい順序のプリセットID配列
-   */
-  function reorderPresets(newOrderIds) {
-    var presets = getPresets();
-    var reordered = [];
-    newOrderIds.forEach(function(id) {
-      for (var i = 0; i < presets.length; i++) {
-        if (presets[i].id === id) {
-          reordered.push(presets[i]);
-          break;
-        }
-      }
-    });
-    // newOrderIdsに含まれないプリセットがあれば末尾に追加（安全策）
-    presets.forEach(function(p) {
-      var found = false;
-      for (var j = 0; j < reordered.length; j++) {
-        if (reordered[j].id === p.id) { found = true; break; }
-      }
-      if (!found) reordered.push(p);
-    });
-    S.s('presets', reordered);
-  }
-
   window.PRESET_TEMPLATES = PRESET_TEMPLATES;
   window.getPresets = getPresets;
   window.getActivePreset = getActivePreset;
@@ -386,6 +360,5 @@
   window.removeWidgetFromPreset = removeWidgetFromPreset;
   window.cycleWidgetSizeInPreset = cycleWidgetSizeInPreset;
   window.moveWidgetInPreset = moveWidgetInPreset;
-  window.reorderPresets = reorderPresets;
 
 })();
