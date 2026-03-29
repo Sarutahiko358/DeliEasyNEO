@@ -211,11 +211,6 @@ body {
   padding-bottom: 140px;
 }
 
-/* ブラウザモードでのFAB位置補正 */
-[data-display-mode="browser"] .fab-container {
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-}
-
 /* iOS Safari の `-webkit-fill-available` フォールバック */
 @supports (-webkit-touch-callout: none) {
   [data-display-mode="browser"] #app {

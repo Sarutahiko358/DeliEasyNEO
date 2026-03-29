@@ -249,7 +249,7 @@
       e.preventDefault();
 
       /* モバイル用 transform */
-      sheet.style.transform = 'translateX(-50%) translateY(' + dy + 'px)';
+      sheet.style.transform = 'translateY(' + dy + 'px)';
 
       var backdrop = _getBackdrop();
       if (backdrop) {
@@ -275,7 +275,7 @@
       var closePx = sheetHeight * CLOSE_THRESHOLD;
       if (dy > closePx || velocity > VELOCITY_THRESHOLD) {
         sheet.style.transition = 'transform .3s cubic-bezier(.28,.11,.32,1)';
-        sheet.style.transform = 'translateX(-50%) translateY(100%)';
+        sheet.style.transform = 'translateY(100%)';
         if (backdrop) {
           backdrop.style.transition = 'opacity .3s';
           backdrop.style.opacity = '0';

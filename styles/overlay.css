@@ -30,10 +30,11 @@
 .overlay-sheet {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%) translateY(100%);
+  left: 0;
+  right: 0;
   width: 100%;
   max-width: 430px;
+  margin: 0 auto;
   height: 95vh;
   max-height: 95vh;
   background: var(--c-bg);
@@ -42,9 +43,10 @@
   flex-direction: column;
   overflow: hidden;
   transition: transform .35s cubic-bezier(.28,.11,.32,1);
+  transform: translateY(100%);
 }
 .overlay-sheet.open {
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
 /* ---------- Stacked (second level) ---------- */
@@ -164,10 +166,10 @@
 
 /* ブラウザモード: オーバーレイの高さを実際のビューポートに合わせる */
 [data-display-mode="browser"] .overlay-sheet {
-  height: calc(var(--app-height, 95vh) * 0.95);
-  max-height: calc(var(--app-height, 95vh) * 0.95);
+  height: calc(var(--app-height, 100vh) * 0.95);
+  max-height: calc(var(--app-height, 100vh) * 0.95);
 }
 [data-display-mode="browser"] .overlay-sheet[data-level="2"] {
-  height: calc(var(--app-height, 90vh) * 0.90);
-  max-height: calc(var(--app-height, 90vh) * 0.90);
+  height: calc(var(--app-height, 100vh) * 0.90);
+  max-height: calc(var(--app-height, 100vh) * 0.90);
 }
