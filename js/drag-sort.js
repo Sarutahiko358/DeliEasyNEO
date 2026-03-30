@@ -52,6 +52,7 @@
     var _prevOverflow = '';
     var _useAbsolute = false;
     var _absParent = null;
+    var _absScrollEl = null;
 
     /* === 内部ヘルパー === */
 
@@ -136,11 +137,14 @@
         // デスクトップのオーバーレイ内かどうかを判定
         _useAbsolute = false;
         _absParent = null;
+        _absScrollEl = null;
         if (window.innerWidth >= 1024) {
           var sheet = dragItem.closest('.overlay-sheet');
           if (sheet) {
             _useAbsolute = true;
             _absParent = sheet;
+            // 実際のスクロール要素を取得（.overlay-body）
+            _absScrollEl = sheet.querySelector('.overlay-body');
           }
         }
 
@@ -165,9 +169,11 @@
         if (_useAbsolute && _absParent) {
           // デスクトップオーバーレイ内: absolute配置
           var parentRect = _absParent.getBoundingClientRect();
+          var scrollOffsetY = _absScrollEl ? _absScrollEl.scrollTop : 0;
+          var scrollOffsetX = _absScrollEl ? _absScrollEl.scrollLeft : 0;
           dragItem.style.position = 'absolute';
-          dragItem.style.left = (rect.left - parentRect.left + _absParent.scrollLeft) + 'px';
-          dragItem.style.top = (rect.top - parentRect.top + _absParent.scrollTop) + 'px';
+          dragItem.style.left = (rect.left - parentRect.left + scrollOffsetX) + 'px';
+          dragItem.style.top = (rect.top - parentRect.top + scrollOffsetY) + 'px';
         } else {
           // モバイルまたはホーム画面: 従来通りfixed配置
           dragItem.style.position = 'fixed';
@@ -178,6 +184,12 @@
         if (isGrid) dragItem.style.height = rect.height + 'px';
         dragItem.style.zIndex = '10000';
         dragItem.style.pointerEvents = 'none';
+
+        // デスクトップオーバーレイ内: overlay-bodyのスクロールも無効化
+        if (_absScrollEl && _absScrollEl !== _scrollContainer) {
+          _absScrollEl._prevOverflow = _absScrollEl.style.overflowY;
+          _absScrollEl.style.overflowY = 'hidden';
+        }
 
         if (navigator.vibrate) navigator.vibrate(30);
         if (typeof opts.onDragStart === 'function') opts.onDragStart(dragItem);
@@ -202,10 +214,12 @@
       if (_useAbsolute && _absParent) {
         // デスクトップオーバーレイ内: absolute配置の座標更新
         var parentRect = _absParent.getBoundingClientRect();
+        var scrollOffsetY = _absScrollEl ? _absScrollEl.scrollTop : 0;
+        var scrollOffsetX = _absScrollEl ? _absScrollEl.scrollLeft : 0;
         if (isGrid) {
-          dragItem.style.left = (pos.x - offsetX - parentRect.left + _absParent.scrollLeft) + 'px';
+          dragItem.style.left = (pos.x - offsetX - parentRect.left + scrollOffsetX) + 'px';
         }
-        dragItem.style.top = (pos.y - offsetY - parentRect.top + _absParent.scrollTop) + 'px';
+        dragItem.style.top = (pos.y - offsetY - parentRect.top + scrollOffsetY) + 'px';
       } else {
         // モバイルまたはホーム画面: 従来通りfixed配置の座標更新
         if (isGrid) {
@@ -260,15 +274,19 @@
         _scrollContainer = null;
       }
 
+      // デスクトップオーバーレイ内のスクロール復元
+      if (_absScrollEl && _absScrollEl._prevOverflow !== undefined) {
+        _absScrollEl.style.overflowY = _absScrollEl._prevOverflow;
+        delete _absScrollEl._prevOverflow;
+      }
+
       if (typeof window !== 'undefined') window.__widgetDragActive = false;
-      _useAbsolute = false;
-      _absParent = null;
     }
 
     function onPointerEnd() {
       _cleanup();
 
-      if (!isDragging || !dragItem) { isDragging = false; return; }
+      if (!isDragging || !dragItem) { isDragging = false; _useAbsolute = false; _absParent = null; _absScrollEl = null; return; }
 
       // ドラッグアイテムのスタイルをリセット
       dragItem.classList.remove(draggingCls);
@@ -303,6 +321,9 @@
       var savedDragItem = dragItem;
       dragItem = null;
       isDragging = false;
+      _useAbsolute = false;
+      _absParent = null;
+      _absScrollEl = null;
 
       if (typeof opts.onDragEnd === 'function') opts.onDragEnd(savedDragItem);
     }
@@ -323,6 +344,9 @@
       dragItem = null;
       placeholder = null;
       isDragging = false;
+      _useAbsolute = false;
+      _absParent = null;
+      _absScrollEl = null;
     }
 
     /* === イベントリスナー登録 === */
