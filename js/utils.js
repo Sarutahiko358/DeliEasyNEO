@@ -28,6 +28,7 @@
       .replace(/\\/g, '\\\\')
       .replace(/'/g, "\\'")
       .replace(/"/g, '\\"')
+      .replace(/`/g, '\\`')
       .replace(/\n/g, '\\n')
       .replace(/\r/g, '\\r');
   }
@@ -42,8 +43,8 @@
   }
 
   var _now = new Date();
-  var TD = dateKey(_now);
-  var MK = TD.substring(0, 7);
+  var _TD = dateKey(_now);
+  var _MK = _TD.substring(0, 7);
 
   /* ---------- Toast ---------- */
   function toast(msg, ms) {
@@ -233,8 +234,14 @@
   window.escJs = escJs;
   window.DAYS = DAYS;
   window.dateKey = dateKey;
-  window.TD = TD;
-  window.MK = MK;
+  Object.defineProperty(window, 'TD', {
+    get: function() { return dateKey(new Date()); },
+    configurable: true
+  });
+  Object.defineProperty(window, 'MK', {
+    get: function() { return dateKey(new Date()).substring(0, 7); },
+    configurable: true
+  });
   window.toast = toast;
   window.hp = hp;
   window.customConfirm = customConfirm;

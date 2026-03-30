@@ -320,7 +320,7 @@
     if (_memo) memoStr += (memoStr ? ' ' : '') + _memo;
 
     if (typeof addE === 'function') {
-      addE(_selectedDate, amount, _count, memoStr, null, true, null);
+      addE(_selectedDate, amount, _count, memoStr, null, true, null).catch(function(e) { console.error('[EarnInput] addE fail:', e); toast('⚠️ 記録の保存に失敗しました'); });
     }
 
     _npVal = '';
@@ -339,7 +339,7 @@
           toast('🗑 削除しました');
           _render();
           if (typeof refreshHome === 'function') refreshHome();
-        });
+        }).catch(function(e) { console.error('[EarnInput] deleteE fail:', e); toast('⚠️ 削除に失敗しました'); });
       }
     });
   };

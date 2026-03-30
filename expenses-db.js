@@ -38,11 +38,20 @@
         req.onsuccess = e => {
           _db = e.target.result;
           _idbAvailable = true;
+          // versionchange 時に古い接続を適切に閉じる
+          _db.onversionchange = () => {
+            _db.close();
+            _db = null;
+            console.warn('[ExpensesDB] DB closed due to versionchange');
+          };
           resolve(_db);
         };
         req.onerror = () => {
           _idbAvailable = false;
           reject(req.error);
+        };
+        req.onblocked = () => {
+          console.warn('[ExpensesDB] DB open blocked — another connection is open');
         };
       } catch(e) {
         _idbAvailable = false;
@@ -152,7 +161,7 @@
       if (existing.length === 0) {
         // tsが無いレコードにtsを付与（古いデータ対策）
         const migrated = lsData.map(e => {
-          if (!e.ts) e.ts = Date.now() + Math.random();
+          if (!e.ts) e.ts = Date.now() + Math.floor(Math.random() * 1000);
           return e;
         });
         await idbClearAndPutAll(migrated);

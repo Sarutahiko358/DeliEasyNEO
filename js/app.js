@@ -181,7 +181,7 @@
           var topId = typeof getTopOverlayId === 'function' ? getTopOverlayId() : null;
           if (topId === 'calendar' && typeof renderCalendar === 'function') renderCalendar();
           if (topId === 'stats' && typeof renderStats === 'function') renderStats();
-        });
+        }).catch(function(e) { console.error('[App] updateE fail:', e); toast('⚠️ 更新に失敗しました'); });
       }
     };
   }

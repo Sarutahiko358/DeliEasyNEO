@@ -68,8 +68,8 @@
 .cal-c .cal-am.lv5 { color: #7d21a8; }
 .cal-c.empty { cursor: default; }
 .cal-c.today { background: var(--c-primary); border-radius: 50%; }
-.cal-c.today .cal-da { color: #fff !important; font-weight: 700; }
-.cal-c.today .cal-am { color: rgba(255,255,255,.85) !important; }
+.cal-g .cal-c.today .cal-da { color: #fff; font-weight: 700; }
+.cal-g .cal-c.today .cal-am { color: rgba(255,255,255,.85); }
 .cal-c.sel:not(.today) { background: var(--c-fill-tertiary); }
 .cal-c .cal-tag { position: absolute; bottom: 0; right: 2px; font-size: .4rem; }
 .cal-c.cal-sun .cal-da { color: var(--c-danger); }

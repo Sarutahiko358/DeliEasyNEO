@@ -503,10 +503,19 @@
   /* ========== 時計更新 ========== */
   var _clockTimer = null;
   function startWidgetClock() {
-    if (_clockTimer) clearInterval(_clockTimer);
+    if (_clockTimer !== null) {
+      clearInterval(_clockTimer);
+      _clockTimer = null;
+    }
     _clockTimer = setInterval(function() {
       var els = document.querySelectorAll('[data-clock="true"]');
-      if (!els || els.length === 0) { clearInterval(_clockTimer); _clockTimer = null; return; }
+      if (!els || els.length === 0) {
+        if (_clockTimer !== null) {
+          clearInterval(_clockTimer);
+          _clockTimer = null;
+        }
+        return;
+      }
       var now = new Date();
       var h = String(now.getHours()).padStart(2,'0');
       var m = String(now.getMinutes()).padStart(2,'0');

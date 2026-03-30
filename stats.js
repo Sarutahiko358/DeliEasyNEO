@@ -636,7 +636,7 @@
           toast('🗑 記録を削除しました');
           renderStats();
           if (typeof window.refreshHome === 'function') window.refreshHome();
-        });
+        }).catch(e => { console.error('[Stats] deleteE fail:', e); toast('⚠️ 削除に失敗しました'); });
       }
     });
   }

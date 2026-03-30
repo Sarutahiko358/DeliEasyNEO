@@ -324,6 +324,129 @@
     requestAnimationFrame(() => initDetailSwipe());
   }
 
+  /* ===== 差分更新: 明細パネルのみ再描画 ===== */
+  function _refreshCalDetail(dk) {
+    const detEl = document.getElementById('cal-det-swipe');
+    if (!detEl) { renderCalendar(); return; }
+
+    const layout = _calLayoutOrder();
+    const detailSections = ['calDateNav','calInput','calSummaryDay','calSummaryWeek','calSummaryMonth','calPfBreakdown','calDeliveryDetail','calExpenseDetail'];
+
+    const sectionRenderers = _buildDetailRenderers(dk);
+    let detailHtml = '';
+
+    if (layout && Array.isArray(layout)) {
+      layout.forEach(item => {
+        if (item.show === false) return;
+        if (detailSections.indexOf(item.id) < 0) return;
+        const renderer = sectionRenderers[item.id];
+        if (renderer) detailHtml += renderer();
+      });
+    } else {
+      detailHtml += _renderCalDateNav(dk);
+      detailHtml += _renderCalInput(dk);
+      detailHtml += _renderCalSummaryDay(dk);
+      detailHtml += _renderCalSummaryWeek(dk);
+      detailHtml += _renderCalSummaryMonth(dk);
+      detailHtml += _renderCalPfBreakdown(dk);
+      detailHtml += _renderCalDeliveryDetail(dk);
+      detailHtml += _renderCalExpenseDetail(dk);
+    }
+
+    detEl.innerHTML = detailHtml;
+    detEl.style.transition = 'none';
+    detEl.style.transform = '';
+    detEl.style.opacity = '';
+    detEl._swipeInit = false;
+    requestAnimationFrame(() => initDetailSwipe());
+  }
+
+  function _buildDetailRenderers(dk) {
+    return {
+      calDateNav: () => _renderCalDateNav(dk),
+      calInput: () => _renderCalInput(dk),
+      calSummaryDay: () => _renderCalSummaryDay(dk),
+      calSummaryWeek: () => _renderCalSummaryWeek(dk),
+      calSummaryMonth: () => _renderCalSummaryMonth(dk),
+      calPfBreakdown: () => _renderCalPfBreakdown(dk),
+      calDeliveryDetail: () => _renderCalDeliveryDetail(dk),
+      calExpenseDetail: () => _renderCalExpenseDetail(dk)
+    };
+  }
+
+  /* ===== 差分更新: グリッドセルの金額表示を更新 ===== */
+  function _updateCalGridCell(dk) {
+    const pg = document.getElementById('pg1');
+    if (!pg) return;
+    const cells = pg.querySelectorAll('.cal-c');
+    cells.forEach(cell => {
+      const daEl = cell.querySelector('.cal-da');
+      if (!daEl) return;
+      const day = parseInt(daEl.textContent, 10);
+      if (isNaN(day)) return;
+      const cellDk = calYear + '-' + String(calMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+      if (cellDk !== dk) return;
+
+      // 金額表示を更新
+      var amEl = cell.querySelector('.cal-am');
+      var tagEl = cell.querySelector('.cal-tag');
+      var dayRecs = eByDate(dk);
+      var dayTot = sumA(dayRecs);
+      var allExps = S.g('exps', []);
+      var hasExp = allExps.some(function(e) { return e.date === dk; });
+
+      if (dayTot > 0) {
+        var lvClass = '';
+        if (dayTot >= 20000) lvClass = 'lv5';
+        else if (dayTot >= 15000) lvClass = 'lv4';
+        else if (dayTot >= 10000) lvClass = 'lv3';
+        else if (dayTot >= 5000) lvClass = 'lv2';
+        else lvClass = 'lv1';
+        var amtText = dayTot >= 10000 ? '¥' + Math.round(dayTot / 1000) + 'k' : '¥' + fmt(dayTot);
+        if (amEl) {
+          amEl.className = 'cal-am ' + lvClass;
+          amEl.textContent = amtText;
+        } else {
+          amEl = document.createElement('span');
+          amEl.className = 'cal-am ' + lvClass;
+          amEl.textContent = amtText;
+          cell.appendChild(amEl);
+        }
+      } else if (amEl) {
+        amEl.remove();
+      }
+
+      if (hasExp && !tagEl) {
+        tagEl = document.createElement('span');
+        tagEl.className = 'cal-tag';
+        tagEl.textContent = '💸';
+        cell.appendChild(tagEl);
+      } else if (!hasExp && tagEl) {
+        tagEl.remove();
+      }
+    });
+  }
+
+  /* ===== 差分更新: カレンダーヘッダーの月サマリーを更新 ===== */
+  function _updateCalHeader() {
+    var pg = document.getElementById('pg1');
+    if (!pg) return;
+    var mk = calYear + '-' + String(calMonth + 1).padStart(2, '0');
+    var monthEarns = eByMonth(mk);
+    var mTot = sumA(monthEarns);
+    var allExps = S.g('exps', []);
+    var mExps = allExps.filter(function(e) { return e.date && e.date.substring(0, 7) === mk; });
+    var mExpTot = mExps.reduce(function(s, e) { return s + (Number(e.amount) || 0); }, 0);
+    var mProfit = mTot - mExpTot;
+
+    var sumItems = pg.querySelectorAll('.cal-sum-item b');
+    if (sumItems.length >= 3) {
+      sumItems[0].textContent = '¥' + fmt(mTot);
+      sumItems[1].textContent = '¥' + fmt(mExpTot);
+      sumItems[2].textContent = '¥' + fmt(mProfit);
+    }
+  }
+
   /* ===== 個別セクション描画関数 ===== */
 
   function _renderCalDateNav(dk) {
@@ -578,11 +701,34 @@
   function calToday() { const now = new Date(); calYear = now.getFullYear(); calMonth = now.getMonth(); calSelDate = TD; renderCalendar(); }
   function calSel(dk) {
     hp();
-    calSelDate = dk;
     var parts = dk.split('-');
-    calYear = +parts[0];
-    calMonth = +parts[1] - 1;
-    renderCalendar();
+    var newYear = +parts[0];
+    var newMonth = +parts[1] - 1;
+
+    if (newYear === calYear && newMonth === calMonth) {
+      // 同月内の日付選択 → グリッドの選択状態だけ切り替え + detail パネルを差分更新
+      var pg = document.getElementById('pg1');
+      if (pg) {
+        var cells = pg.querySelectorAll('.cal-c');
+        cells.forEach(function(cell) { cell.classList.remove('sel'); });
+        // 新しい選択セルに sel クラスを追加
+        cells.forEach(function(cell) {
+          var daEl = cell.querySelector('.cal-da');
+          if (!daEl) return;
+          var day = parseInt(daEl.textContent, 10);
+          if (isNaN(day)) return;
+          var cellDk = calYear + '-' + String(calMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+          if (cellDk === dk) cell.classList.add('sel');
+        });
+      }
+      calSelDate = dk;
+      _refreshCalDetail(dk);
+    } else {
+      calSelDate = dk;
+      calYear = newYear;
+      calMonth = newMonth;
+      renderCalendar();
+    }
   }
 
   /* ===== データ操作 ===== */
@@ -599,9 +745,15 @@
     if (!a || a <= 0) { toast('金額を入力してください'); return; }
     let memo = pf ? '/' + pf : '';
     if (memo_text) memo += ' ' + memo_text;
-    addE(dk, a, 1, memo, null, true, null); calNpVal = ''; renderCalendar();
+    addE(dk, a, 1, memo, null, true, null).catch(function(e) { console.error('[Cal] addE fail:', e); toast('⚠️ 記録の保存に失敗しました'); }); calNpVal = '';
+    _updateCalGridCell(dk); _updateCalHeader(); _refreshCalDetail(dk);
   }
-  function calDelEarn(ts) { customConfirm('この記録を削除しますか？', function() { deleteE(ts).then(() => renderCalendar()); }); }
+  function calDelEarn(ts) { customConfirm('この記録を削除しますか？', function() {
+    var dk = calSelDate || TD;
+    deleteE(ts).then(function() {
+      _updateCalGridCell(dk); _updateCalHeader(); _refreshCalDetail(dk);
+    }).catch(function(e) { console.error('[Cal] deleteE fail:', e); toast('⚠️ 削除に失敗しました'); });
+  }); }
   function calAddExp(dk) {
     let amount;
     if (calInputMode === 'direct') {
@@ -613,12 +765,15 @@
     const cat = $('#cal-xcat')?.value || 'その他'; const memo = $('#cal-xm')?.value || '';
     if (!amount || amount <= 0) { toast('金額を入力してください'); return; }
     const exps = S.g('exps', []); exps.push({ date: dk, cat, amount, memo, ts: Date.now() }); S.s('exps', exps);
-    toast('💸 経費を記録しました'); calNpVal = ''; renderCalendar();
+    toast('💸 経費を記録しました'); calNpVal = '';
+    _updateCalGridCell(dk); _updateCalHeader(); _refreshCalDetail(dk);
   }
   function calDelExp(dk, idx) {
     customConfirm('この経費を削除しますか？', function() {
       const exps = S.g('exps', []); const dayExps = exps.filter(e => e.date === dk);
-      if (dayExps[idx]) { const ts = dayExps[idx].ts; S.s('exps', exps.filter(e => e.ts !== ts)); renderCalendar(); }
+      if (dayExps[idx]) { const ts = dayExps[idx].ts; S.s('exps', exps.filter(e => e.ts !== ts));
+        _updateCalGridCell(dk); _updateCalHeader(); _refreshCalDetail(dk);
+      }
     });
   }
 

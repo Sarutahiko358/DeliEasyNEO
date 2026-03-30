@@ -654,14 +654,14 @@
     if (amount === 0) {
       // 金額0なら既存レコード削除
       if (existing) {
-        deleteE(existing.ts);
+        deleteE(existing.ts).catch(function(e) { console.error('[Spreadsheet] deleteE fail:', e); });
       }
     } else if (existing) {
       // 既存レコード更新
-      updateE(existing.ts, { a: amount });
+      updateE(existing.ts, { a: amount }).catch(function(e) { console.error('[Spreadsheet] updateE fail:', e); });
     } else {
       // 新規追加（notify=false でトースト抑制）
-      addE(dk, amount, 1, '/' + pfName, null, false, null);
+      addE(dk, amount, 1, '/' + pfName, null, false, null).catch(function(e) { console.error('[Spreadsheet] addE fail:', e); });
     }
   }
 

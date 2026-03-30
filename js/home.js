@@ -591,6 +591,7 @@
 
     var timer = null;
     var _lpActive = false;
+    var _mouseAbort = null; // mousedown 内リスナー用 AbortController
 
     function onTouchStart(e) {
       var widget = e.target.closest('.widget');
@@ -627,23 +628,26 @@
       if (!widget) return;
       var startX = e.clientX;
       var startY = e.clientY;
+
+      // 前回の mousedown 内リスナーをクリーンアップ
+      if (_mouseAbort) _mouseAbort.abort();
+      _mouseAbort = new AbortController();
+      var signal = _mouseAbort.signal;
+
       timer = setTimeout(function() {
         hp();
         enterEditMode();
       }, 500);
 
-      function onMouseUp() {
+      document.addEventListener('mouseup', function() {
         clearTimeout(timer);
-        document.removeEventListener('mouseup', onMouseUp);
-        document.removeEventListener('mousemove', onMouseMove);
-      }
-      function onMouseMove(ev) {
+        if (_mouseAbort) { _mouseAbort.abort(); _mouseAbort = null; }
+      }, { signal: signal });
+      document.addEventListener('mousemove', function(ev) {
         if (Math.abs(ev.clientX - startX) > 5 || Math.abs(ev.clientY - startY) > 5) {
           clearTimeout(timer);
         }
-      }
-      document.addEventListener('mouseup', onMouseUp);
-      document.addEventListener('mousemove', onMouseMove);
+      }, { signal: signal });
     }
 
     grid.addEventListener('mousedown', onMouseDown);
@@ -653,6 +657,7 @@
       grid.removeEventListener('touchend', onTouchEnd);
       grid.removeEventListener('touchmove', onTouchMove);
       grid.removeEventListener('mousedown', onMouseDown);
+      if (_mouseAbort) { _mouseAbort.abort(); _mouseAbort = null; }
     };
   }
 
