@@ -62,10 +62,10 @@
 
   /* オーバーレイごとに必要なスクリプトを定義 */
   var OVERLAY_DEPS = {
-    calendar:      ['./calendar.js'],
-    stats:         ['./stats.js'],
-    expenseManage: ['./expense.js'],
-    tax:           ['./tax.js']
+    calendar:      ['./calendar.js',  './js/calendar-view.js'],
+    stats:         ['./stats.js',     './js/stats-view.js'],
+    expenseManage: ['./expense.js',   './js/expense-view.js'],
+    tax:           ['./tax.js',       './js/tax-view.js']
   };
 
   /* ---------- デスクトップ判定 ---------- */
@@ -377,11 +377,17 @@
             '<div class="fz-s c-muted">読み込み中...</div>' +
           '</div>';
 
-        Promise.all(deps.map(function(src) { return _loadScript(src); }))
+        // 直列ロード（依存順序を保証）
+        var chain = Promise.resolve();
+        deps.forEach(function(src) {
+          chain = chain.then(function() { return _loadScript(src); });
+        });
+        chain
           .then(function() {
             _doRenderOverlayContent(id, body);
           })
           .catch(function(err) {
+            console.error('[LazyLoad] Error:', err);
             body.innerHTML =
               '<div class="text-c" style="padding:60px 20px">' +
                 '<div style="font-size:2rem;margin-bottom:12px">⚠️</div>' +
