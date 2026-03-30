@@ -50,12 +50,19 @@
     var _txOff = { x: 0, y: 0 };
     var _scrollContainer = null;
     var _prevOverflow = '';
+    var _useAbsolute = false;
+    var _absParent = null;
 
     /* === 内部ヘルパー === */
 
     function _getFixedOffset(el) {
       var p = el.parentElement;
       while (p && p !== document.body && p !== document.documentElement) {
+        // デスクトップのオーバーレイ内: position:relative の overlay-sheet を検出
+        if (p.classList && p.classList.contains('overlay-sheet')) {
+          var r = p.getBoundingClientRect();
+          return { x: r.left, y: r.top };
+        }
         var cs = window.getComputedStyle(p);
         if (cs.transform && cs.transform !== 'none') {
           var r = p.getBoundingClientRect();
@@ -125,6 +132,18 @@
 
         var rect = dragItem.getBoundingClientRect();
         _txOff = _getFixedOffset(dragItem);
+
+        // デスクトップのオーバーレイ内かどうかを判定
+        _useAbsolute = false;
+        _absParent = null;
+        if (window.innerWidth >= 1024) {
+          var sheet = dragItem.closest('.overlay-sheet');
+          if (sheet) {
+            _useAbsolute = true;
+            _absParent = sheet;
+          }
+        }
+
         offsetX = startX - rect.left;
         offsetY = startY - rect.top;
 
@@ -141,11 +160,20 @@
         }
         list.insertBefore(placeholder, dragItem);
 
-        // ドラッグアイテムをfixed配置
+        // ドラッグアイテムの配置
         dragItem.classList.add(draggingCls);
-        dragItem.style.position = 'fixed';
-        dragItem.style.left = (rect.left - _txOff.x) + 'px';
-        dragItem.style.top = (rect.top - _txOff.y) + 'px';
+        if (_useAbsolute && _absParent) {
+          // デスクトップオーバーレイ内: absolute配置
+          var parentRect = _absParent.getBoundingClientRect();
+          dragItem.style.position = 'absolute';
+          dragItem.style.left = (rect.left - parentRect.left + _absParent.scrollLeft) + 'px';
+          dragItem.style.top = (rect.top - parentRect.top + _absParent.scrollTop) + 'px';
+        } else {
+          // モバイルまたはホーム画面: 従来通りfixed配置
+          dragItem.style.position = 'fixed';
+          dragItem.style.left = (rect.left - _txOff.x) + 'px';
+          dragItem.style.top = (rect.top - _txOff.y) + 'px';
+        }
         dragItem.style.width = rect.width + 'px';
         if (isGrid) dragItem.style.height = rect.height + 'px';
         dragItem.style.zIndex = '10000';
@@ -171,10 +199,20 @@
       if (e.preventDefault) e.preventDefault();
 
       // ドラッグアイテムの位置更新
-      if (isGrid) {
-        dragItem.style.left = (pos.x - offsetX - _txOff.x) + 'px';
+      if (_useAbsolute && _absParent) {
+        // デスクトップオーバーレイ内: absolute配置の座標更新
+        var parentRect = _absParent.getBoundingClientRect();
+        if (isGrid) {
+          dragItem.style.left = (pos.x - offsetX - parentRect.left + _absParent.scrollLeft) + 'px';
+        }
+        dragItem.style.top = (pos.y - offsetY - parentRect.top + _absParent.scrollTop) + 'px';
+      } else {
+        // モバイルまたはホーム画面: 従来通りfixed配置の座標更新
+        if (isGrid) {
+          dragItem.style.left = (pos.x - offsetX - _txOff.x) + 'px';
+        }
+        dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
       }
-      dragItem.style.top = (pos.y - offsetY - _txOff.y) + 'px';
 
       // プレースホルダーの挿入位置を更新
       var items = getItems().filter(function(el) { return el !== dragItem; });
@@ -223,6 +261,8 @@
       }
 
       if (typeof window !== 'undefined') window.__widgetDragActive = false;
+      _useAbsolute = false;
+      _absParent = null;
     }
 
     function onPointerEnd() {
