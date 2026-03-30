@@ -10,8 +10,8 @@
 .overlay-body .cal-body { background: var(--c-card); border-radius: var(--ds-radius); }
 .overlay-body .cal-det { background: var(--c-card); border-radius: var(--ds-radius); }
 .overlay-body .cal-acc { background: var(--c-card); }
-.overlay-body .cal-acc-btn-primary { background: var(--c-primary) !important; }
-.overlay-body .cal-acc-btn-secondary { background: var(--c-fill-tertiary) !important; color: var(--c-primary) !important; }
+.overlay-body .cal-acc-content .cal-acc-btn-primary { background: var(--c-primary); color: #fff; }
+.overlay-body .cal-acc-content .cal-acc-btn-secondary { background: var(--c-fill-tertiary); color: var(--c-primary); }
 .overlay-body .cal-legend { padding: 8px 4px 12px; }
 .overlay-body .home-input-toggle { margin: 0 0 12px; }
 .overlay-body .cal-sum-row { padding: 0 4px; }
@@ -220,13 +220,13 @@
 .cal-acc-list-item:last-child { border-bottom: none; }
 .cal-acc-btn-primary {
   width: 100%; padding: 14px; border: none; border-radius: var(--ds-radius-sm);
-  background: var(--c-primary) !important; color: #fff !important;
+  background: var(--c-primary); color: #fff;
   font-size: .9375rem; font-weight: 600; cursor: pointer; margin-top: 4px;
 }
 .cal-acc-btn-primary:active { opacity: .7; transform: scale(.98); }
 .cal-acc-btn-secondary {
   width: 100%; padding: 14px; border: none; border-radius: var(--ds-radius-sm);
-  background: var(--c-fill-tertiary) !important; color: var(--c-primary) !important;
+  background: var(--c-fill-tertiary); color: var(--c-primary);
   font-size: .875rem; font-weight: 600; cursor: pointer; margin-top: 4px;
 }
 .cal-acc-btn-secondary:active { opacity: .7; transform: scale(.98); }
