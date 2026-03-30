@@ -2,10 +2,10 @@
 (function(){
   'use strict';
 
-  let taxTab = 'calc';
-  let taxInputMode = 'manual';
-  let taxYear = new Date().getFullYear();
-  let taxStartMonth = 1;
+  let taxTab = S.g('taxTab', 'calc');
+  let taxInputMode = S.g('taxInputMode_tax', 'manual');
+  let taxYear = S.g('taxYear', new Date().getFullYear());
+  let taxStartMonth = S.g('taxStartMonth', 1);
   let taxDeductionsOpen = false;
 
   function loadDeductions() {
@@ -183,16 +183,19 @@
       html += `<div class="stat-box accent-primary mb8"><div class="stat-box-label">年間売上（連動）</div><div class="stat-box-value">¥${fmt(revenue)}</div></div>`;
       html += `<div class="stat-box accent-danger mb8"><div class="stat-box-label">年間経費（連動）</div><div class="stat-box-value">¥${fmt(expense)}</div></div>`;
     } else {
-      html += `<div class="input-group"><label class="input-label">年間売上（円）</label><input type="number" class="input" id="tax-rev" value="${lastTaxResult ? lastTaxResult.revenue : 0}"></div>`;
-      html += `<div class="input-group"><label class="input-label">年間経費（円）</label><input type="number" class="input" id="tax-exp" value="${lastTaxResult ? lastTaxResult.expense : 0}"></div>`;
+      var savedRev = S.g('taxManualRevenue', lastTaxResult ? lastTaxResult.revenue : 0);
+      var savedExp = S.g('taxManualExpense', lastTaxResult ? lastTaxResult.expense : 0);
+      html += `<div class="input-group"><label class="input-label">年間売上（円）</label><input type="number" class="input" id="tax-rev" value="${savedRev}" oninput="S.s('taxManualRevenue',Number(this.value))"></div>`;
+      html += `<div class="input-group"><label class="input-label">年間経費（円）</label><input type="number" class="input" id="tax-exp" value="${savedExp}" oninput="S.s('taxManualExpense',Number(this.value))"></div>`;
     }
 
+    var savedBlue = S.g('taxBlueDeduction', 650000);
     html += `<div class="input-group"><label class="input-label">青色申告控除</label>
-      <select class="input" id="tax-blue">
-        <option value="650000">65万円（電子申告）</option>
-        <option value="550000">55万円</option>
-        <option value="100000">10万円</option>
-        <option value="0">白色（0円）</option>
+      <select class="input" id="tax-blue" onchange="_saveBlueSetting()">
+        <option value="650000" ${savedBlue==650000?'selected':''}>65万円（電子申告）</option>
+        <option value="550000" ${savedBlue==550000?'selected':''}>55万円</option>
+        <option value="100000" ${savedBlue==100000?'selected':''}>10万円</option>
+        <option value="0" ${savedBlue==0?'selected':''}>白色（0円）</option>
       </select>
     </div>`;
 
@@ -217,8 +220,8 @@
       <span class="fz-xs fw6" style="color:var(--c-primary)">社会保険料控除</span>${catBadge(socSum,'var(--c-primary)')}<span class="card-arrow fz-xs" style="margin-left:4px">▼</span>
     </div>`;
     html += `<div class="hidden" style="padding:8px 10px">`;
-    html += `<div class="input-group"><label class="input-label">国民健康保険料（年額）</label><input type="number" class="input" id="tax-d-social" value="${d.social}" placeholder="0"></div>`;
-    html += `<div class="input-group"><label class="input-label">国民年金保険料（年額）</label><input type="number" class="input" id="tax-d-nenkin" value="${d.kokumin_nenkin}" placeholder="約200,000"></div>`;
+    html += `<div class="input-group"><label class="input-label">国民健康保険料（年額）</label><input type="number" class="input" id="tax-d-social" value="${d.social}" placeholder="0" oninput="_autoSaveDeductions()"></div>`;
+    html += `<div class="input-group"><label class="input-label">国民年金保険料（年額）</label><input type="number" class="input" id="tax-d-nenkin" value="${d.kokumin_nenkin}" placeholder="約200,000" oninput="_autoSaveDeductions()"></div>`;
     html += `</div></div>`;
 
     /* 小規模企業共済・iDeCo */
@@ -228,8 +231,8 @@
       <span class="fz-xs fw6" style="color:var(--c-success)">小規模企業共済等掛金控除</span>${catBadge(kakSum,'var(--c-success)')}<span class="card-arrow fz-xs" style="margin-left:4px">▼</span>
     </div>`;
     html += `<div class="hidden" style="padding:8px 10px">`;
-    html += `<div class="input-group"><label class="input-label">小規模企業共済（年額）</label><input type="number" class="input" id="tax-d-shoukibo" value="${d.shoukibo}" placeholder="最大840,000"></div>`;
-    html += `<div class="input-group"><label class="input-label">iDeCo掛金（年額）</label><input type="number" class="input" id="tax-d-ideco" value="${d.ideco}" placeholder="最大816,000"></div>`;
+    html += `<div class="input-group"><label class="input-label">小規模企業共済（年額）</label><input type="number" class="input" id="tax-d-shoukibo" value="${d.shoukibo}" placeholder="最大840,000" oninput="_autoSaveDeductions()"></div>`;
+    html += `<div class="input-group"><label class="input-label">iDeCo掛金（年額）</label><input type="number" class="input" id="tax-d-ideco" value="${d.ideco}" placeholder="最大816,000" oninput="_autoSaveDeductions()"></div>`;
     html += `</div></div>`;
 
     /* 保険料控除 */
@@ -240,7 +243,7 @@
     </div>`;
     html += `<div class="hidden" style="padding:8px 10px">`;
     html += `<div class="input-group"><label class="input-label">生命保険料控除額</label>
-      <select class="input" id="tax-d-seimei">
+      <select class="input" id="tax-d-seimei" onchange="_autoSaveDeductions()">
         <option value="0" ${d.seimei==0?'selected':''}>なし</option>
         <option value="40000" ${d.seimei==40000?'selected':''}>〜4万円（新制度各枠）</option>
         <option value="80000" ${d.seimei==80000?'selected':''}>〜8万円（2枠）</option>
@@ -248,7 +251,7 @@
       </select>
     </div>`;
     html += `<div class="input-group"><label class="input-label">地震保険料控除額</label>
-      <select class="input" id="tax-d-jishin">
+      <select class="input" id="tax-d-jishin" onchange="_autoSaveDeductions()">
         <option value="0" ${d.jishin==0?'selected':''}>なし</option>
         <option value="25000" ${d.jishin==25000?'selected':''}>〜25,000円</option>
         <option value="50000" ${d.jishin==50000?'selected':''}>最大50,000円</option>
@@ -264,7 +267,7 @@
       <span class="fz-xs fw6" style="color:var(--c-danger)">医療費控除</span>${catBadge(iryoDeduct,'var(--c-danger)')}<span class="card-arrow fz-xs" style="margin-left:4px">▼</span>
     </div>`;
     html += `<div class="hidden" style="padding:8px 10px">`;
-    html += `<div class="input-group"><label class="input-label">年間医療費（自己負担合計）</label><input type="number" class="input" id="tax-d-iryo" value="${d.iryo}" placeholder="10万円超の分が控除"></div>`;
+    html += `<div class="input-group"><label class="input-label">年間医療費（自己負担合計）</label><input type="number" class="input" id="tax-d-iryo" value="${d.iryo}" placeholder="10万円超の分が控除" oninput="_autoSaveDeductions()"></div>`;
     html += `</div></div>`;
 
     /* 人的控除 */
@@ -278,16 +281,16 @@
     </div>`;
     html += `<div class="hidden" style="padding:8px 10px">`;
     html += `<div class="input-group"><label class="input-label">配偶者控除</label>
-      <select class="input" id="tax-d-haigusha">
+      <select class="input" id="tax-d-haigusha" onchange="_autoSaveDeductions()">
         <option value="none" ${d.haigusha==='none'?'selected':''}>なし</option>
         <option value="380000" ${d.haigusha==='380000'?'selected':''}>配偶者控除（38万円）</option>
         <option value="480000" ${d.haigusha==='480000'?'selected':''}>老人控除対象（48万円）</option>
         <option value="special" ${d.haigusha==='special'?'selected':''}>配偶者特別控除（段階的）</option>
       </select>
     </div>`;
-    html += `<div class="input-group"><label class="input-label">扶養控除（一般 16歳以上）人数</label><input type="number" class="input" id="tax-d-fuyo" value="${d.fuyo_ippan}" min="0" max="10"></div>`;
-    html += `<div class="input-group"><label class="input-label">扶養控除（特定 19〜22歳）人数</label><input type="number" class="input" id="tax-d-fuyo-t" value="${d.fuyo_tokutei}" min="0" max="10"></div>`;
-    html += `<div class="input-group"><label class="input-label">扶養控除（老人 70歳以上）人数</label><input type="number" class="input" id="tax-d-fuyo-r" value="${d.fuyo_roujin}" min="0" max="10"></div>`;
+    html += `<div class="input-group"><label class="input-label">扶養控除（一般 16歳以上）人数</label><input type="number" class="input" id="tax-d-fuyo" value="${d.fuyo_ippan}" min="0" max="10" oninput="_autoSaveDeductions()"></div>`;
+    html += `<div class="input-group"><label class="input-label">扶養控除（特定 19〜22歳）人数</label><input type="number" class="input" id="tax-d-fuyo-t" value="${d.fuyo_tokutei}" min="0" max="10" oninput="_autoSaveDeductions()"></div>`;
+    html += `<div class="input-group"><label class="input-label">扶養控除（老人 70歳以上）人数</label><input type="number" class="input" id="tax-d-fuyo-r" value="${d.fuyo_roujin}" min="0" max="10" oninput="_autoSaveDeductions()"></div>`;
     html += `</div></div>`;
 
     /* その他 */
@@ -301,7 +304,7 @@
     </div>`;
     html += `<div class="hidden" style="padding:8px 10px">`;
     html += `<div class="input-group"><label class="input-label">障害者控除</label>
-      <select class="input" id="tax-d-disability">
+      <select class="input" id="tax-d-disability" onchange="_autoSaveDeductions()">
         <option value="none" ${d.disability==='none'?'selected':''}>なし</option>
         <option value="270000" ${d.disability==='270000'?'selected':''}>一般（27万円）</option>
         <option value="400000" ${d.disability==='400000'?'selected':''}>特別（40万円）</option>
@@ -309,11 +312,11 @@
       </select>
     </div>`;
     html += `<div class="input-group" style="display:flex;align-items:center;gap:8px">
-      <input type="checkbox" id="tax-d-single" ${d.single_parent?'checked':''}>
+      <input type="checkbox" id="tax-d-single" ${d.single_parent?'checked':''} onchange="_autoSaveDeductions()">
       <label for="tax-d-single" style="margin:0">ひとり親控除（35万円）</label>
     </div>`;
     html += `<div class="input-group" style="display:flex;align-items:center;gap:8px">
-      <input type="checkbox" id="tax-d-widow" ${d.widow?'checked':''}>
+      <input type="checkbox" id="tax-d-widow" ${d.widow?'checked':''} onchange="_autoSaveDeductions()">
       <label for="tax-d-widow" style="margin:0">寡婦控除（27万円）</label>
     </div>`;
     html += `</div></div>`;
@@ -321,6 +324,10 @@
     html += `</div>`; /* end #tax-deductions */
 
     html += `<button class="btn btn-primary btn-block" onclick="doTaxCalc()">計算</button>`;
+    html += `<div style="display:flex;gap:8px;margin-top:12px">`;
+    html += `<button class="btn btn-secondary btn-sm btn-block" onclick="clearTaxSettings()">🗑 設定をクリア</button>`;
+    html += `</div>`;
+    html += `<div class="fz-xxs c-muted text-c mt8">💡 入力内容は自動的に保存されます</div>`;
     html += `</div></div>`;
     html += `<div id="tax-result">${lastTaxResult ? renderTaxResult(lastTaxResult) : ''}</div>`;
 
@@ -377,6 +384,7 @@
     S.s('lastTaxResult', lastTaxResult);
     document.getElementById('tax-result').innerHTML = renderTaxResult(lastTaxResult);
     hp();
+    if (typeof window.refreshHome === 'function') window.refreshHome();
   }
 
   function renderTaxResult(r) {
@@ -576,10 +584,49 @@
     return html;
   }
 
-  function setTaxTab(t) { taxTab = t; renderTax(); }
-  function setTaxInputMode(m) { taxInputMode = m; renderTax(); }
-  function setTaxYear(v) { taxYear = +v; renderTax(); }
-  function setTaxStartMonth(v) { taxStartMonth = +v; renderTax(); }
+  function setTaxTab(t) { taxTab = t; S.s('taxTab', t); renderTax(); }
+  function setTaxInputMode(m) { taxInputMode = m; S.s('taxInputMode_tax', m); renderTax(); }
+  function setTaxYear(v) { taxYear = +v; S.s('taxYear', taxYear); renderTax(); }
+  function setTaxStartMonth(v) { taxStartMonth = +v; S.s('taxStartMonth', taxStartMonth); renderTax(); }
+
+  function _autoSaveDeductions() {
+    var d = gatherDeductions();
+    saveDeductions(d);
+  }
+
+  function _saveBlueSetting() {
+    var el = document.getElementById('tax-blue');
+    if (el) S.s('taxBlueDeduction', Number(el.value));
+  }
+
+  function clearTaxSettings() {
+    customConfirm('税金の設定を全てクリアしますか？\n入力した控除額や計算結果もリセットされます。', function() {
+      taxInputMode = 'manual';
+      taxYear = new Date().getFullYear();
+      taxStartMonth = 1;
+      taxDeductionsOpen = false;
+      lastTaxResult = null;
+
+      S.s('taxInputMode_tax', 'manual');
+      S.s('taxYear', new Date().getFullYear());
+      S.s('taxStartMonth', 1);
+      S.s('taxBlueDeduction', 650000);
+      S.s('taxManualRevenue', 0);
+      S.s('taxManualExpense', 0);
+      S.s('taxDeductions', {
+        social: 0, kokumin_nenkin: 0, shoukibo: 0, ideco: 0,
+        seimei: 0, jishin: 0, iryo: 0,
+        haigusha: 'none', fuyo_ippan: 0, fuyo_tokutei: 0, fuyo_roujin: 0,
+        disability: 'none', single_parent: false, widow: false
+      });
+      S.s('lastTaxResult', null);
+      S.s('taxCalcParams', null);
+
+      toast('🗑 税金設定をクリアしました');
+      renderTax();
+      if (typeof window.refreshHome === 'function') window.refreshHome();
+    });
+  }
 
   /* expose */
   window.renderTax = renderTax;
@@ -592,6 +639,9 @@
   window.doFurusato = doFurusato;
   window.frAutoRev = frAutoRev;
   window.frAutoExp = frAutoExp;
+  window.clearTaxSettings = clearTaxSettings;
+  window._autoSaveDeductions = _autoSaveDeductions;
+  window._saveBlueSetting = _saveBlueSetting;
   window.loadTaxDeductions = loadDeductions;
   window.calcTaxDeductionTotal = calcDeductionTotal;
   window.calcTaxResult = calcTaxResult;
