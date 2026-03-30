@@ -1,4 +1,5 @@
 firebase-config.js
+SECURITY-NOTE.md
 .env
 .env.local
 .env.production
