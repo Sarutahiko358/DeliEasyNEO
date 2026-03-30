@@ -634,4 +634,6 @@
     }, { passive: false });
   }
 
+  window._initMiniCalSwipe = _initMiniCalSwipe;
+
 })();

@@ -499,6 +499,8 @@
   function _initDashLongPress(coId) {
     var grid = document.getElementById('dash-widget-grid-' + coId);
     if (!grid) return;
+    if (grid._dashLpInit) return;
+    grid._dashLpInit = true;
     var timer = null;
     var _lpActive = false;
 

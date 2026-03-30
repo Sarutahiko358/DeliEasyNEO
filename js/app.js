@@ -106,13 +106,6 @@
   };
   window.curPage = -1;
 
-  window.refreshHome = function() {
-    if (typeof renderHome === 'function') renderHome();
-  };
-  window.renderHomeWidgets = function() {
-    if (typeof renderHome === 'function') renderHome();
-  };
-
   /* ---------- 売上編集ダイアログ ---------- */
   function _openEarnEditDialog(ts) {
     var earns = typeof getE === 'function' ? getE() : [];
