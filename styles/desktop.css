@@ -37,7 +37,7 @@
     position: fixed;
     inset: 0;
   }
-  .overlay-sheet {
+  html .overlay-sheet {
     position: relative;
     bottom: auto;
     top: auto;
@@ -50,10 +50,10 @@
     box-shadow: 0 24px 80px rgba(0,0,0,.25);
     opacity: 0;
     transition: opacity .2s ease;
-    transform: none !important;
+    transform: none;
     z-index: 1;
   }
-  .overlay-sheet.open {
+  html .overlay-sheet.open {
     opacity: 1;
   }
   .overlay-handle {
@@ -116,13 +116,13 @@
   /* ==========================================================
      サイドバー — 常時固定表示
      ========================================================== */
-  .sidebar-overlay {
-    display: none !important;
+  html body .sidebar-overlay {
+    display: none;
   }
 
-  .sidebar {
-    position: static !important;
-    transform: none !important;
+  html body .sidebar {
+    position: static;
+    transform: none;
     width: 240px;
     min-width: 240px;
     max-width: none;
@@ -141,13 +141,13 @@
   /* ==========================================================
      右パネル — 常時表示オプション
      ========================================================== */
-  .right-panel-overlay {
-    display: none !important;
+  html body .right-panel-overlay {
+    display: none;
   }
 
-  body.desktop-rp-visible .right-panel {
-    position: static !important;
-    transform: none !important;
+  html body.desktop-rp-visible .right-panel {
+    position: static;
+    transform: none;
     width: 360px;
     min-width: 360px;
     max-width: none;
@@ -162,8 +162,8 @@
   }
 
   /* 常時表示が無効の場合 — モバイルと同じ挙動を維持 */
-  body:not(.desktop-rp-visible) .right-panel-overlay {
-    display: block !important;
+  html body:not(.desktop-rp-visible) .right-panel-overlay {
+    display: block;
   }
   body:not(.desktop-rp-visible) .right-panel {
     position: fixed;
@@ -172,8 +172,8 @@
   /* ==========================================================
      ボトムバー — 非表示
      ========================================================== */
-  .bottombar {
-    display: none !important;
+  html body .bottombar {
+    display: none;
   }
 
   /* オーバーレイ — 768px の flexbox 中央配置を継承。幅のみ上書き */
@@ -245,8 +245,8 @@
   }
 
   /* --- フローティングハンバーガーはデスクトップで非表示 --- */
-  .floating-hamburger {
-    display: none !important;
+  html body .floating-hamburger {
+    display: none;
   }
 
   /* --- 編集リストのデスクトップ幅制限 --- */

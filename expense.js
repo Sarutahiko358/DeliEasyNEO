@@ -294,7 +294,7 @@
     const memo = $('#exp-memo')?.value || '';
     if (!amount || amount <= 0) { toast('金額を入力してください'); return; }
     const exps = S.g('exps', []);
-    exps.push({ cat, date, amount, memo, ts: Date.now() });
+    exps.push({ cat, date, amount, memo, ts: Date.now() + Math.floor(Math.random() * 1000) });
     S.s('exps', exps);
     toast('💸 経費を記録しました');
     if ($('#exp-amount')) $('#exp-amount').value = '';

@@ -355,15 +355,15 @@ textarea.input { resize: vertical; min-height: 80px; }
 .input-mode-toggle:active { background: var(--c-fill-secondary); transform: scale(.95); }
 
 /* ---------- Direct Amount Input ---------- */
-.direct-amount-input {
-  font-size: 2rem !important;
-  font-weight: 700 !important;
-  text-align: right !important;
-  height: 64px !important;
-  background: var(--c-input-bg) !important;
-  border: none !important;
-  border-radius: var(--ds-radius-sm) !important;
-  padding: 14px 18px !important;
+input[type="number"].direct-amount-input {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: right;
+  height: 64px;
+  background: var(--c-input-bg);
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  padding: 14px 18px;
   transition: box-shadow .2s;
   width: 100%;
   box-sizing: border-box;
@@ -372,8 +372,8 @@ textarea.input { resize: vertical; min-height: 80px; }
   color: var(--c-tx);
   outline: none;
 }
-.direct-amount-input:focus {
-  box-shadow: 0 0 0 4px rgba(0,122,255,.25) !important;
+input[type="number"].direct-amount-input:focus {
+  box-shadow: 0 0 0 4px rgba(0,122,255,.25);
 }
 /* ==========================================================
    以下を components.css の末尾に追加

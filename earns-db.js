@@ -36,7 +36,15 @@
         req.onsuccess = e => {
           _db = e.target.result;
           _idbAvailable = true;
+          _db.onversionchange = () => {
+            _db.close();
+            _db = null;
+            console.warn('[EarnsDB] DB closed due to versionchange');
+          };
           resolve(_db);
+        };
+        req.onblocked = () => {
+          console.warn('[EarnsDB] DB open blocked — another connection is open');
         };
         req.onerror = () => {
           _idbAvailable = false;

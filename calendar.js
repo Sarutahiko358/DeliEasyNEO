@@ -764,7 +764,7 @@
     }
     const cat = $('#cal-xcat')?.value || 'その他'; const memo = $('#cal-xm')?.value || '';
     if (!amount || amount <= 0) { toast('金額を入力してください'); return; }
-    const exps = S.g('exps', []); exps.push({ date: dk, cat, amount, memo, ts: Date.now() }); S.s('exps', exps);
+    const exps = S.g('exps', []); exps.push({ date: dk, cat, amount, memo, ts: Date.now() + Math.floor(Math.random() * 1000) }); S.s('exps', exps);
     toast('💸 経費を記録しました'); calNpVal = '';
     _updateCalGridCell(dk); _updateCalHeader(); _refreshCalDetail(dk);
   }
