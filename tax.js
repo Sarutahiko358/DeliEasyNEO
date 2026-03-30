@@ -118,7 +118,7 @@
     };
   }
 
-  let lastTaxResult = null;
+  let lastTaxResult = S.g('lastTaxResult', null);
 
   function renderTaxCalc() {
     let html = `<div class="card"><div class="card-body">`;
@@ -149,8 +149,8 @@
       html += `<div class="stat-box accent-primary mb8"><div class="stat-box-label">年間売上（連動）</div><div class="stat-box-value">¥${fmt(revenue)}</div></div>`;
       html += `<div class="stat-box accent-danger mb8"><div class="stat-box-label">年間経費（連動）</div><div class="stat-box-value">¥${fmt(expense)}</div></div>`;
     } else {
-      html += `<div class="input-group"><label class="input-label">年間売上（円）</label><input type="number" class="input" id="tax-rev" value="0"></div>`;
-      html += `<div class="input-group"><label class="input-label">年間経費（円）</label><input type="number" class="input" id="tax-exp" value="0"></div>`;
+      html += `<div class="input-group"><label class="input-label">年間売上（円）</label><input type="number" class="input" id="tax-rev" value="${lastTaxResult ? lastTaxResult.revenue : 0}"></div>`;
+      html += `<div class="input-group"><label class="input-label">年間経費（円）</label><input type="number" class="input" id="tax-exp" value="${lastTaxResult ? lastTaxResult.expense : 0}"></div>`;
     }
 
     html += `<div class="input-group"><label class="input-label">青色申告控除</label>
@@ -331,6 +331,7 @@
     const deductions = gatherDeductions();
     saveDeductions(deductions);
     lastTaxResult = calcTaxResult(revenue, expense, blue, deductions);
+    S.s('lastTaxResult', lastTaxResult);
     document.getElementById('tax-result').innerHTML = renderTaxResult(lastTaxResult);
     hp();
   }
@@ -529,4 +530,7 @@
   window.doFurusato = doFurusato;
   window.frAutoRev = frAutoRev;
   window.frAutoExp = frAutoExp;
+  window.loadTaxDeductions = loadDeductions;
+  window.calcTaxDeductionTotal = calcDeductionTotal;
+  window.calcTaxResult = calcTaxResult;
 })();

@@ -58,8 +58,9 @@
 .cal-c:active { opacity: .6; }
 .cal-c .cal-da { font-weight: 500; font-size: .875rem; line-height: 1; }
 .cal-c .cal-am {
-  font-size: .45rem; color: var(--c-tx-secondary); line-height: 1; white-space: nowrap;
+  font-size: .4rem; color: var(--c-tx-secondary); line-height: 1; white-space: nowrap;
   font-weight: 600; font-variant-numeric: tabular-nums;
+  overflow: hidden; text-overflow: ellipsis; max-width: 100%;
 }
 .cal-c .cal-am.lv1 { color: #bf8f00; }
 .cal-c .cal-am.lv2 { color: #c46200; }

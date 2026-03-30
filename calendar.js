@@ -218,7 +218,7 @@
           h += `<div class="cal-c ${dowClass} ${isToday ? 'today' : ''} ${isSel ? 'sel' : ''}"${holidayName ? ' title="' + escHtml(holidayName) + '"' : ''} onclick="calSel('${dk}')">
             <span class="cal-da">${d}</span>
             ${holidayName ? `<span class="cal-holiday-name">${escHtml(holidayName)}</span>` : ''}
-            ${dayTot > 0 ? `<span class="cal-am ${lvClass}">¥${dayTot >= 10000 ? Math.round(dayTot/1000)+'k' : fmt(dayTot)}</span>` : ''}
+            ${dayTot > 0 ? `<span class="cal-am ${lvClass}">¥${fmt(dayTot)}</span>` : ''}
             ${hasExp ? `<span class="cal-tag">💸</span>` : ''}
           </div>`;
         }
@@ -402,7 +402,7 @@
         else if (dayTot >= 10000) lvClass = 'lv3';
         else if (dayTot >= 5000) lvClass = 'lv2';
         else lvClass = 'lv1';
-        var amtText = dayTot >= 10000 ? '¥' + Math.round(dayTot / 1000) + 'k' : '¥' + fmt(dayTot);
+        var amtText = '¥' + fmt(dayTot);
         if (amEl) {
           amEl.className = 'cal-am ' + lvClass;
           amEl.textContent = amtText;

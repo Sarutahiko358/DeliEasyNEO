@@ -233,20 +233,17 @@
       '<div class="rp-stat"><span class="rp-stat-label">売上</span><span class="rp-stat-value">¥' + fmt(data.tot) + '</span></div>' +
       '<div class="rp-stat"><span class="rp-stat-label">件数</span><span class="rp-stat-value">' + data.cnt + '件</span></div>' +
       '<div class="rp-stat"><span class="rp-stat-label">単価</span><span class="rp-stat-value">¥' + fmt(avg) + '</span></div>' +
-      '<div class="rp-stat"><span class="rp-stat-label">稼働日</span><span class="rp-stat-value">' + data.days + '日</span></div>' +
     '</div>';
   }
 
   function _renderMonthSummary() {
     var tot = typeof moTot === 'function' ? moTot() : 0;
     var cnt = typeof moCnt === 'function' ? moCnt() : 0;
-    var days = typeof moDays === 'function' ? moDays() : 0;
     var avg = cnt > 0 ? Math.round(tot / cnt) : 0;
     return '<div class="rp-stat-grid">' +
       '<div class="rp-stat"><span class="rp-stat-label">売上</span><span class="rp-stat-value">¥' + fmt(tot) + '</span></div>' +
       '<div class="rp-stat"><span class="rp-stat-label">件数</span><span class="rp-stat-value">' + cnt + '件</span></div>' +
       '<div class="rp-stat"><span class="rp-stat-label">単価</span><span class="rp-stat-value">¥' + fmt(avg) + '</span></div>' +
-      '<div class="rp-stat"><span class="rp-stat-label">稼働日</span><span class="rp-stat-value">' + days + '日</span></div>' +
     '</div>';
   }
 
@@ -292,11 +289,11 @@
 
   function _renderQuickStats() {
     var tot = typeof moTot === 'function' ? moTot() : 0;
-    var days = typeof moDays === 'function' ? moDays() : 0;
-    var dailyAvg = days > 0 ? Math.round(tot / days) : 0;
     var now = new Date();
+    var dayOfMonth = now.getDate();
+    var dailyAvg = dayOfMonth > 0 ? Math.round(tot / dayOfMonth) : 0;
     var daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    var pace = days > 0 ? Math.round(tot / days * daysInMonth) : 0;
+    var pace = dayOfMonth > 0 ? Math.round(tot / dayOfMonth * daysInMonth) : 0;
     return '<div class="rp-stat-grid">' +
       '<div class="rp-stat"><span class="rp-stat-label">日平均</span><span class="rp-stat-value">¥' + fmt(dailyAvg) + '</span></div>' +
       '<div class="rp-stat"><span class="rp-stat-label">月末予測</span><span class="rp-stat-value">¥' + fmt(pace) + '</span></div>' +

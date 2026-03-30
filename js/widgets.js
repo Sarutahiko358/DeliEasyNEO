@@ -130,11 +130,10 @@
         var data = typeof wkData === 'function' ? wkData() : { tot: 0, cnt: 0, days: 0 };
         var unit = data.cnt > 0 ? Math.round(data.tot / data.cnt) : 0;
         return '<div class="widget-inner">' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">' +
           _miniStat('週売上', '¥' + fmt(data.tot)) +
           _miniStat('週件数', data.cnt + '件') +
           _miniStat('週単価', '¥' + fmt(unit)) +
-          _miniStat('稼働日', data.days + '日') +
           '</div></div>';
       }
     },
@@ -146,14 +145,12 @@
       render: function() {
         var tot = typeof moTot === 'function' ? moTot() : 0;
         var cnt = typeof moCnt === 'function' ? moCnt() : 0;
-        var days = typeof moDays === 'function' ? moDays() : 0;
         var unit = cnt > 0 ? Math.round(tot / cnt) : 0;
         return '<div class="widget-inner">' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">' +
           _miniStat('月売上', '¥' + fmt(tot)) +
           _miniStat('月件数', cnt + '件') +
           _miniStat('月単価', '¥' + fmt(unit)) +
-          _miniStat('稼働日', days + '日') +
           '</div></div>';
       }
     },
@@ -308,7 +305,7 @@
             }
           }
           if (sales > 0) {
-            var displayAmt = sales >= 10000 ? Math.round(sales / 1000) + 'k' : (sales >= 1000 ? (sales / 1000).toFixed(1) + 'k' : sales);
+            var displayAmt = '¥' + fmt(sales);
             var amtFz = w.size === 'wide' ? '.5rem' : '.55rem';
             html += '<span class="widget-cal-day-amount" style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);font-size:' + amtFz + ';font-weight:700;line-height:1;white-space:nowrap;color:' + (isToday ? 'rgba(255,255,255,.9)' : 'var(--c-tx-secondary)') + ';font-variant-numeric:tabular-nums">' + displayAmt + '</span>';
           }
@@ -349,10 +346,34 @@
         yExps.forEach(function(e) { expense += (Number(e.amount) || 0); });
 
         var blueDeduction = 650000; /* デフォルト: 65万円 */
-        var income = Math.max(0, revenue - expense - blueDeduction);
-        var taxableIncome = Math.max(0, income - 480000); /* 基礎控除 */
 
-        /* 簡易税額計算 */
+        var deductions = typeof window.loadTaxDeductions === 'function'
+          ? window.loadTaxDeductions()
+          : { social:0, kokumin_nenkin:0, shoukibo:0, ideco:0, seimei:0, jishin:0, iryo:0, haigusha:'none', fuyo_ippan:0, fuyo_tokutei:0, fuyo_roujin:0, disability:'none', single_parent:false, widow:false };
+
+        if (typeof window.calcTaxResult === 'function') {
+          var r = window.calcTaxResult(revenue, expense, blueDeduction, deductions);
+          var html = '<div class="widget-inner">';
+          html += '<div class="fz-xs c-muted mb4 text-c">' + yr + '年（青色65万円控除）</div>';
+          html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+          html += _miniStat('年間売上', '¥' + fmt(revenue));
+          html += _miniStat('年間経費', '¥' + fmt(expense));
+          html += _miniStat('所得税+復興税', '¥' + fmt(r.totalIncomeTax));
+          html += _miniStat('住民税', '¥' + fmt(r.residentTax));
+          html += _miniStat('国保概算', '¥' + fmt(r.healthInsurance));
+          html += _miniStat('税金合計', '<span class="c-danger">¥' + fmt(r.totalTax) + '</span>');
+          html += '</div>';
+          html += '<div style="text-align:center;margin-top:8px;padding-top:8px;border-top:.5px solid var(--c-divider)">';
+          html += '<div class="fz-xs c-muted">手取り概算</div>';
+          html += '<div class="fw7 fz-l' + (r.takeHome < 0 ? ' c-danger' : ' c-success') + '" style="font-variant-numeric:tabular-nums">¥' + fmt(r.takeHome) + '</div>';
+          html += '</div>';
+          html += '</div>';
+          return html;
+        }
+
+        /* フォールバック: calcTaxResult が未ロードの場合は簡易計算 */
+        var income = Math.max(0, revenue - expense - blueDeduction);
+        var taxableIncome = Math.max(0, income - 480000);
         var BRACKETS = [
           { limit: 1950000, rate: 0.05, deduction: 0 },
           { limit: 3300000, rate: 0.10, deduction: 97500 },
@@ -415,8 +436,10 @@
         var expense = 0;
         yExps.forEach(function(e) { expense += (Number(e.amount) || 0); });
 
+        var deductions = typeof window.loadTaxDeductions === 'function' ? window.loadTaxDeductions() : {};
+        var social = (Number(deductions.social) || 0) + (Number(deductions.kokumin_nenkin) || 0);
         var income = Math.max(0, revenue - expense - 650000);
-        var taxable = Math.max(0, income - 480000);
+        var taxable = Math.max(0, income - 480000 - social);
         var residentIncomeRate = taxable * 0.10;
         var limit = Math.floor(residentIncomeRate * 0.20) + 2000;
 

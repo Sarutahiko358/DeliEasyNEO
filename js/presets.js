@@ -13,8 +13,8 @@
   /* ========== テンプレート（新構造: mobile/desktop個別） ========== */
   var PRESET_TEMPLATES = [
     {
-      name: '🚴 稼働中',
-      desc: '配達中にサッと確認',
+      name: '🚴 メイン',
+      desc: '基本のレイアウト',
       mobile: {
         widgets: [
           { id: 'clock', size: 'full' },

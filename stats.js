@@ -674,8 +674,6 @@
     heroContent += '<div class="ds-grid">';
     heroContent += '<div class="ds-gbox"><div class="ds-gl">件数</div><div class="ds-gv">' + pd.cnt + '件</div></div>';
     heroContent += '<div class="ds-gbox"><div class="ds-gl">単価</div><div class="ds-gv">¥' + fmt(pd.avg) + '</div></div>';
-    heroContent += '<div class="ds-gbox"><div class="ds-gl">稼働日</div><div class="ds-gv">' + pd.daysCnt + '日</div></div>';
-    heroContent += '<div class="ds-gbox"><div class="ds-gl">日平均</div><div class="ds-gv">¥' + fmt(pd.dailyAvg) + '</div></div>';
     heroContent += '</div>';
 
     if (pd.pfArr.length > 0) {

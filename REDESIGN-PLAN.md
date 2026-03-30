@@ -44,7 +44,7 @@
 ### 5つの原則
 
 #### 原則1: ゼロ設定で使える
-- 初回起動時はテンプレート「稼働中」が自動適用
+- 初回起動時はテンプレート「メイン」が自動適用
 - 何も設定しなくても売上記録と確認ができる
 - カスタマイズの存在を初回から見せない
 
@@ -189,7 +189,7 @@
 3. ウィジェットを長押し → 編集モードに入る
    → 初回だけ「長押しでカスタマイズ」のヒントをトーストで出す
 4. プリセット名をタップ → プリセット切替が見える
-   → 最初は「稼働中」1つだけなので目立たない
+   → 最初は「メイン」1つだけなので目立たない
 ```
 
 ---
@@ -199,7 +199,7 @@
 ### レベル1: 初回起動（何も知らない）
 **見えるもの:**
 - トップバー（☰ + アプリ名 + ☁️同期）
-- ウィジェット（テンプレート「稼働中」）
+- ウィジェット（テンプレート「メイン」）
 - FAB（＋ボタン）
 
 **できること:**
@@ -1044,7 +1044,7 @@ const WIDGET_CATEGORIES = [
 // dp_presets に保存
 {
   id: 'preset_1711234567890',
-  name: '稼働中',
+  name: 'メイン',
   icon: '🚴',
   widgets: [
     { id: 'clock', size: 'full' },
@@ -1076,7 +1076,7 @@ const WIDGET_CATEGORIES = [
 ### プリセット切替バー（ホーム画面上部）
 
 ```
-[🚴 稼働中] [📊 振り返り] [📆 月末] [+]
+[🚴 メイン] [📊 振り返り] [📆 月末] [+]
 ```
 
 **段階的開示:**
@@ -1089,8 +1089,8 @@ const WIDGET_CATEGORIES = [
 ```javascript
 const PRESET_TEMPLATES = [
   {
-    name: '🚴 稼働中',
-    desc: '配達中にサッと確認',
+    name: '🚴 メイン',
+    desc: '基本のレイアウト',
     widgets: [
       { id: 'clock', size: 'full' },
       { id: 'todaySales', size: 'half' },
@@ -1178,7 +1178,7 @@ const PRESET_TEMPLATES = [
 ┌───────────────────────────────┐
 │ [キャンセル] ホーム編集 [完了]  │
 ├───────────────────────────────┤
-│ [🚴 稼働中 ▼] [✏️名前] [🗑]   │ ← プリセット操作
+│ [🚴 メイン ▼] [✏️名前] [🗑]   │ ← プリセット操作
 ├───────────────────────────────┤
 │  ┌─────────────────────────┐  │
 │  │ 🕐 時計          [× 🔄]│  │ ← ×で削除、🔄でサイズ変更
@@ -1376,7 +1376,7 @@ function migrateToV2() {
   S.s('color', mapped.color);
 
   // 2. デフォルトプリセット作成
-  const defaultPreset = JSON.parse(JSON.stringify(PRESET_TEMPLATES[0])); // 稼働中
+  const defaultPreset = JSON.parse(JSON.stringify(PRESET_TEMPLATES[0])); // メイン
   defaultPreset.id = 'preset_' + Date.now();
   S.s('presets', [defaultPreset]);
   S.s('activePreset', defaultPreset.id);
@@ -1512,7 +1512,7 @@ window.deleteE(ts)
 window.updateE(ts, updates)
 window.tdTot() / tdCnt() // 今日
 window.moTot() / moCnt() // 今月
-window.moDays()          // 今月稼働日数
+window.moDays()          // 今月記録日数
 window.wkData()          // 今週データ
 window.initEarnsDB()     // 初期化（起動時に呼ぶ）
 ```

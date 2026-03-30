@@ -256,8 +256,6 @@
     html += '<div class="ss-summary-item"><div class="ss-summary-label">件数</div><div class="ss-summary-value">' + fmt(summary.totalCount) + '件</div></div>';
     html += '<div class="ss-summary-item"><div class="ss-summary-label">経費</div><div class="ss-summary-value">¥' + fmt(summary.totalExpense) + '</div></div>';
     html += '<div class="ss-summary-item"><div class="ss-summary-label">利益</div><div class="ss-summary-value' + (summary.profit >= 0 ? ' ss-cell-profit-positive' : ' ss-cell-profit-negative') + '">¥' + fmt(summary.profit) + '</div></div>';
-    html += '<div class="ss-summary-item"><div class="ss-summary-label">稼働日</div><div class="ss-summary-value">' + summary.workDays + '日</div></div>';
-    html += '<div class="ss-summary-item"><div class="ss-summary-label">日平均</div><div class="ss-summary-value">¥' + fmt(summary.avgDaily) + '</div></div>';
     html += '</div>';
 
     // テーブル
@@ -745,7 +743,7 @@
     html += '<div class="ss-annual-table-wrap">';
     html += '<table class="ss-annual-table">';
     html += '<thead><tr>';
-    html += '<th>月</th><th>売上</th><th>件数</th><th>単価</th><th>経費</th><th>利益</th><th>稼働日</th><th>日平均</th>';
+    html += '<th>月</th><th>売上</th><th>件数</th><th>単価</th><th>経費</th><th>利益</th>';
     html += '</tr></thead>';
     html += '<tbody>';
 
@@ -769,8 +767,6 @@
       html += '<td>¥' + fmt(summary.avgUnit) + '</td>';
       html += '<td>¥' + fmt(summary.totalExpense) + '</td>';
       html += '<td class="' + (summary.profit >= 0 ? 'ss-cell-profit-positive' : 'ss-cell-profit-negative') + '">¥' + fmt(summary.profit) + '</td>';
-      html += '<td>' + summary.workDays + '日</td>';
-      html += '<td>¥' + fmt(summary.avgDaily) + '</td>';
       html += '</tr>';
     }
 
@@ -782,8 +778,6 @@
     html += '<td>¥' + fmt(yearTotals.count > 0 ? Math.round(yearTotals.sales / yearTotals.count) : 0) + '</td>';
     html += '<td>¥' + fmt(yearTotals.expense) + '</td>';
     html += '<td class="' + (yearTotals.profit >= 0 ? 'ss-cell-profit-positive' : 'ss-cell-profit-negative') + '">¥' + fmt(yearTotals.profit) + '</td>';
-    html += '<td>' + yearTotals.workDays + '日</td>';
-    html += '<td>¥' + fmt(yearTotals.workDays > 0 ? Math.round(yearTotals.sales / yearTotals.workDays) : 0) + '</td>';
     html += '</tr>';
 
     html += '</tbody></table></div>';
