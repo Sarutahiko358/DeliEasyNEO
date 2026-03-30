@@ -448,9 +448,7 @@
       { id: 'outline',   name: 'アウトライン', emoji: '🔲', desc: '塗りなし線のみ・線画的な美しさ' },
       { id: 'mono',      name: 'モノ',         emoji: '⬛', desc: '完全モノクロ・グレースケールのみ' },
       { id: 'yinyang-light', name: '陰陽・光', emoji: '☯️', desc: '流れる曲線・光と闇の調和・静穏なバランス' },
-      { id: 'yinyang-dark',  name: '陰陽・闇', emoji: '🌓', desc: '闇に浮かぶ白・静寂と対比・夜の調和' },
-      { id: 'engimono-light', name: '縁起・光', emoji: '🎍', desc: '二重枠・福々しい丸み・めでたい装飾線' },
-      { id: 'engimono-dark',  name: '縁起・闇', emoji: '🏮', desc: '金蒔絵風・夜祭りの華やかさ・暗闘に浮かぶ祝い線' }
+      { id: 'engimono-light', name: '縁起・光', emoji: '🎍', desc: '二重枠・福々しい丸み・めでたい装飾線' }
     ];
 
     var lightColors = [
@@ -545,7 +543,7 @@
     var activeColorName = currentColor;
     lightColors.concat(darkColors).forEach(function(c) { if (c.id === currentColor) activeColorName = c.name; });
     html += '<div class="fz-m fw7 mt4" style="color:var(--c-primary)">' + escHtml(activeStyleName) + ' × ' + escHtml(activeColorName) + '</div>';
-    html += '<div class="fz-xs c-muted mt8">22スタイル × 20カラー = 440通りの組み合わせ</div>';
+    html += '<div class="fz-xs c-muted mt8">20スタイル × 20カラー = 400通りの組み合わせ</div>';
     html += '</div></div>';
 
     body.innerHTML = html;

@@ -330,31 +330,50 @@
       desc: '年間の所得税・住民税・国保の概算',
       tappable: true, tapAction: 'tax',
       render: function() {
-        /* 年間データを集計 */
         var now = new Date();
         var yr = now.getFullYear();
-        var from = yr + '-01-01';
-        var to = yr + '-12-31';
-        var earns = typeof getE === 'function' ? getE() : [];
-        var yEarns = earns.filter(function(r) { return r.d >= from && r.d <= to; });
-        var revenue = 0;
-        yEarns.forEach(function(r) { revenue += (Number(r.a) || 0); });
 
-        var allExps = S.g('exps', []);
-        var yExps = allExps.filter(function(e) { return e.date >= from && e.date <= to; });
-        var expense = 0;
-        yExps.forEach(function(e) { expense += (Number(e.amount) || 0); });
+        // 保存済みパラメータを取得
+        var params = S.g('taxCalcParams', null);
+        var blueDeduction = 650000;
+        if (params && params.blueDeduction !== undefined && params.blueDeduction !== null) {
+          blueDeduction = Number(params.blueDeduction);
+        }
 
-        var blueDeduction = 650000; /* デフォルト: 65万円 */
+        // 収支データの取得
+        var revenue, expense;
+        if (params && params.inputMode === 'manual' && params.manualRevenue !== null) {
+          revenue = Number(params.manualRevenue) || 0;
+          expense = Number(params.manualExpense) || 0;
+        } else {
+          var targetYear = (params && params.year) ? params.year : yr;
+          var startMonth = (params && params.startMonth) ? params.startMonth : 1;
+          var from = targetYear + '-' + String(startMonth).padStart(2, '0') + '-01';
+          var endY = startMonth > 1 ? targetYear + 1 : targetYear;
+          var endM = startMonth > 1 ? startMonth - 1 : 12;
+          var lastDay = new Date(endY, endM, 0).getDate();
+          var to = endY + '-' + String(endM).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
 
+          var earns = typeof getE === 'function' ? getE() : [];
+          revenue = 0;
+          earns.forEach(function(r) { if (r.d >= from && r.d <= to) revenue += (Number(r.a) || 0); });
+
+          var allExps = S.g('exps', []);
+          expense = 0;
+          allExps.forEach(function(e) { if (e.date >= from && e.date <= to) expense += (Number(e.amount) || 0); });
+        }
+
+        // 控除データの取得
         var deductions = typeof window.loadTaxDeductions === 'function'
           ? window.loadTaxDeductions()
           : { social:0, kokumin_nenkin:0, shoukibo:0, ideco:0, seimei:0, jishin:0, iryo:0, haigusha:'none', fuyo_ippan:0, fuyo_tokutei:0, fuyo_roujin:0, disability:'none', single_parent:false, widow:false };
 
+        var blueLabel = blueDeduction >= 650000 ? '65万' : (blueDeduction >= 550000 ? '55万' : (blueDeduction >= 100000 ? '10万' : '白色'));
+
         if (typeof window.calcTaxResult === 'function') {
           var r = window.calcTaxResult(revenue, expense, blueDeduction, deductions);
           var html = '<div class="widget-inner">';
-          html += '<div class="fz-xs c-muted mb4 text-c">' + yr + '年（青色65万円控除）</div>';
+          html += '<div class="fz-xs c-muted mb4 text-c">青色' + blueLabel + '円控除</div>';
           html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
           html += _miniStat('年間売上', '¥' + fmt(revenue));
           html += _miniStat('年間経費', '¥' + fmt(expense));
@@ -371,9 +390,25 @@
           return html;
         }
 
-        /* フォールバック: calcTaxResult が未ロードの場合は簡易計算 */
+        // フォールバック（tax.jsが未ロードの場合）- 控除も反映
+        var deductionTotal = 0;
+        deductionTotal += (Number(deductions.social) || 0) + (Number(deductions.kokumin_nenkin) || 0);
+        deductionTotal += (Number(deductions.shoukibo) || 0) + (Number(deductions.ideco) || 0);
+        deductionTotal += Number(deductions.seimei) || 0;
+        deductionTotal += Number(deductions.jishin) || 0;
+        var iryoVal = Number(deductions.iryo) || 0;
+        if (iryoVal > 100000) deductionTotal += Math.min(iryoVal - 100000, 2000000);
+        if (deductions.haigusha === 'special') deductionTotal += 380000;
+        else if (deductions.haigusha !== 'none') deductionTotal += Number(deductions.haigusha) || 0;
+        deductionTotal += (Number(deductions.fuyo_ippan) || 0) * 380000;
+        deductionTotal += (Number(deductions.fuyo_tokutei) || 0) * 630000;
+        deductionTotal += (Number(deductions.fuyo_roujin) || 0) * 480000;
+        if (deductions.disability !== 'none') deductionTotal += Number(deductions.disability) || 0;
+        if (deductions.single_parent) deductionTotal += 350000;
+        if (deductions.widow) deductionTotal += 270000;
+
         var income = Math.max(0, revenue - expense - blueDeduction);
-        var taxableIncome = Math.max(0, income - 480000);
+        var taxableIncome = Math.max(0, income - 480000 - deductionTotal);
         var BRACKETS = [
           { limit: 1950000, rate: 0.05, deduction: 0 },
           { limit: 3300000, rate: 0.10, deduction: 97500 },
@@ -398,7 +433,7 @@
         var takeHome = revenue - expense - totalTax;
 
         var html = '<div class="widget-inner">';
-        html += '<div class="fz-xs c-muted mb4 text-c">' + yr + '年（青色65万円控除・簡易計算）</div>';
+        html += '<div class="fz-xs c-muted mb4 text-c">青色' + blueLabel + '円控除（簡易計算）</div>';
         html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
         html += _miniStat('年間売上', '¥' + fmt(revenue));
         html += _miniStat('年間経費', '¥' + fmt(expense));
@@ -424,22 +459,56 @@
       render: function(w) {
         var now = new Date();
         var yr = now.getFullYear();
-        var from = yr + '-01-01';
-        var to = yr + '-12-31';
-        var earns = typeof getE === 'function' ? getE() : [];
-        var yEarns = earns.filter(function(r) { return r.d >= from && r.d <= to; });
-        var revenue = 0;
-        yEarns.forEach(function(r) { revenue += (Number(r.a) || 0); });
 
-        var allExps = S.g('exps', []);
-        var yExps = allExps.filter(function(e) { return e.date >= from && e.date <= to; });
-        var expense = 0;
-        yExps.forEach(function(e) { expense += (Number(e.amount) || 0); });
+        var params = S.g('taxCalcParams', null);
+        var blueDeduction = 650000;
+        if (params && params.blueDeduction !== undefined && params.blueDeduction !== null) {
+          blueDeduction = Number(params.blueDeduction);
+        }
+
+        var revenue, expense;
+        if (params && params.inputMode === 'manual' && params.manualRevenue !== null) {
+          revenue = Number(params.manualRevenue) || 0;
+          expense = Number(params.manualExpense) || 0;
+        } else {
+          var targetYear = (params && params.year) ? params.year : yr;
+          var startMonth = (params && params.startMonth) ? params.startMonth : 1;
+          var from = targetYear + '-' + String(startMonth).padStart(2, '0') + '-01';
+          var endY = startMonth > 1 ? targetYear + 1 : targetYear;
+          var endM = startMonth > 1 ? startMonth - 1 : 12;
+          var lastDay = new Date(endY, endM, 0).getDate();
+          var to = endY + '-' + String(endM).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
+
+          var earns = typeof getE === 'function' ? getE() : [];
+          revenue = 0;
+          earns.forEach(function(r) { if (r.d >= from && r.d <= to) revenue += (Number(r.a) || 0); });
+
+          var allExps = S.g('exps', []);
+          expense = 0;
+          allExps.forEach(function(e) { if (e.date >= from && e.date <= to) expense += (Number(e.amount) || 0); });
+        }
 
         var deductions = typeof window.loadTaxDeductions === 'function' ? window.loadTaxDeductions() : {};
-        var social = (Number(deductions.social) || 0) + (Number(deductions.kokumin_nenkin) || 0);
-        var income = Math.max(0, revenue - expense - 650000);
-        var taxable = Math.max(0, income - 480000 - social);
+
+        // 全控除額を計算
+        var deductionTotal = 0;
+        deductionTotal += (Number(deductions.social) || 0) + (Number(deductions.kokumin_nenkin) || 0);
+        deductionTotal += (Number(deductions.shoukibo) || 0) + (Number(deductions.ideco) || 0);
+        deductionTotal += Number(deductions.seimei) || 0;
+        deductionTotal += Number(deductions.jishin) || 0;
+        var iryoVal = Number(deductions.iryo) || 0;
+        if (iryoVal > 100000) deductionTotal += Math.min(iryoVal - 100000, 2000000);
+        if (deductions.haigusha === 'special') deductionTotal += 380000;
+        else if (deductions.haigusha !== 'none') deductionTotal += Number(deductions.haigusha) || 0;
+        deductionTotal += (Number(deductions.fuyo_ippan) || 0) * 380000;
+        deductionTotal += (Number(deductions.fuyo_tokutei) || 0) * 630000;
+        deductionTotal += (Number(deductions.fuyo_roujin) || 0) * 480000;
+        if (deductions.disability !== 'none') deductionTotal += Number(deductions.disability) || 0;
+        if (deductions.single_parent) deductionTotal += 350000;
+        if (deductions.widow) deductionTotal += 270000;
+
+        var income = Math.max(0, revenue - expense - blueDeduction);
+        var taxable = Math.max(0, income - 480000 - deductionTotal);
         var residentIncomeRate = taxable * 0.10;
         var limit = Math.floor(residentIncomeRate * 0.20) + 2000;
 

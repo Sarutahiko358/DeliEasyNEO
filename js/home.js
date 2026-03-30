@@ -98,7 +98,8 @@
         var exp = 0;
         aexp.forEach(function(e) { if (e.date >= from && e.date <= to) exp += (Number(e.amount) || 0); });
         var deductions = typeof window.loadTaxDeductions === 'function' ? window.loadTaxDeductions() : {};
-        return 'tax_' + rev + '_' + exp + '_' + JSON.stringify(deductions);
+        var taxParams = S.g('taxCalcParams', null);
+        return 'tax_' + rev + '_' + exp + '_' + JSON.stringify(deductions) + '_' + JSON.stringify(taxParams);
       }
       case 'furusatoLimit': {
         var earns2 = typeof getE === 'function' ? getE() : [];
@@ -111,7 +112,8 @@
         var exp2 = 0;
         aexp2.forEach(function(e) { if (e.date >= from2 && e.date <= to2) exp2 += (Number(e.amount) || 0); });
         var deductions2 = typeof window.loadTaxDeductions === 'function' ? window.loadTaxDeductions() : {};
-        return 'fl_' + rev2 + '_' + exp2 + '_' + JSON.stringify(deductions2);
+        var taxParams2 = S.g('taxCalcParams', null);
+        return 'fl_' + rev2 + '_' + exp2 + '_' + JSON.stringify(deductions2) + '_' + JSON.stringify(taxParams2);
       }
       case 'quickMemo':
         return 'memo_' + (S.g('quickMemo', '') || '').length;

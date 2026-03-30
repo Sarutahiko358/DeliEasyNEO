@@ -93,6 +93,7 @@
     const deductionTotal = calcDeductionTotal(deductions);
     const taxableIncome = Math.max(0, income - 480000 - deductionTotal);
 
+    // === 所得税 ===
     let incomeTax = 0;
     for (const b of BRACKETS) {
       if (taxableIncome <= b.limit) {
@@ -103,8 +104,39 @@
     incomeTax = Math.max(0, incomeTax);
     const reconstructionTax = Math.floor(incomeTax * 0.021);
     const totalIncomeTax = incomeTax + reconstructionTax;
-    const residentTax = Math.floor(taxableIncome * 0.10);
-    const healthInsurance = Math.floor(taxableIncome * 0.10);
+
+    // === 住民税（所得割 + 均等割を分離） ===
+    let residentIncomeRate = Math.floor(taxableIncome * 0.10);
+    let residentEqualRate = 5000;
+    let forestTax = 1000;
+    const isResidentTaxExempt = (income - 480000) <= 0;
+    if (isResidentTaxExempt) {
+      residentIncomeRate = 0;
+      residentEqualRate = 0;
+      forestTax = 0;
+    }
+    const residentTax = residentIncomeRate + residentEqualRate + forestTax;
+
+    // === 個人事業税（事業所得290万円超の場合に課税） ===
+    const businessTaxableIncome = Math.max(0, income - 2900000);
+    const businessTaxRate = 0.05;
+    const businessTax = Math.floor(businessTaxableIncome * businessTaxRate);
+
+    // === 国民健康保険料（所得割 + 均等割の概算） ===
+    const kokuhoShotokuBase = Math.max(0, income - 430000);
+    const kokuhoIryouShotoku = Math.floor(kokuhoShotokuBase * 0.0789);
+    const kokuhoIryouKintou = 42100;
+    let kokuhoIryou = Math.min(kokuhoIryouShotoku + kokuhoIryouKintou, 650000);
+    const kokuhoShienShotoku = Math.floor(kokuhoShotokuBase * 0.0269);
+    const kokuhoShienKintou = 14400;
+    let kokuhoShien = Math.min(kokuhoShienShotoku + kokuhoShienKintou, 240000);
+    let healthInsurance = kokuhoIryou + kokuhoShien;
+    if (kokuhoShotokuBase <= 0) {
+      healthInsurance = Math.floor((kokuhoIryouKintou + kokuhoShienKintou) * 0.3);
+      kokuhoIryou = Math.floor(kokuhoIryouKintou * 0.3);
+      kokuhoShien = Math.floor(kokuhoShienKintou * 0.3);
+    }
+
     const totalTax = totalIncomeTax + residentTax + healthInsurance;
     const takeHome = revenue - expense - totalTax;
     const effectiveRate = revenue > 0 ? (totalTax / revenue * 100).toFixed(1) : 0;
@@ -114,7 +146,9 @@
       revenue, expense, blueDeduction, deductionTotal, income, taxableIncome,
       incomeTax, reconstructionTax, totalIncomeTax,
       residentTax, healthInsurance, totalTax,
-      takeHome, effectiveRate, monthlyTakeHome
+      takeHome, effectiveRate, monthlyTakeHome,
+      residentIncomeRate, residentEqualRate, forestTax,
+      businessTax, kokuhoIryou, kokuhoShien, isResidentTaxExempt
     };
   }
 
@@ -331,6 +365,15 @@
     const deductions = gatherDeductions();
     saveDeductions(deductions);
     lastTaxResult = calcTaxResult(revenue, expense, blue, deductions);
+    // 計算パラメータも保存（ウィジェットが参照する）
+    S.s('taxCalcParams', {
+      blueDeduction: blue,
+      year: taxInputMode === 'linked' ? taxYear : null,
+      startMonth: taxInputMode === 'linked' ? taxStartMonth : null,
+      inputMode: taxInputMode,
+      manualRevenue: taxInputMode === 'manual' ? revenue : null,
+      manualExpense: taxInputMode === 'manual' ? expense : null
+    });
     S.s('lastTaxResult', lastTaxResult);
     document.getElementById('tax-result').innerHTML = renderTaxResult(lastTaxResult);
     hp();
@@ -344,14 +387,33 @@
           <div class="stat-box accent-danger"><div class="stat-box-label">税金合計</div><div class="stat-box-value">¥${fmt(r.totalTax)}</div></div>
         </div>
         ${r.deductionTotal ? `<div class="stat-box mb8" style="background:var(--c-primary-light)"><div class="stat-box-label">所得控除合計（基礎控除除く）</div><div class="stat-box-value">¥${fmt(r.deductionTotal)}</div></div>` : ''}
+
+        <div class="fz-xs fw6 c-secondary mb4 mt8">所得税</div>
         <div class="stat-grid stat-grid-2 mb12">
-          <div class="stat-box"><div class="stat-box-label">所得税</div><div class="stat-box-value">¥${fmt(r.totalIncomeTax)}</div></div>
-          <div class="stat-box"><div class="stat-box-label">住民税</div><div class="stat-box-value">¥${fmt(r.residentTax)}</div></div>
-          <div class="stat-box"><div class="stat-box-label">国保</div><div class="stat-box-value">¥${fmt(r.healthInsurance)}</div></div>
-          <div class="stat-box accent-success"><div class="stat-box-label">手取り</div><div class="stat-box-value">¥${fmt(r.takeHome)}</div></div>
+          <div class="stat-box"><div class="stat-box-label">所得税</div><div class="stat-box-value">¥${fmt(r.incomeTax)}</div></div>
+          <div class="stat-box"><div class="stat-box-label">復興特別所得税</div><div class="stat-box-value">¥${fmt(r.reconstructionTax)}</div></div>
         </div>
+
+        <div class="fz-xs fw6 c-secondary mb4">住民税</div>
+        ${r.isResidentTaxExempt ? '<div class="fz-xs c-success mb4">※ 非課税の見込み</div>' : ''}
+        <div class="stat-grid stat-grid-3 mb12">
+          <div class="stat-box"><div class="stat-box-label">所得割(10%)</div><div class="stat-box-value">¥${fmt(r.residentIncomeRate)}</div></div>
+          <div class="stat-box"><div class="stat-box-label">均等割</div><div class="stat-box-value">¥${fmt(r.residentEqualRate)}</div></div>
+          <div class="stat-box"><div class="stat-box-label">森林環境税</div><div class="stat-box-value">¥${fmt(r.forestTax)}</div></div>
+        </div>
+
+        <div class="fz-xs fw6 c-secondary mb4">国民健康保険料（概算）</div>
+        <div class="fz-xxs c-muted mb4">※ 自治体により異なります。全国平均料率で計算しています。</div>
+        <div class="stat-grid stat-grid-2 mb12">
+          <div class="stat-box"><div class="stat-box-label">医療分</div><div class="stat-box-value">¥${fmt(r.kokuhoIryou)}</div></div>
+          <div class="stat-box"><div class="stat-box-label">後期支援分</div><div class="stat-box-value">¥${fmt(r.kokuhoShien)}</div></div>
+        </div>
+
+        ${r.businessTax > 0 ? `<div class="stat-box mb8" style="background:var(--c-warning-light)"><div class="stat-box-label">個人事業税（参考）</div><div class="stat-box-value">¥${fmt(r.businessTax)}</div><div class="fz-xxs c-muted" style="text-align:center;margin-top:4px">※ 配達業は非課税となる場合があります</div></div>` : ''}
+
         <div class="stat-grid stat-grid-2">
           <div class="stat-box"><div class="stat-box-label">実効税率</div><div class="stat-box-value">${r.effectiveRate}%</div></div>
+          <div class="stat-box accent-success"><div class="stat-box-label">手取り</div><div class="stat-box-value">¥${fmt(r.takeHome)}</div></div>
           <div class="stat-box accent-info"><div class="stat-box-label">月平均手取り</div><div class="stat-box-value">¥${fmt(r.monthlyTakeHome)}</div></div>
         </div>
       </div></div>`;
