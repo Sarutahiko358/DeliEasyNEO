@@ -5,6 +5,10 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, drag-sort.js
+     @provides: registerOverlaySections, openOverlayCustomizer,
+                isOverlaySectionVisible, getOverlaySectionOrder */
+
   var _overlayCustomDefs = {};
 
   function registerOverlaySections(overlayId, sections) {

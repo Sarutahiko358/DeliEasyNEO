@@ -5,6 +5,10 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, presets.js, earns-db.js
+     @provides: renderTopbar, renderTopbarSettings, getTopbarConfig,
+                startTopbarUpdater, setTopbarSlot, toggleTopbarVisibility */
+
   /* ---------- スロット定義 ---------- */
   var TOPBAR_SLOT_OPTIONS = {
     leftCustom: [

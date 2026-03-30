@@ -5,6 +5,12 @@
 (function(){
   'use strict';
 
+  /* @depends: (none - must load first after storage.js)
+     @provides: $, $$, fmt, escHtml, escJs, DAYS, dateKey, TD, MK,
+                toast, hp, customConfirm, customPrompt,
+                getAllPFs, pfColor, extractPf, pfOpts,
+                foldCard, toggleFold, isJapaneseHoliday, getJapaneseHolidayName */
+
   /* ---------- DOM helpers ---------- */
   function $(s) { return document.querySelector(s); }
   function $$(s) { return document.querySelectorAll(s); }

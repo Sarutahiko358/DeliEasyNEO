@@ -5,6 +5,12 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, widgets.js (WIDGET_DEFS)
+     @provides: PRESET_TEMPLATES, getPresets, getActivePreset, getActivePresetRaw,
+                getPresetModeData, savePresetModeData, setActivePreset, savePreset,
+                deletePreset, createPresetFromTemplate, addWidgetToPreset,
+                removeWidgetFromPreset, cycleWidgetSizeInPreset, _getDeviceMode */
+
   /* ========== デバイスモード判定 ========== */
   function _getDeviceMode() {
     return window.innerWidth >= 1024 ? 'desktop' : 'mobile';

@@ -5,6 +5,9 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js
+     @provides: renderOverlay_expenseInput */
+
   /* ---------- 状態 ---------- */
   var _inputMode = 'numpad'; // 'numpad' | 'direct'
   var _npVal = '';
@@ -25,8 +28,13 @@
     _inputMode = S.g('expInputMode', 'numpad');
     _npVal = '';
     _selectedDate = TD;
-    _selectedCat = DEFAULT_CATS[0];
     _memo = '';
+    var recentExps = S.g('exps', []);
+    var lastCat = null;
+    for (var i = recentExps.length - 1; i >= 0; i--) {
+      if (recentExps[i].cat) { lastCat = recentExps[i].cat; break; }
+    }
+    _selectedCat = lastCat || DEFAULT_CATS[0];
   }
 
   /* ---------- オーバーレイ描画 ---------- */
@@ -40,6 +48,23 @@
     if (!body) return;
 
     var cats = _getCats();
+
+    /* 最近使用したカテゴリ順にソート */
+    var allExps = S.g('exps', []);
+    var recentCatOrder = [];
+    allExps.slice().sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); }).forEach(function(e) {
+      if (e.cat && recentCatOrder.indexOf(e.cat) < 0) recentCatOrder.push(e.cat);
+    });
+    if (recentCatOrder.length > 0) {
+      var sortedCats = [];
+      recentCatOrder.forEach(function(c) {
+        if (cats.indexOf(c) >= 0 && sortedCats.indexOf(c) < 0) sortedCats.push(c);
+      });
+      cats.forEach(function(c) {
+        if (sortedCats.indexOf(c) < 0) sortedCats.push(c);
+      });
+      cats = sortedCats;
+    }
     var html = '';
 
     /* ===== カテゴリ選択 ===== */

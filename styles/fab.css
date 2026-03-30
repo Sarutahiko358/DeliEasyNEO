@@ -128,3 +128,12 @@
   .fab-main.open:hover { transform: rotate(45deg) scale(1.05); }
   .fab-mini:hover { transform: scale(1.03); box-shadow: 0 6px 20px var(--c-shadow-color); }
 }
+
+/* ---------- FAB first-record pulse hint ---------- */
+@keyframes fab-first-record-pulse {
+  0%, 100% { transform: scale(1); box-shadow: var(--ds-shadow-fab); }
+  50% { transform: scale(1.18); box-shadow: 0 0 24px rgba(var(--c-primary-rgb, 0,122,255), .45); }
+}
+.fab-main.fab-pulse-hint {
+  animation: fab-first-record-pulse 0.8s ease-in-out 3;
+}

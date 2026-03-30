@@ -6,6 +6,9 @@
 (function(){
   'use strict';
 
+  /* @depends: overlay.js, overlay-customizer.js, expense.js (lazy loaded)
+     @provides: renderOverlay_expenseManage */
+
   /* セクション登録 */
   if (typeof registerOverlaySections === 'function') {
     registerOverlaySections('expenseManage', [

@@ -6,6 +6,9 @@
 (function(){
   'use strict';
 
+  /* @depends: overlay.js, overlay-customizer.js, tax.js (lazy loaded)
+     @provides: renderOverlay_tax */
+
   /* セクション登録 */
   if (typeof registerOverlaySections === 'function') {
     registerOverlaySections('tax', [

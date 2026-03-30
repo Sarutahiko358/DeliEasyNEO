@@ -5,6 +5,10 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, presets.js, drag-sort.js
+     @provides: renderFab, renderFabSettings, getFabConfig, saveFabConfig,
+                toggleFabMenu, closeFabMenu, showFab, hideFab, isFabOpen */
+
   var _isOpen = false;
   var _isHidden = false;
   var _fabSortCleanup = null;

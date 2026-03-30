@@ -6,6 +6,9 @@
 (function(){
   'use strict';
 
+  /* @depends: overlay.js, overlay-customizer.js, calendar.js (lazy loaded)
+     @provides: renderOverlay_calendar */
+
   /* セクション登録 */
   if (typeof registerOverlaySections === 'function') {
     registerOverlaySections('calendar', [

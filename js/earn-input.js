@@ -5,6 +5,9 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, earns-db.js
+     @provides: renderOverlay_earnInput */
+
   /* ---------- 状態 ---------- */
   var _inputMode = 'numpad';
   var _npVal = '';

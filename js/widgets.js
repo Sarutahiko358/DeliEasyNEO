@@ -5,6 +5,10 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, earns-db.js
+     @provides: WIDGET_DEFS, WIDGET_CATEGORIES, renderWidgetWrapper,
+                startWidgetClock, widgetTap, openCalendarAtDate */
+
   /* ========== カテゴリ ========== */
   var WIDGET_CATEGORIES = [
     { id: 'time',    icon: '🕐', name: '時間' },

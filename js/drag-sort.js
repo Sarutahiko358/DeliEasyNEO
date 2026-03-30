@@ -5,6 +5,9 @@
 (function(){
   'use strict';
 
+  /* @depends: (none - standalone module)
+     @provides: initDragSort */
+
   /**
    * initDragSort — 長押しドラッグ並び替えを初期化
    *

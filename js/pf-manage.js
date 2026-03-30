@@ -5,6 +5,9 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js
+     @provides: renderOverlay_pfManage */
+
   var _activeTab = 'pf'; /* 'pf' | 'expCat' */
 
   /* ---------- デフォルトPF ---------- */

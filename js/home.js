@@ -6,6 +6,12 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, presets.js, widgets.js, overlay.js, drag-sort.js,
+               topbar.js, bottombar.js, right-panel.js, fab.js, sidebar.js
+     @provides: renderHome, refreshHome, forceFullRenderHome,
+                enterEditMode, exitEditMode, isEditMode,
+                switchPreset, openPresetMenu, openWidgetPicker */
+
   var _editMode = false;
   var _homeEditCurrentMode = null; // null = 自動検出
 
@@ -209,6 +215,41 @@
     }
 
     _initLongPress();
+    _showLongPressHint();
+  }
+
+  /* ========== 長押し編集ヒントバッジ ========== */
+  function _showLongPressHint() {
+    if (S.g('hint_longpress_shown', false)) return;
+    var earnCount = typeof getE === 'function' ? getE().length : 0;
+    if (earnCount < 1) return;
+    var grid = document.getElementById('widget-grid');
+    if (!grid) return;
+    var firstWidget = grid.querySelector('.widget');
+    if (!firstWidget) return;
+
+    var cs = window.getComputedStyle(firstWidget);
+    if (cs.position === 'static') firstWidget.style.position = 'relative';
+
+    var badge = document.createElement('div');
+    badge.style.cssText =
+      'position:absolute;top:8px;right:8px;' +
+      'background:var(--c-primary);color:#fff;' +
+      'font-size:.55rem;font-weight:600;' +
+      'padding:4px 10px;border-radius:980px;' +
+      'z-index:10;pointer-events:none;' +
+      'animation:v2-fade-in .5s ease;' +
+      'box-shadow:0 2px 8px rgba(0,0,0,.15)';
+    badge.textContent = '\uD83D\uDCA1 \u9577\u62BC\u3057\u3067\u7DE8\u96C6';
+    firstWidget.appendChild(badge);
+
+    setTimeout(function() {
+      badge.style.transition = 'opacity .5s';
+      badge.style.opacity = '0';
+      setTimeout(function() { badge.remove(); }, 500);
+    }, 5000);
+
+    S.si('hint_longpress_shown', true);
   }
 
   /* ========== data-widget-index 付きウィジェット描画 ========== */

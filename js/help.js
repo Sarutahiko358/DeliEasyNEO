@@ -5,6 +5,9 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, overlay.js
+     @provides: checkAndShowOnboarding, restartOnboarding, renderOverlay_help */
+
   /* S.r (remove) は storage.js に存在しないため定義 */
   if (typeof S !== 'undefined' && !S.r) {
     S.r = function(key) {
@@ -229,6 +232,18 @@
     S.r('onboarding_step');
     _closeOnboarding();
     if (typeof toast === 'function') toast('\uD83C\uDF89 \u30BB\u30C3\u30C8\u30A2\u30C3\u30D7\u5B8C\u4E86\uFF01\u307E\u305A\u306F\u300C\uFF0B\u300D\u30DC\u30BF\u30F3\u304B\u3089\u58F2\u4E0A\u3092\u8A18\u9332\u3057\u3066\u307F\u307E\u3057\u3087\u3046');
+    var earnCount = typeof getE === 'function' ? getE().length : 0;
+    if (earnCount === 0) {
+      setTimeout(function() {
+        var fabMain = document.getElementById('fab-main');
+        if (fabMain) {
+          fabMain.classList.add('fab-pulse-hint');
+          fabMain.addEventListener('animationend', function() {
+            fabMain.classList.remove('fab-pulse-hint');
+          }, { once: true });
+        }
+      }, 500);
+    }
   }
 
   /* ---------- オンボーディング中断 ---------- */

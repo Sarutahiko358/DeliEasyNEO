@@ -5,6 +5,10 @@
 (function(){
   'use strict';
 
+  /* @depends: ALL files above
+     @provides: applyTheme, getThemeStyle, getThemeColor, setThemeStyle, setThemeColor,
+                isDarkPalette, updateSyncIndicator, openEditEarn, _isDesktop */
+
   /* ---------- Theme Management ---------- */
   var DEFAULT_STYLE = 'minimal';
   var DEFAULT_COLOR = 'blue-light';
@@ -216,6 +220,20 @@
     else el.classList.add('sync-idle');
   }
 
+  /* ---------- iOS同期リマインダー ---------- */
+  function _checkSyncReminder() {
+    if (typeof firebaseIsSignedIn === 'function' && firebaseIsSignedIn()) return;
+    var earnCount = typeof getE === 'function' ? getE().length : 0;
+    if (earnCount < 10) return;
+    var lastReminder = S.g('syncReminderLastShown', 0);
+    var now = Date.now();
+    if (now - lastReminder < 30 * 24 * 60 * 60 * 1000) return;
+    S.si('syncReminderLastShown', now);
+    setTimeout(function() {
+      toast('\uD83D\uDCA1 ' + earnCount + '\u4EF6\u306E\u8A18\u9332\u304C\u3042\u308A\u307E\u3059\u3002\u30AF\u30E9\u30A6\u30C9\u540C\u671F\u3067\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3057\u307E\u305B\u3093\u304B\uFF1F', 5000);
+    }, 10000);
+  }
+
   /* ---------- Init ---------- */
   function initApp() {
     applyTheme(getThemeStyle(), getThemeColor());
@@ -274,6 +292,8 @@
         }
 
         if (typeof maybeWarnStoragePressure === 'function') maybeWarnStoragePressure();
+
+        _checkSyncReminder();
 
       }).catch(function(e) {
         console.warn('[App] Init error:', e);

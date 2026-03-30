@@ -5,6 +5,11 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js
+     @provides: openSidebar, closeSidebar, toggleSidebar, isSidebarOpen,
+                renderSidebar, initSidebarGestures, getGestureConfig,
+                renderGestureSettings, renderSidebarSettings */
+
   var _isOpen = false;
   var _touchStartX = 0;
   var _touchStartY = 0;

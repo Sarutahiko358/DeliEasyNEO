@@ -6,6 +6,9 @@
 (function(){
   'use strict';
 
+  /* @depends: overlay.js, overlay-customizer.js, stats.js (lazy loaded)
+     @provides: renderOverlay_stats, renderDashOverlay */
+
   /* セクション登録 */
   if (typeof registerOverlaySections === 'function') {
     registerOverlaySections('stats', [

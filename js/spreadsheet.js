@@ -5,6 +5,9 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, earns-db.js, overlay.js
+     @provides: openSpreadsheetMain, closeSpreadsheetMain */
+
   /* ===== プリセットレイアウト ===== */
   var LAYOUT_PRESETS = {
     simple: {

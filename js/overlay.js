@@ -5,6 +5,11 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js
+     @provides: openOverlay, closeOverlay, closeAllOverlays, isOverlayOpen,
+                getTopOverlayId, openOverlayManager, OVERLAYS,
+                registerOverlaySections (via overlay-customizer.js) */
+
   /* ---------- Overlay registry ---------- */
   var OVERLAYS = {
     earnInput:     { title: '✏️ 売上入力' },

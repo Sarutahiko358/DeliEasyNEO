@@ -5,6 +5,10 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, presets.js, overlay.js
+     @provides: renderBottombar, renderBottombarSettings, getBottombarConfig,
+                toggleBottombarVisibility, showBottombar, hideBottombar */
+
   /* ---------- 割り当て可能なアクション ---------- */
   var BOTTOMBAR_ACTIONS = [
     { id: 'earnInput',    icon: '✏️', label: '売上入力',    action: function(){ openOverlay('earnInput'); } },

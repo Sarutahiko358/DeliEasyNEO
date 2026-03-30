@@ -6,6 +6,10 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, overlay.js, earns-db.js,
+               firebase-sync.js (API calls only)
+     @provides: renderOverlay_settings */
+
   /* ---------- 折りたたみ状態 ---------- */
   var _syncTroubleOpen = false;
   var _dataDeleteOpen = false;

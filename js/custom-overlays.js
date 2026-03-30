@@ -5,6 +5,11 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, overlay.js, drag-sort.js, widgets.js, presets.js
+     @provides: getCustomOverlays, saveCustomOverlays, createCustomOverlay,
+                deleteCustomOverlay, openCustomOverlay, openCreateCustomOverlayDialog,
+                CUSTOM_OVERLAY_TYPES */
+
   var CUSTOM_OVERLAY_TYPES = [
     {
       id: 'dashboard',

@@ -5,6 +5,11 @@
 (function(){
   'use strict';
 
+  /* @depends: utils.js, storage.js, presets.js, earns-db.js, sidebar.js (getGestureConfig)
+     @provides: openRightPanel, closeRightPanel, isRightPanelOpen,
+                renderRightPanel, renderRightPanelSettings,
+                initRightPanelGestures, setDesktopRightPanelVisible */
+
   var _isOpen = false;
   var _touchStartX = 0;
   var _touchStartY = 0;
